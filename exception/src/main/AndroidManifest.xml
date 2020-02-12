@@ -1,2 +1,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="it.niedermann.nextcloud.exception" />
+    package="it.niedermann.nextcloud.exception">
+
+    <application>
+        <activity
+            android:name=".ExceptionActivity"
+            android:process=":error_activity" />
+    </application>
+</manifest>

@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -11,7 +12,6 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
-import butterknife.BindString;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
@@ -19,6 +19,8 @@ import butterknife.OnClick;
 import static it.niedermann.nextcloud.exception.ExceptionHandler.KEY_THROWABLE;
 
 public class ExceptionActivity extends AppCompatActivity {
+
+    private static final String TAG = ExceptionActivity.class.getCanonicalName();
 
     Throwable throwable;
 
@@ -29,7 +31,6 @@ public class ExceptionActivity extends AppCompatActivity {
     @BindView(R2.id.stacktrace)
     TextView stacktrace;
 
-    @SuppressLint("SetTextI18n") // only used for logging
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         setContentView(R.layout.activity_exception);
@@ -48,8 +49,12 @@ public class ExceptionActivity extends AppCompatActivity {
     void copyStacktraceToClipboard() {
         final ClipboardManager clipboardManager = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
         ClipData clipData = ClipData.newPlainText(getString(R.string.simple_exception), "```\n" + this.stacktrace.getText() + "\n```");
-        clipboardManager.setPrimaryClip(clipData);
-        Toast.makeText(this, R.string.copied_to_clipboard, Toast.LENGTH_SHORT).show();
+        if (clipboardManager != null) {
+            clipboardManager.setPrimaryClip(clipData);
+            Toast.makeText(this, R.string.copied_to_clipboard, Toast.LENGTH_SHORT).show();
+        } else {
+            Log.e(TAG, "Could not copy text because clipboardManager is null.");
+        }
     }
 
     @OnClick(R2.id.close)
