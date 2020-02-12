@@ -12,10 +12,10 @@ public class ExceptionHandler implements Thread.UncaughtExceptionHandler {
 
     private static final String TAG = ExceptionHandler.class.getCanonicalName();
     private Context context;
-    private Class<Activity> errorActivity;
+    private Class<? extends Activity> errorActivity;
     public static final String KEY_THROWABLE = "T";
 
-    public ExceptionHandler(Context context, Class<Activity> errorActivity) {
+    public ExceptionHandler(Context context, Class<? extends Activity> errorActivity) {
         super();
         this.context = context;
         this.errorActivity = errorActivity;
