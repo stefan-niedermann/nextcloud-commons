@@ -1,5 +1,11 @@
 # nextcloud-commons
 
+[![Latest Release](https://img.shields.io/github/v/tag/stefan-niedermann/nextcloud-commons?label=latest+release&sort=semver)](https://github.com/stefan-niedermann/nextcloud-commons/releases)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/9f784826834042e8b512d531cab84711)](https://www.codacy.com/manual/info_147/nextcloud-commons?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=stefan-niedermann/nextcloud-commons&amp;utm_campaign=Badge_Grade)
+[![GitHub issues](https://img.shields.io/github/issues/stefan-niedermann/nextcloud-commons.svg)](https://github.com/stefan-niedermann/nextcloud-commons/issues)
+[![GitHub stars](https://img.shields.io/github/stars/stefan-niedermann/nextcloud-commons.svg)](https://github.com/stefan-niedermann/nextcloud-commons/stargazers)
+[![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+
 ## How to use
 
 Add this dependency to your `build.gradle`-file:
@@ -46,3 +52,6 @@ public class CustomAppGlideModule extends AppGlideModule {
   }
 }
 ```
+
+## :notebook: License
+This project is licensed under the [GNU GENERAL PUBLIC LICENSE](/LICENSE).
