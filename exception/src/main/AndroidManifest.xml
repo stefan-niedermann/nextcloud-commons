@@ -3,6 +3,7 @@
 
     <application>
         <activity
+            android:theme="@style/Theme.AppCompat.DayNight.NoActionBar"
             android:name=".ExceptionActivity"
             android:process=":error_activity" />
     </application>
