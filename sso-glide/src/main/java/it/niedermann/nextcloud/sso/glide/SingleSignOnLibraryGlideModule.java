@@ -21,10 +21,13 @@ import java.io.InputStream;
  */
 @GlideModule
 public final class SingleSignOnLibraryGlideModule extends LibraryGlideModule {
+
+    private static final String TAG = SingleSignOnLibraryGlideModule.class.getCanonicalName();
+
     @Override
     public void registerComponents(
             @NonNull Context context, @NonNull Glide glide, @NonNull Registry registry) {
-        Log.v("yey", "yey");
+        Log.v(TAG, "Replacing default implementation for " + GlideUrl.class.getSimpleName() +  ".");
         registry.replace(GlideUrl.class, InputStream.class, new SingleSignOnUrlLoader.Factory(context));
     }
 }

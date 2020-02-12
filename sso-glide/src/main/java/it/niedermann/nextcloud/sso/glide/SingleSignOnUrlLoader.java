@@ -59,7 +59,7 @@ public class SingleSignOnUrlLoader implements ModelLoader<GlideUrl, InputStream>
                 loader = new SingleSignOnUrlLoader(new NextcloudAPI(context, SingleAccountHelper.getCurrentSingleSignOnAccount(context), new GsonBuilder().create(), new NextcloudAPI.ApiConnectedListener() {
                     @Override
                     public void onConnected() {
-                        Log.v(TAG, "success: init SSO-Api");
+                        Log.v(TAG, "SSO API successfully initialized");
                     }
 
                     @Override
