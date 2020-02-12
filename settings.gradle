@@ -1,2 +1,2 @@
-include ':app', ':sso-glide'
-rootProject.name='Nextcloud commons'
+include ':sso-glide'
+rootProject.name='nextcloud-commons'
