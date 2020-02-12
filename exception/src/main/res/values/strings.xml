@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">exception</string>
+    <string name="simple_copy">Copy</string>
+    <string name="simple_error">Error</string>
+    <string name="simple_close">Close</string>
+    <string name="simple_exception">Exception</string>
+    <string name="copied_to_clipboard">Copied to clipboard</string>
 </resources>

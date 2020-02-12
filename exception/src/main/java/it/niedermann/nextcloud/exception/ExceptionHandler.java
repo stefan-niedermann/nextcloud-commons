@@ -15,6 +15,12 @@ public class ExceptionHandler implements Thread.UncaughtExceptionHandler {
     private Class<? extends Activity> errorActivity;
     public static final String KEY_THROWABLE = "T";
 
+    public ExceptionHandler(Context context) {
+        super();
+        this.context = context;
+        this.errorActivity = ExceptionActivity.class;
+    }
+
     public ExceptionHandler(Context context, Class<? extends Activity> errorActivity) {
         super();
         this.context = context;

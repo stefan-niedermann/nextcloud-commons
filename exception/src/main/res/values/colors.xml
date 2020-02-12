@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="bg_highlighted">#eee</color>
+    <color name="primary">#0082C9</color>
+    <color name="fg_contrast">#ffffff</color>
+</resources>
