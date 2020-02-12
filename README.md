@@ -4,7 +4,7 @@
 
 Add this dependency to your `build.gradle`-file:
 
-`implementation 'com.github.stefan-niedermann:nextcloud-commons:c491b84271'`
+`implementation 'com.github.stefan-niedermann:nextcloud-commons:0.0.1'`
 
 ## Modules
 
