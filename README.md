@@ -10,7 +10,9 @@
 
 Add this dependency to your `build.gradle`-file:
 
-`implementation 'com.github.stefan-niedermann:nextcloud-commons:0.0.1'`
+```groovy
+implementation 'com.github.stefan-niedermann:nextcloud-commons:0.0.1'
+```
 
 ## Modules
 
@@ -18,7 +20,9 @@ Add this dependency to your `build.gradle`-file:
 
 This is a global `UncaughtExceptionHandler`. You can call it like this in your `onCreate`-callback of an activity:
 
-`Thread.currentThread().setUncaughtExceptionHandler(new ExceptionHandler(this, YoutExceptionActivity.class));`
+```java
+Thread.currentThread().setUncaughtExceptionHandler(new ExceptionHandler(this, YoutExceptionActivity.class));
+```
 
 It will create a better stacktrace with rich informations like your app version, the files-app version and device & OS information.
 
@@ -28,22 +32,14 @@ This is a Glide-integration module. If you are using [Single Sign On](https://gi
 
 To make it work, add this dependency to your `build.gradle`-file:
 
-`implementation 'com.github.bumptech.glide:glide:4.10.0'`
-`annotationProcessor 'com.github.bumptech.glide:compiler:4.10.0'`
+```groovy
+implementation 'com.github.bumptech.glide:glide:4.10.0'
+annotationProcessor 'com.github.bumptech.glide:compiler:4.10.0'
+```
 
 Then create a custom AppGlideModule at the place you want, like this:
 
 ```java
-
-import android.content.Context;
-
-import androidx.annotation.NonNull;
-
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.Registry;
-import com.bumptech.glide.annotation.GlideModule;
-import com.bumptech.glide.module.AppGlideModule;
-
 @GlideModule
 public class CustomAppGlideModule extends AppGlideModule {
   @Override
