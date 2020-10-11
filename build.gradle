@@ -26,3 +26,9 @@ allprojects {
 task clean(type: Delete) {
     delete rootProject.buildDir
 }
+
+ext {
+    versionCode = 1
+    versionName = '0.0.4'
+    ssoVersion = '0.5.3'
+}

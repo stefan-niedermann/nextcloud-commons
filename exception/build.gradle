@@ -9,8 +9,8 @@ android {
     defaultConfig {
         minSdkVersion 14
         targetSdkVersion 29
-        versionCode 1
-        versionName "0.0.3"
+        versionCode $rootProject.versionCode
+        versionName $rootProject.versionName
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles 'consumer-rules.pro'
@@ -28,7 +28,7 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
-    api "com.github.nextcloud:Android-SingleSignOn:0.5.3"
+    api "com.github.nextcloud:Android-SingleSignOn:$rootProject.ssoVersion"
 
     implementation 'com.jakewharton:butterknife:10.2.3'
     annotationProcessor 'com.jakewharton:butterknife-compiler:10.2.3'

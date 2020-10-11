@@ -1,4 +1,4 @@
-package it.niedermann.android.glidesso;
+package it.niedermann.nextcloud.sso.glide;
 
 import android.content.Context;
 import android.util.Log;
