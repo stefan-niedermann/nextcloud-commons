@@ -17,7 +17,6 @@ import java.io.InputStream;
  */
 public class SingleSignOnUrlLoader implements ModelLoader<GlideUrl, InputStream> {
 
-    private static final String TAG = SingleSignOnUrlLoader.class.getSimpleName();
     private final Context context;
 
     // Public API.
@@ -32,8 +31,7 @@ public class SingleSignOnUrlLoader implements ModelLoader<GlideUrl, InputStream>
     }
 
     @Override
-    public LoadData<InputStream> buildLoadData(
-            @NonNull GlideUrl model, int width, int height, @NonNull Options options) {
+    public LoadData<InputStream> buildLoadData(@NonNull GlideUrl model, int width, int height, @NonNull Options options) {
         return new LoadData<>(model, new SingleSignOnStreamFetcher(context, model));
     }
 

@@ -123,12 +123,12 @@ public class SingleSignOnStreamFetcher implements DataFetcher<InputStream> {
 
     @Override
     public void cleanup() {
-
+        // Nothing to do here...
     }
 
     @Override
     public void cancel() {
-
+        // Nothing to do here...
     }
 
     @NonNull

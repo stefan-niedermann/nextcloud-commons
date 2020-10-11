@@ -28,6 +28,6 @@ public final class SingleSignOnLibraryGlideModule extends LibraryGlideModule {
     public void registerComponents(
             @NonNull Context context, @NonNull Glide glide, @NonNull Registry registry) {
         Log.v(TAG, "Replacing default implementation for " + GlideUrl.class.getSimpleName() +  ".");
-        registry.replace(GlideUrl.class, InputStream.class, new it.niedermann.android.glidesso.SingleSignOnUrlLoader.Factory(context));
+        registry.replace(GlideUrl.class, InputStream.class, new SingleSignOnUrlLoader.Factory(context));
     }
 }
