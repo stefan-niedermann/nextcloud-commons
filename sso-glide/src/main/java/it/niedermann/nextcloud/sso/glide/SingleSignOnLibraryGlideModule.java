@@ -1,4 +1,4 @@
-package it.niedermann.nextcloud.sso.glide;
+package it.niedermann.android.glidesso;
 
 import android.content.Context;
 import android.util.Log;
@@ -22,7 +22,7 @@ import java.io.InputStream;
 @GlideModule
 public final class SingleSignOnLibraryGlideModule extends LibraryGlideModule {
 
-    private static final String TAG = SingleSignOnLibraryGlideModule.class.getCanonicalName();
+    private static final String TAG = SingleSignOnLibraryGlideModule.class.getSimpleName();
 
     @Override
     public void registerComponents(

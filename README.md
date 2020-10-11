@@ -8,29 +8,37 @@
 
 ## How to use
 
-Add this dependency to your `build.gradle`-file:
+Add this dependency to your `build.gradle`-file to include *all* modules at once:
 
 ```groovy
-implementation 'com.github.stefan-niedermann:nextcloud-commons:0.0.1'
+implementation 'com.github.stefan-niedermann:nextcloud-commons:0.0.2'
 ```
 
 ## Modules
 
 ### exception
 
+```groovy
+implementation 'com.github.stefan-niedermann.nextcloud-commons:exception:0.0.2'
+```
+
 This is a global `UncaughtExceptionHandler`. You can call it like this in your `onCreate`-callback of an activity:
 
 ```java
-Thread.currentThread().setUncaughtExceptionHandler(new ExceptionHandler(this, YoutExceptionActivity.class));
+Thread.currentThread().setUncaughtExceptionHandler(new ExceptionHandler(this, YourExceptionActivity.class));
 ```
 
 It will create a better stacktrace with rich informations like your app version, the files-app version and device & OS information.
 
 ### sso-glide
 
+```groovy
+implementation 'com.github.stefan-niedermann.nextcloud-commons:sso-glide:0.0.2'
+```
+
 This is a Glide-integration module. If you are using [Single Sign On](https://github.com/nextcloud/Android-SingleSignOn) you may want to also fetch avatars or other images via Glide but with the SSO network stack to avoid problems with self-signed certificates, 2fa and so on.
 
-To make it work, add this dependency to your `build.gradle`-file:
+To make it work, you need also this dependencies in your `build.gradle`-file:
 
 ```groovy
 implementation 'com.github.bumptech.glide:glide:4.10.0'
