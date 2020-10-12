@@ -1,0 +1,12 @@
+<resources>
+
+
+    <string name="simple_exception">例外</string>
+    <string name="simple_close"> 關閉</string>
+
+
+    <string name="error_dialog_we_need_info">我們需要以下的技術資訊來幫助您：</string>
+    <string name="error_action_open_deck_info">開啟 App 資訊</string>
+    <string name="error_action_open_network">網路設定</string>
+    <string name="error_action_server_logs">伺服器記錄</string>
+</resources>

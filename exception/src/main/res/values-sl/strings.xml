@@ -1,0 +1,32 @@
+<resources>
+
+
+    <string name="simple_exception">Izjema</string>
+    <string name="simple_close">zapri</string>
+
+
+    <string name="error_dialog_title">Ojoj, kaj pa zdaj? 🙁</string>
+    <string name="error_dialog_tip_token_mismatch_retry">Poskusite vsiliti končanje programa in ga ponovno zagnati. Morda je težava v neustrezni povezavi z okoljem Nextcloud</string>
+    <string name="error_dialog_tip_clear_storage_might_help">Če se težava še naprej pojavlja, poskusite počistiti podatke programa Nextcloud in Nextcloud Deck.</string>
+    <string name="error_dialog_tip_database_upgrade_failed">Nadgradnja podatkovne zbirke je spodletela. Pošljite poročilo o napaki in nato počistite shrambo za normalno uporabo programa.</string>
+    <string name="error_dialog_tip_clear_storage">Shrambo je mogoče počistiti med podrobnostmi programa Shramba → Počisti shrambo.</string>
+    <string name="error_dialog_tip_files_outdated">Program Nextcloud je očitno starejše različice. Posodobite jo prek Trgovine Play ali s posodabljalnikom F-Droid.</string>
+    <string name="error_dialog_tip_files_force_stop">Kaže, da je nekaj narobe s programom Nextcloud. Poskusite vsiljeno zaustaviti programa Nextcloud in Nextcloud Deck.</string>
+    <string name="error_dialog_tip_files_delete_storage">Vsiljeno zaustavljanje ni imelo ustreznega učinka. Poskusite lahko še počistiti podatke shrambe obeh programov.</string>
+    <string name="error_dialog_timeout_instance">V podanem času program ni pridobil ustreznega odziva strežnika. Prepričajte se, da program deluje pravilno.</string>
+    <string name="error_dialog_timeout_toggle">Preverite omrežno povezavo. Včasih preklapljanje med mobilnimi in Wi-Fi podatki razreši težavo.</string>
+    <string name="error_dialog_check_server">Prejet je napačen odziv s strežnika. Preverite, ali imate dostop do programa Deck prek spletnega vmesnika.</string>
+    <string name="error_dialog_check_server_logs">Prišlo je do napake z namestitvijo Nextcloud. Preverite zapis dnevnika na strežniku.</string>
+    <string name="error_dialog_check_maintenance">Preverite, ali je morda namestitev Nextcloud trenutno v vzdrževalnem načinu.</string>
+    <string name="error_dialog_insufficient_storage">Ni več prostora v shrambi. Izbrisati je treba nekaj datotek za nadaljevanje usklajevanja krajevnih datotek z oblakom.</string>
+    <string name="error_dialog_we_need_info">Z ustrezno pomoč potrebujemo nekaj tehničnih podrobnosti sistema:</string>
+    <string name="error_dialog_redirect">S strežnika je prejet odziv s kodo stanja HTTP 302, kar kaže na to, da program Deck ni nameščen, ali pa je napačno nastavljen. Napaka se pojavi tudi pri nekaterih določilih v datoteki .htaccess oziroma programih, kot je odjemalec OID.</string>
+    <string name="error_dialog_tip_disable_battery_optimizations">Onemogočite vso optimizacijo porabe baterije za programa Nextcloud in Deck.</string>
+    <string name="error_action_open_deck_info">Odpri podrobnosti programa</string>
+    <string name="error_action_open_network">Nastavitve omrežja</string>
+    <string name="error_action_server_logs">Dnevniki strežnika</string>
+    <string name="error_action_report_issue">Poročilo</string>
+
+    <string name="error_action_open_battery_settings">Nastavitve baterije</string>
+
+</resources>

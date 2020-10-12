@@ -1,0 +1,7 @@
+<resources>
+
+
+    <string name="simple_exception">Izuzetak</string>
+    <string name="simple_close">zatvori</string>
+
+</resources>

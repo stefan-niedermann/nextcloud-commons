@@ -9,14 +9,18 @@ android {
     defaultConfig {
         minSdkVersion 17
         targetSdkVersion 29
-        versionCode 1
-        versionName versionName = '0.0.5'
+        versionCode 6
+        versionName versionName = '0.0.6'
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles 'consumer-rules.pro'
     }
     buildFeatures {
         viewBinding true
+    }
+    lintOptions {
+        disable 'MissingTranslation'
+        abortOnError false
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -35,7 +39,7 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
     api "com.github.nextcloud:Android-SingleSignOn:$rootProject.ssoVersion"
-    implementation 'com.github.stefan-niedermann:android-commons:0.0.2'
+    implementation 'com.github.stefan-niedermann:android-commons:0.0.3'
 
     implementation 'com.jakewharton:butterknife:10.2.3'
     implementation 'androidx.recyclerview:recyclerview:1.1.0'

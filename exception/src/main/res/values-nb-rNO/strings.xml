@@ -1,0 +1,35 @@
+<resources>
+
+
+    <string name="simple_exception">Avbrudd</string>
+    <string name="simple_close">lukk</string>
+
+
+    <!-- Archived cards -->
+
+
+    <string name="error_dialog_title">Å nei - Hva nå? 🙁</string>
+    <string name="error_dialog_tip_token_mismatch_retry">Prøv å tvinge avslutning av appen og start den på nytt. Det kan ha vært en feiltilkobling til Nextcloud-appen.</string>
+    <string name="error_dialog_tip_clear_storage_might_help">Hvis problemet vedvarer, prøv å tømme lageret for begge disse appene for å løse problemet: Nextcloud og Nextcloud Deck.</string>
+    <string name="error_dialog_tip_database_upgrade_failed">Oppgraderingen av databasen mislyktes. Vennligst rapporter problemet og tøm lageret for å bruke appen normalt.</string>
+    <string name="error_dialog_tip_clear_storage">Du kan tømme lageret ved å åpne App info og velge Lagring og buffer → Tøm lagring.</string>
+    <string name="error_dialog_tip_files_outdated">Det virker som Nextcloud appen er utdatert. Vennligst besøk Play Store eller F-Droid for å finne siste versjon.</string>
+    <string name="error_dialog_tip_files_force_stop">Det virker som noe er galt med Nextcloud appen. Vennligst prøv å tvinge avslutning av Nextcloud appen og Nextcloud Deck appen.</string>
+    <string name="error_dialog_tip_files_delete_storage">Hvis det ikke hjelper med tving avslutt, så kan du prøve å tømme lageret for begge appene.</string>
+    <string name="error_dialog_timeout_instance">Serveren svarer ikke innen en gitt tid. Vennligst påse at serveren er tilgjengelig.</string>
+    <string name="error_dialog_timeout_toggle">Sjekk nettverkstilkoblingen. Noen ganger hjelper det å skru av og på mobil data eller WI-FI tilkoblingen.</string>
+    <string name="error_dialog_check_server">Svaret fra serveren var feil. Vennligst påse at du har tilgang til Deck appen via nettgrensesnittet.</string>
+    <string name="error_dialog_check_server_logs">Det er et problem med Nextcloud oppsettet ditt. Vennligst ta en titt i loggfilene til serveren.</string>
+    <string name="error_dialog_check_maintenance">Vennligst sjekk at Nextcloud instansen ikke er i vedlikeholdsmodus for øyeblikket.</string>
+    <string name="error_dialog_insufficient_storage">Nextcloud instansen har ikke mer ledig lagringsplass. Vennligst slett noen filer for å synkronisere de lokale endringen til skyen din.</string>
+    <string name="error_dialog_we_need_info">Vi trenger følgende teknisk informasjon for å kunne hjelpe deg:</string>
+    <string name="error_dialog_redirect">Serveren din svarte med en HTTP 302-statuskode, noe som antyder at du ikke har installert Deck-appen på serveren din, eller at noe er feilkonfigurert. Dette kan være forårsaket av tilpassede overstyringer i en .htaccess-fil eller av Nextcloud-apper som OID Client.</string>
+    <string name="error_dialog_tip_disable_battery_optimizations">Deaktiver alle batterioptimaliseringer for Nextcloud og Deck-appen.</string>
+    <string name="error_action_open_deck_info">Åpne App info</string>
+    <string name="error_action_open_network">Nettverksinnstillinger</string>
+    <string name="error_action_server_logs">Serverlogger</string>
+    <string name="error_action_report_issue">Rapporter</string>
+
+    <string name="error_action_open_battery_settings">Batteri innstillinger</string>
+
+</resources>
