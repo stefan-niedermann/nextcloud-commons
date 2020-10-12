@@ -14,6 +14,7 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?android:actionBarSize"
+            app:titleTextColor="@android:color/white"
             tools:title="@string/simple_exception" />
 
     </com.google.android.material.appbar.AppBarLayout>
@@ -97,8 +98,7 @@
             android:layout_height="wrap_content"
             android:layout_marginEnd="@dimen/spacer_1x"
             android:layout_weight=".5"
-            android:text="@string/simple_close"
-            android:textColor="@color/primary" />
+            android:text="@string/simple_close" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/copy"
@@ -107,8 +107,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/spacer_1x"
             android:layout_weight=".5"
-            android:text="@android:string/copy"
-            android:textColor="@color/primary" />
+            android:text="@android:string/copy" />
 
     </LinearLayout>
 </LinearLayout>

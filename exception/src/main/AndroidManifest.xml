@@ -4,6 +4,6 @@
     <application>
         <activity
             android:name=".ExceptionActivity"
-            android:theme="@style/Theme.MaterialComponents.DayNight.NoActionBar.Bridge" />
+            android:theme="@style/BaseTheme" />
     </application>
 </manifest>
