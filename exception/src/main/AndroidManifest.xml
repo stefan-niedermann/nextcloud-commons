@@ -2,6 +2,8 @@
     package="it.niedermann.nextcloud.exception">
 
     <application>
-        <activity android:name=".ExceptionActivity" />
+        <activity
+            android:name=".ExceptionActivity"
+            android:theme="@style/Theme.MaterialComponents.DayNight.NoActionBar.Bridge" />
     </application>
 </manifest>

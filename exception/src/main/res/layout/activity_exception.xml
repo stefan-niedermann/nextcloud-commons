@@ -97,7 +97,8 @@
             android:layout_height="wrap_content"
             android:layout_marginEnd="@dimen/spacer_1x"
             android:layout_weight=".5"
-            android:text="@string/simple_close" />
+            android:text="@string/simple_close"
+            android:textColor="@color/primary" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/copy"
@@ -106,7 +107,8 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/spacer_1x"
             android:layout_weight=".5"
-            android:text="@android:string/copy" />
+            android:text="@android:string/copy"
+            android:textColor="@color/primary" />
 
     </LinearLayout>
 </LinearLayout>
