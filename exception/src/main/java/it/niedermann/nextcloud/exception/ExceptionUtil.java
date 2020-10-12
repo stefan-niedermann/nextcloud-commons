@@ -1,8 +1,13 @@
 package it.niedermann.nextcloud.exception;
 
-import android.app.Activity;
+import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.os.Build;
+import android.text.TextUtils;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.nextcloud.android.sso.helper.VersionCheckHelper;
 
@@ -17,55 +22,70 @@ public class ExceptionUtil {
 
     }
 
-    public static String getDebugInfos(Activity activity, Throwable throwable) {
-        List<Throwable> throwables = new ArrayList<>();
-        throwables.add(throwable);
-        return getDebugInfos(activity, throwables);
+    public static String getDebugInfos(@NonNull Context context, @NonNull Throwable throwable) {
+        return getDebugInfos(context, throwable, null);
     }
 
-    public static String getDebugInfos(Activity activity, List<Throwable> throwables) {
-        StringBuilder debugInfos = new StringBuilder(""
-                + getAppVersions(activity)
-                + "\n\n---\n"
-                + getDeviceInfos()
-                + "\n\n---"
-                + "\n\n");
+    public static String getDebugInfos(@NonNull Context context, @NonNull Throwable throwable, @Nullable String serverAppVersion) {
+        List<Throwable> throwables = new ArrayList<>(1);
+        throwables.add(throwable);
+        return getDebugInfos(context, new ArrayList<>(throwables), serverAppVersion);
+    }
+
+    public static String getDebugInfos(@NonNull Context context, @NonNull List<Throwable> throwables) {
+        return getDebugInfos(context, throwables, null);
+    }
+
+    public static String getDebugInfos(@NonNull Context context, @NonNull List<Throwable> throwables, @Nullable String serverAppVersion) {
+        final StringBuilder debugInfos = new StringBuilder()
+                .append(getAppVersions(context, serverAppVersion))
+                .append("\n\n---\n")
+                .append(getDeviceInfos())
+                .append("\n\n---");
         for (Throwable throwable : throwables) {
-            debugInfos.append(getStacktraceOf(throwable));
+            debugInfos.append("\n\n").append(getStacktraceOf(throwable));
         }
         return debugInfos.toString();
     }
 
-    private static String getAppVersions(Activity activity) {
+    private static String getAppVersions(@NonNull Context context, @Nullable String serverAppVersion) {
         String versions = "";
         try {
-            PackageInfo pInfo = activity.getApplicationContext().getPackageManager().getPackageInfo(activity.getApplicationContext().getPackageName(), 0);
-            versions += "App Version: " + pInfo.versionName;
-            versions += "\nApp Version Code: " + pInfo.versionCode;
+            PackageInfo pInfo = context.getApplicationContext().getPackageManager().getPackageInfo(context.getApplicationContext().getPackageName(), 0);
+            versions += "App Version: " + pInfo.versionName + "\n";
+            versions += "App Version Code: " + pInfo.versionCode + "\n";
         } catch (PackageManager.NameNotFoundException e) {
-            versions += "\nApp Version: " + e.getMessage();
+            versions += "App Version: " + e.getMessage() + "\n";
             e.printStackTrace();
         }
 
+        if (TextUtils.isEmpty(serverAppVersion)) {
+            versions += "Server App Version: " + "unknown";
+        } else {
+            versions += "Server App Version: " + serverAppVersion + "\n";
+        }
+
+        versions += "\n";
         try {
-            versions += "\nFiles App Version Code: " + VersionCheckHelper.getNextcloudFilesVersionCode(activity);
+            versions += "Files App Version Code: " + VersionCheckHelper.getNextcloudFilesVersionCode(context);
         } catch (PackageManager.NameNotFoundException e) {
-            versions += "\nFiles App Version Code: " + e.getMessage();
+            versions += "Files App Version Code: " + e.getMessage();
             e.printStackTrace();
         }
         return versions;
     }
 
     private static String getDeviceInfos() {
-        return ""
-                + "\nOS Version: " + System.getProperty("os.version") + "(" + android.os.Build.VERSION.INCREMENTAL + ")"
-                + "\nOS API Level: " + android.os.Build.VERSION.SDK_INT
-                + "\nDevice: " + android.os.Build.DEVICE
-                + "\nModel (and Product): " + android.os.Build.MODEL + " (" + android.os.Build.PRODUCT + ")";
+        return "\n"
+                + "OS Version: " + System.getProperty("os.version") + "(" + Build.VERSION.INCREMENTAL + ")" + "\n"
+                + "OS API Level: " + Build.VERSION.SDK_INT + "\n"
+                + "Device: " + Build.DEVICE + "\n"
+                + "Manufacturer: " + Build.MANUFACTURER + "\n"
+                + "Model (and Product): " + Build.MODEL + " (" + Build.PRODUCT + ")";
     }
 
-    private static String getStacktraceOf(Throwable e) {
-        StringWriter sw = new StringWriter();
+    private static String getStacktraceOf(@NonNull Throwable e) {
+        final StringWriter sw = new StringWriter();
         e.printStackTrace(new PrintWriter(sw));
         return sw.toString();
     }

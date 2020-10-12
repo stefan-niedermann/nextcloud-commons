@@ -25,7 +25,7 @@ implementation 'com.github.stefan-niedermann.nextcloud-commons:exception:0.0.5'
 This is a global `UncaughtExceptionHandler`. You can call it like this in your `onCreate`-callback of an activity:
 
 ```java
-Thread.currentThread().setUncaughtExceptionHandler(new ExceptionHandler(this, YourExceptionActivity.class));
+Thread.currentThread().setUncaughtExceptionHandler(new ExceptionHandler(this, BuildConfig.APPLICATION_ID, BuildConfig.FLAVOR YourExceptionActivity.class));
 ```
 
 It will create a better stacktrace with rich informations like your app version, the files-app version and device & OS information.

@@ -1,45 +1,33 @@
 package it.niedermann.nextcloud.exception;
 
 import android.app.Activity;
-import android.content.Context;
-import android.content.Intent;
-import android.os.Bundle;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 public class ExceptionHandler implements Thread.UncaughtExceptionHandler {
 
-    private static final String TAG = ExceptionHandler.class.getCanonicalName();
-    private Context context;
-    private Class<? extends Activity> errorActivity;
-    public static final String KEY_THROWABLE = "T";
+    @NonNull
+    private Activity activity;
+    @NonNull
+    private final String applicationId;
+    @NonNull
+    private final String flavor;
+    @Nullable
+    private final String bugReportUrl;
 
-    public ExceptionHandler(Context context) {
+    public ExceptionHandler(@NonNull Activity activity, @NonNull String applicationId, @NonNull String flavor, @Nullable String bugReportUrl) {
         super();
-        this.context = context;
-        this.errorActivity = ExceptionActivity.class;
-    }
-
-    public ExceptionHandler(Context context, Class<? extends Activity> errorActivity) {
-        super();
-        this.context = context;
-        this.errorActivity = errorActivity;
+        this.activity = activity;
+        this.applicationId = applicationId;
+        this.flavor = flavor;
+        this.bugReportUrl = bugReportUrl;
     }
 
     @Override
     public void uncaughtException(@NonNull Thread t, @NonNull Throwable e) {
-        Log.e(TAG, e.getMessage(), e);
-        Intent intent = new Intent(context.getApplicationContext(), errorActivity);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        Bundle extras = new Bundle();
-        intent.putExtra(KEY_THROWABLE, e);
-        extras.putSerializable(KEY_THROWABLE, e);
-        intent.putExtras(extras);
-        context.getApplicationContext().startActivity(intent);
-        if (context instanceof Activity) {
-            ((Activity) context).finish();
-        }
+        activity.getApplicationContext().startActivity(ExceptionActivity.createIntent(activity, e, applicationId, flavor, bugReportUrl));
+        activity.finish();
         Runtime.getRuntime().exit(0);
     }
 }
