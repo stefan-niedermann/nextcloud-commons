@@ -12,9 +12,9 @@
 
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
+            style="@style/Widget.MaterialComponents.Toolbar.PrimarySurface"
             android:layout_width="match_parent"
             android:layout_height="?android:actionBarSize"
-            app:titleTextColor="@android:color/white"
             tools:title="@string/simple_exception" />
 
     </com.google.android.material.appbar.AppBarLayout>
