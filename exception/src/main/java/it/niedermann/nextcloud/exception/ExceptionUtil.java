@@ -13,8 +13,8 @@ import com.nextcloud.android.sso.helper.VersionCheckHelper;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 
 public class ExceptionUtil {
 
@@ -23,20 +23,28 @@ public class ExceptionUtil {
     }
 
     public static String getDebugInfos(@NonNull Context context, @NonNull Throwable throwable) {
-        return getDebugInfos(context, throwable, null);
+        return getDebugInfos(context, throwable, null, null);
     }
 
-    public static String getDebugInfos(@NonNull Context context, @NonNull Throwable throwable, @Nullable String serverAppVersion) {
-        return getDebugInfos(context, Collections.singletonList(throwable), serverAppVersion);
+    public static String getDebugInfos(@NonNull Context context, @NonNull Throwable throwable, @Nullable String flavor) {
+        return getDebugInfos(context, throwable, flavor, null);
     }
 
-    public static String getDebugInfos(@NonNull Context context, @NonNull List<Throwable> throwables) {
-        return getDebugInfos(context, throwables, null);
+    public static String getDebugInfos(@NonNull Context context, @NonNull Throwable throwable, @Nullable String flavor, @Nullable String serverAppVersion) {
+        return getDebugInfos(context, Collections.singleton(throwable), flavor, serverAppVersion);
     }
 
-    public static String getDebugInfos(@NonNull Context context, @NonNull List<Throwable> throwables, @Nullable String serverAppVersion) {
+    public static String getDebugInfos(@NonNull Context context, @NonNull Collection<Throwable> throwables) {
+        return getDebugInfos(context, throwables, null, null);
+    }
+
+    public static String getDebugInfos(@NonNull Context context, @NonNull Collection<Throwable> throwables, @Nullable String flavor) {
+        return getDebugInfos(context, throwables, flavor, null);
+    }
+
+    public static String getDebugInfos(@NonNull Context context, @NonNull Collection<Throwable> throwables, @Nullable String flavor, @Nullable String serverAppVersion) {
         final StringBuilder debugInfos = new StringBuilder()
-                .append(getAppVersions(context, serverAppVersion))
+                .append(getAppVersions(context, flavor, serverAppVersion))
                 .append("\n\n---\n")
                 .append(getDeviceInfos())
                 .append("\n\n---");
@@ -46,7 +54,7 @@ public class ExceptionUtil {
         return debugInfos.toString();
     }
 
-    private static String getAppVersions(@NonNull Context context, @Nullable String serverAppVersion) {
+    private static String getAppVersions(@NonNull Context context, @Nullable String flavor, @Nullable String serverAppVersion) {
         String versions = "";
         try {
             PackageInfo pInfo = context.getApplicationContext().getPackageManager().getPackageInfo(context.getApplicationContext().getPackageName(), 0);
@@ -65,6 +73,14 @@ public class ExceptionUtil {
             }
         }
 
+        if (flavor != null) {
+            if (TextUtils.isEmpty(flavor)) {
+                versions += "App Flavor: " + "unknown";
+            } else {
+                versions += "App Flavor: " + flavor + "\n";
+            }
+        }
+
         versions += "\n";
         try {
             versions += "Files App Version Code: " + VersionCheckHelper.getNextcloudFilesVersionCode(context);
@@ -77,10 +93,10 @@ public class ExceptionUtil {
 
     private static String getDeviceInfos() {
         return "\n"
-                + "OS Version: "          + System.getProperty("os.version") + "(" + Build.VERSION.INCREMENTAL + ")" + "\n"
-                + "OS API Level: "        + Build.VERSION.SDK_INT + "\n"
-                + "Device: "              + Build.DEVICE + "\n"
-                + "Manufacturer: "        + Build.MANUFACTURER + "\n"
+                + "OS Version: " + System.getProperty("os.version") + "(" + Build.VERSION.INCREMENTAL + ")" + "\n"
+                + "OS API Level: " + Build.VERSION.SDK_INT + "\n"
+                + "Device: " + Build.DEVICE + "\n"
+                + "Manufacturer: " + Build.MANUFACTURER + "\n"
                 + "Model (and Product): " + Build.MODEL + " (" + Build.PRODUCT + ")";
     }
 

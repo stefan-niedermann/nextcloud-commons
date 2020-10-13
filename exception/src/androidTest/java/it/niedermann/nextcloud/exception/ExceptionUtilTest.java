@@ -28,6 +28,7 @@ public class ExceptionUtilTest {
         assertTrue(debug.contains("Model (and Product):"));
 
         assertFalse(debug.contains("Server App Version:"));
+        assertFalse(debug.contains("App Flavor:"));
     }
 
     @Test
@@ -41,15 +42,26 @@ public class ExceptionUtilTest {
     }
 
     @Test
-    public void containServerAppVersion() {
+    public void containsServerAppVersion() {
         final Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
-        final String debugValidVersion = ExceptionUtil.getDebugInfos(appContext, new IllegalStateException(), "4.7.11");
+        final String debugValidVersion = ExceptionUtil.getDebugInfos(appContext, new IllegalStateException(), null, "4.7.11");
 
         assertTrue(debugValidVersion.contains("Server App Version: 4.7.11"));
 
-        final String debugEmptyVersion = ExceptionUtil.getDebugInfos(appContext, new IllegalStateException(), "");
+        final String debugEmptyVersion = ExceptionUtil.getDebugInfos(appContext, new IllegalStateException(), null, "");
 
         assertTrue(debugEmptyVersion.contains("Server App Version: unknown"));
+    }
 
+    @Test
+    public void containsAppFlavor() {
+        final Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
+        final String debugValidVersion = ExceptionUtil.getDebugInfos(appContext, new IllegalStateException(), "dev");
+
+        assertTrue(debugValidVersion.contains("App Flavor: dev"));
+
+        final String debugEmptyVersion = ExceptionUtil.getDebugInfos(appContext, new IllegalStateException(), "");
+
+        assertTrue(debugEmptyVersion.contains("App Flavor: unknown"));
     }
 }
