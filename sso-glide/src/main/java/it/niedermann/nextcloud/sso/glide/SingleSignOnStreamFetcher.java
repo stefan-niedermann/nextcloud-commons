@@ -44,12 +44,12 @@ public class SingleSignOnStreamFetcher implements DataFetcher<InputStream> {
 
     private static final Map<String, NextcloudAPI> INITIALIZED_APIs = new HashMap<>();
 
+    @NonNull
     private final Context context;
+    @NonNull
     private final GlideUrl url;
 
-    // Public API.
-    @SuppressWarnings("WeakerAccess")
-    public SingleSignOnStreamFetcher(Context context, GlideUrl url) {
+    public SingleSignOnStreamFetcher(@NonNull Context context, @NonNull GlideUrl url) {
         this.context = context;
         this.url = url;
     }
@@ -102,7 +102,7 @@ public class SingleSignOnStreamFetcher implements DataFetcher<InputStream> {
                 callback.onLoadFailed(e);
             } catch (TokenMismatchException e) {
                 if (!didInitialize) {
-                    Log.w(TAG, "SSO Glide loader failed with TokenMismatchException, trying to re-initialize...");
+                    Log.w(TAG, "SSO Glide loader failed with " + TokenMismatchException.class.getSimpleName() + ", trying to re-initialize...");
                     client.stop();
                     INITIALIZED_APIs.remove(ssoAccount.name);
                     loadData(priority, callback);

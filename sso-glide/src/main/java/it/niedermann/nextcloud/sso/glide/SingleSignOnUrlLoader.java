@@ -17,10 +17,9 @@ import java.io.InputStream;
  */
 public class SingleSignOnUrlLoader implements ModelLoader<GlideUrl, InputStream> {
 
+    @NonNull
     private final Context context;
 
-    // Public API.
-    @SuppressWarnings("WeakerAccess")
     public SingleSignOnUrlLoader(@NonNull Context context) {
         this.context = context;
     }
@@ -31,17 +30,15 @@ public class SingleSignOnUrlLoader implements ModelLoader<GlideUrl, InputStream>
     }
 
     @Override
-    public LoadData<InputStream> buildLoadData(@NonNull GlideUrl model, int width, int height, @NonNull Options options) {
-        return new LoadData<>(model, new SingleSignOnStreamFetcher(context, model));
+    public LoadData<InputStream> buildLoadData(@NonNull GlideUrl url, int width, int height, @NonNull Options options) {
+        return new LoadData<>(url, new SingleSignOnStreamFetcher(context, url));
     }
 
     /**
      * The default factory for {@link SingleSignOnUrlLoader}s.
      */
-    // Public API.
-    @SuppressWarnings("WeakerAccess")
     public static class Factory implements ModelLoaderFactory<GlideUrl, InputStream> {
-        private SingleSignOnUrlLoader loader;
+        private final SingleSignOnUrlLoader loader;
 
         /**
          * Constructor for a new Factory that runs requests using given client.

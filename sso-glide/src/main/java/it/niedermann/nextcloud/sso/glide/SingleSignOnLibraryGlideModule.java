@@ -27,7 +27,7 @@ public final class SingleSignOnLibraryGlideModule extends LibraryGlideModule {
     @Override
     public void registerComponents(
             @NonNull Context context, @NonNull Glide glide, @NonNull Registry registry) {
-        Log.v(TAG, "Replacing default implementation for " + GlideUrl.class.getSimpleName() +  ".");
+        Log.v(TAG, "Replacing default implementation for " + GlideUrl.class.getSimpleName() + " with " + TAG + ".");
         registry.replace(GlideUrl.class, InputStream.class, new SingleSignOnUrlLoader.Factory(context));
     }
 }

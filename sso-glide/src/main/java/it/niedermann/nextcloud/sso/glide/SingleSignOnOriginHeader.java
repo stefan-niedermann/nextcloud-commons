@@ -16,10 +16,11 @@ import static it.niedermann.nextcloud.sso.glide.SingleSignOnStreamFetcher.X_HEAD
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 public class SingleSignOnOriginHeader implements Headers {
 
-    private Headers headers;
+    private final Headers headers;
 
     /**
      * Use this as {@link Headers} if you want to do a {@link Glide} request for an {@link SingleSignOnAccount} which is not set by {@link SingleAccountHelper} as current {@link SingleSignOnAccount}.
+     * They also add User-Agent header.
      *
      * @param ssoAccountName Account name from which host the request should be fired (needs to match {@link SingleSignOnAccount#name})
      */
@@ -29,8 +30,10 @@ public class SingleSignOnOriginHeader implements Headers {
 
     /**
      * Use this as {@link Headers} if you want to do a {@link Glide} request for an {@link SingleSignOnAccount} which is not set by {@link SingleAccountHelper} as current {@link SingleSignOnAccount}.
+     * They also add User-Agent header.
      *
      * @param ssoAccountName Account name from which host the request should be fired (needs to match {@link SingleSignOnAccount#name})
+     * @param headers        {@link Headers} which should be set additionally
      */
     public SingleSignOnOriginHeader(@NonNull String ssoAccountName, Headers headers) {
         LazyHeaders.Builder builder = new LazyHeaders.Builder();
