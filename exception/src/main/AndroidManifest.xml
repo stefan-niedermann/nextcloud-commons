@@ -1,9 +1,1 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="it.niedermann.nextcloud.exception">
-
-    <application>
-        <activity
-            android:name=".ExceptionActivity"
-            android:theme="@style/BaseTheme" />
-    </application>
-</manifest>
+<manifest package="it.niedermann.nextcloud.exception" />

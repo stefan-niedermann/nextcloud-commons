@@ -11,7 +11,7 @@
 Add this dependency to your `build.gradle`-file to include *all* modules at once:
 
 ```groovy
-implementation 'com.github.stefan-niedermann:nextcloud-commons:0.0.8'
+implementation 'com.github.stefan-niedermann:nextcloud-commons:0.1.0'
 ```
 
 ## Modules
@@ -19,21 +19,70 @@ implementation 'com.github.stefan-niedermann:nextcloud-commons:0.0.8'
 ### exception
 
 ```groovy
-implementation 'com.github.stefan-niedermann.nextcloud-commons:exception:0.0.8'
+implementation 'com.github.stefan-niedermann.nextcloud-commons:exception:0.1.0'
 ```
 
-This is a global `UncaughtExceptionHandler`. You can call it like this in your `onCreate`-callback of an activity:
+This is a util class which provides methods for generating a rich stacktrace from a throwable containing additional information like the used files app and OS versions.
+
+#### Usage
 
 ```java
-Thread.currentThread().setUncaughtExceptionHandler(new ExceptionHandler(this, BuildConfig.APPLICATION_ID, BuildConfig.FLAVOR YourExceptionActivity.class));
+try {
+  // ...
+} catch (Exception exception) {
+  String debug = ExceptionUtil.getDebugInfos(context, exception);
+}
 ```
 
-It will create a better stacktrace with rich informations like your app version, the files-app version and device & OS information.
+#### Example
+
+```
+App Version: 2.17.1
+App Version Code: 2017001
+App Flavor: dev
+Server App Version: 3.2.0
+
+Files App Version Code: 30120090
+
+---
+
+OS Version: 4.14.112+(5775370)
+OS API Level: 29
+Device: generic_x86_64
+Manufacturer: unknown
+Model (and Product): Android SDK built for x86_64 (sdk_phone_x86_64)
+
+---
+
+java.lang.RuntimeException: Unable to start activity ComponentInfo{it.niedermann.owncloud.notes.dev/it.niedermann.owncloud.notes.main.MainActivity}: java.lang.NumberFormatException: For input string: "ASDF"
+	at android.app.ActivityThread.performLaunchActivity(ActivityThread.java:3270)
+	at android.app.ActivityThread.handleLaunchActivity(ActivityThread.java:3409)
+	at android.app.servertransaction.LaunchActivityItem.execute(LaunchActivityItem.java:83)
+	at android.app.servertransaction.TransactionExecutor.executeCallbacks(TransactionExecutor.java:135)
+	at android.app.servertransaction.TransactionExecutor.execute(TransactionExecutor.java:95)
+	at android.app.ActivityThread$H.handleMessage(ActivityThread.java:2016)
+	at android.os.Handler.dispatchMessage(Handler.java:107)
+	at android.os.Looper.loop(Looper.java:214)
+	at android.app.ActivityThread.main(ActivityThread.java:7356)
+	at java.lang.reflect.Method.invoke(Native Method)
+	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:492)
+	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:930)
+Caused by: java.lang.NumberFormatException: For input string: "ASDF"
+	at java.lang.Integer.parseInt(Integer.java:615)
+	at java.lang.Integer.parseInt(Integer.java:650)
+	at it.niedermann.owncloud.notes.main.MainActivity.onCreate(MainActivity.java:180)
+	at android.app.Activity.performCreate(Activity.java:7802)
+	at android.app.Activity.performCreate(Activity.java:7791)
+	at android.app.Instrumentation.callActivityOnCreate(Instrumentation.java:1299)
+	at android.app.ActivityThread.performLaunchActivity(ActivityThread.java:3245)
+	... 11 more
+
+```
 
 ### sso-glide
 
 ```groovy
-implementation 'com.github.stefan-niedermann.nextcloud-commons:sso-glide:0.0.8'
+implementation 'com.github.stefan-niedermann.nextcloud-commons:sso-glide:0.1.0'
 ```
 
 This is a Glide-integration module. If you are using [Single Sign On](https://github.com/nextcloud/Android-SingleSignOn) you may want to also fetch avatars or other images via Glide but with the SSO network stack to avoid problems with self-signed certificates, 2fa and so on.

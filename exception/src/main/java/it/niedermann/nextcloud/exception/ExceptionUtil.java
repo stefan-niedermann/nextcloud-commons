@@ -13,13 +13,13 @@ import com.nextcloud.android.sso.helper.VersionCheckHelper;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class ExceptionUtil {
 
     private ExceptionUtil() {
-
+        // Util class
     }
 
     public static String getDebugInfos(@NonNull Context context, @NonNull Throwable throwable) {
@@ -27,9 +27,7 @@ public class ExceptionUtil {
     }
 
     public static String getDebugInfos(@NonNull Context context, @NonNull Throwable throwable, @Nullable String serverAppVersion) {
-        List<Throwable> throwables = new ArrayList<>(1);
-        throwables.add(throwable);
-        return getDebugInfos(context, new ArrayList<>(throwables), serverAppVersion);
+        return getDebugInfos(context, Collections.singletonList(throwable), serverAppVersion);
     }
 
     public static String getDebugInfos(@NonNull Context context, @NonNull List<Throwable> throwables) {
