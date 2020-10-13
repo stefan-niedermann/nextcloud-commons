@@ -57,10 +57,12 @@ public class ExceptionUtil {
             e.printStackTrace();
         }
 
-        if (TextUtils.isEmpty(serverAppVersion)) {
-            versions += "Server App Version: " + "unknown";
-        } else {
-            versions += "Server App Version: " + serverAppVersion + "\n";
+        if (serverAppVersion != null) {
+            if (TextUtils.isEmpty(serverAppVersion)) {
+                versions += "Server App Version: " + "unknown";
+            } else {
+                versions += "Server App Version: " + serverAppVersion + "\n";
+            }
         }
 
         versions += "\n";
@@ -75,10 +77,10 @@ public class ExceptionUtil {
 
     private static String getDeviceInfos() {
         return "\n"
-                + "OS Version: " + System.getProperty("os.version") + "(" + Build.VERSION.INCREMENTAL + ")" + "\n"
-                + "OS API Level: " + Build.VERSION.SDK_INT + "\n"
-                + "Device: " + Build.DEVICE + "\n"
-                + "Manufacturer: " + Build.MANUFACTURER + "\n"
+                + "OS Version: "          + System.getProperty("os.version") + "(" + Build.VERSION.INCREMENTAL + ")" + "\n"
+                + "OS API Level: "        + Build.VERSION.SDK_INT + "\n"
+                + "Device: "              + Build.DEVICE + "\n"
+                + "Manufacturer: "        + Build.MANUFACTURER + "\n"
                 + "Model (and Product): " + Build.MODEL + " (" + Build.PRODUCT + ")";
     }
 

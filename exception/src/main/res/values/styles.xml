@@ -1,5 +1,0 @@
-<resources>
-    <style name="BaseTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar.Bridge">
-        <item name="colorPrimary">@color/primary</item>
-    </style>
-</resources>

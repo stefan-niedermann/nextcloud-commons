@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <color name="primary">@android:color/black</color>
-    <color name="bg_highlighted">#eee</color>
-</resources>

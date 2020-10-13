@@ -4,27 +4,21 @@ android {
     compileSdkVersion 29
     buildToolsVersion "29.0.3"
 
-
     defaultConfig {
         minSdkVersion 17
         targetSdkVersion 29
-        versionCode 8
-        versionName versionName = '0.0.8'
+        versionCode 1000
+        versionName versionName = '0.1.0'
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles 'consumer-rules.pro'
     }
-    buildFeatures {
-        viewBinding true
-    }
-    lintOptions {
-        disable 'MissingTranslation'
-        abortOnError false
-    }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+
     buildTypes {
         release {
             minifyEnabled false
