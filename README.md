@@ -11,7 +11,7 @@
 Add this dependency to your `build.gradle`-file to include *all* modules at once:
 
 ```groovy
-implementation 'com.github.stefan-niedermann:nextcloud-commons:1.0.0'
+implementation 'com.github.stefan-niedermann:nextcloud-commons:1.1.0'
 ```
 
 ## Modules
@@ -19,7 +19,7 @@ implementation 'com.github.stefan-niedermann:nextcloud-commons:1.0.0'
 ### exception
 
 ```groovy
-implementation 'com.github.stefan-niedermann.nextcloud-commons:exception:1.0.0'
+implementation 'com.github.stefan-niedermann.nextcloud-commons:exception:1.1.0'
 ```
 
 This is a util class which provides methods for generating a rich stacktrace from a throwable containing additional information like the used files app and OS versions.
@@ -30,7 +30,7 @@ This is a util class which provides methods for generating a rich stacktrace fro
 try {
   // ...
 } catch (Exception exception) {
-  String debug = ExceptionUtil.getDebugInfos(context, exception);
+  String debug = ExceptionUtil.INSTANCE.getDebugInfos(context, exception);
 }
 ```
 
@@ -39,8 +39,8 @@ try {
 ```
 App Version: 2.17.1
 App Version Code: 2017001
-App Flavor: dev
 Server App Version: 3.2.0
+App Flavor: dev
 
 Files App Version Code: 30120090
 
@@ -82,7 +82,7 @@ Caused by: java.lang.NumberFormatException: For input string: "ASDF"
 ### sso-glide
 
 ```groovy
-implementation 'com.github.stefan-niedermann.nextcloud-commons:sso-glide:1.0.0'
+implementation 'com.github.stefan-niedermann.nextcloud-commons:sso-glide:1.1.0'
 ```
 
 This is a Glide-integration module. If you are using [Single Sign On](https://github.com/nextcloud/Android-SingleSignOn) you may want to also fetch avatars or other images via Glide but with the SSO network stack to avoid problems with self-signed certificates, 2fa and so on.
@@ -90,8 +90,8 @@ This is a Glide-integration module. If you are using [Single Sign On](https://gi
 To make it work, you need also this dependencies in your `build.gradle`-file:
 
 ```groovy
-implementation 'com.github.bumptech.glide:glide:4.10.0'
-annotationProcessor 'com.github.bumptech.glide:compiler:4.10.0'
+implementation 'com.github.bumptech.glide:glide:4.11.0'
+annotationProcessor 'com.github.bumptech.glide:compiler:4.11.0'
 ```
 
 Then create a custom AppGlideModule at the place you want, like this:
