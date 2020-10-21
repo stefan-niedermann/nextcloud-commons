@@ -6,11 +6,16 @@
 [![GitHub stars](https://img.shields.io/github/stars/stefan-niedermann/nextcloud-commons.svg)](https://github.com/stefan-niedermann/nextcloud-commons/stargazers)
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
+- [What is this](#what-is-this)
 - [How to use](#how-to-use)
 - [Modules](#modules)
   - [exception](#exception)
   - [sso-glide](#glide-sso)
-- [License](#license)
+- [License](#notebook-license)
+
+## What is this
+
+Many Android clients for Nextcloud apps need similar mechanisms. To reduce maintenance efforts and provide a similar look & feel, this library aims to provide tooling and support which can be useful for various Android clients.
 
 ## How to use
 
