@@ -6,6 +6,12 @@
 [![GitHub stars](https://img.shields.io/github/stars/stefan-niedermann/nextcloud-commons.svg)](https://github.com/stefan-niedermann/nextcloud-commons/stargazers)
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
+- [How to use](#how-to-use)
+- [Modules](#modules)
+  - [exception](#exception)
+  - [sso-glide](#glide-sso)
+- [License](#license)
+
 ## How to use
 
 Add this dependency to your `build.gradle`-file to include *all* modules at once:
@@ -94,7 +100,9 @@ implementation 'com.github.bumptech.glide:glide:4.11.0'
 annotationProcessor 'com.github.bumptech.glide:compiler:4.11.0'
 ```
 
-Then create a custom AppGlideModule at the place you want, like this:
+#### Usage
+
+Then create a custom `AppGlideModule` at the place you want, like this:
 
 ```java
 @GlideModule
@@ -104,6 +112,24 @@ public class CustomAppGlideModule extends AppGlideModule {
     super.registerComponents(context, glide, registry);
   }
 }
+```
+
+Glide will automatically recognize the custom `AppGlideModule` and process this library module.
+
+```java
+Glide.with(context)
+     .load("https://nextcloud.example.com/index.php/avatar/username/32")
+     .into(myImageView);
+```
+
+will make a request from the user which is stored as the current SingleSignOn account (see [here](https://github.com/nextcloud/Android-SingleSignOn#4-how-to-get-account-information)).
+
+If you need to perform the request from another account (for example to display avatars in an account switcher), you can use a `SingleSignOnUrl` instance as `Url`:
+
+```java
+Glide.with(context)
+     .load(new SingleSignOnUrl(ssoAccount, "https://nextcloud.example.com/index.php/avatar/username/32"))
+     .into(myImageView);
 ```
 
 ## :notebook: License
