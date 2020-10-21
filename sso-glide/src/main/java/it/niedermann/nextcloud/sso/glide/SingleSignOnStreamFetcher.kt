@@ -1,6 +1,7 @@
 package it.niedermann.nextcloud.sso.glide
 
 import android.content.Context
+import android.text.TextUtils
 import android.util.Log
 import com.bumptech.glide.Priority
 import com.bumptech.glide.load.DataSource
@@ -18,6 +19,7 @@ import com.nextcloud.android.sso.helper.SingleAccountHelper
 import com.nextcloud.android.sso.model.SingleSignOnAccount
 import java.io.InputStream
 import java.net.MalformedURLException
+import java.net.URL
 import java.util.*
 
 /**
@@ -49,9 +51,10 @@ class SingleSignOnStreamFetcher(private val context: Context, private val url: G
             }
             val requestBuilder: NextcloudRequest.Builder
             try {
+                val urlObject = url.toURL();
                 requestBuilder = NextcloudRequest.Builder()
                         .setMethod(METHOD_GET)
-                        .setUrl(url.toURL().path)
+                        .setUrl(urlObject.path)
                 val header: MutableMap<String, List<String>> = HashMap()
                 for ((key, value) in url.headers) {
                     if (X_HEADER_SSO_ACCOUNT_NAME != key) {
@@ -59,6 +62,7 @@ class SingleSignOnStreamFetcher(private val context: Context, private val url: G
                     }
                 }
                 requestBuilder.setHeader(header)
+                requestBuilder.setParameter(getQueryParams(urlObject))
                 val nextcloudRequest = requestBuilder.build()
                 Log.v(TAG, nextcloudRequest.toString())
                 val response = client.performNetworkRequestV2(nextcloudRequest)
@@ -99,6 +103,24 @@ class SingleSignOnStreamFetcher(private val context: Context, private val url: G
 
     override fun getDataSource(): DataSource {
         return DataSource.REMOTE
+    }
+
+    fun getQueryParams(url: URL): Map<String?, String?>? {
+        if (TextUtils.isEmpty(url.query)) {
+            return emptyMap<String?, String>()
+        }
+        val queryParams: MutableMap<String?, String?> = HashMap()
+        for (param in url.query.split("&").toTypedArray()) {
+            if ("c" == param) {
+                Log.w(TAG, "stripped query parameter \"c\". This is usually used as CSRF protection and must not be sent by the client because the SSO authenticates itself.");
+            } else {
+                val idx = param.indexOf("=")
+                val key = if (idx > 0) param.substring(0, idx) else param
+                val value = if (idx > 0 && param.length > idx + 1) param.substring(idx + 1) else null
+                queryParams[key] = value
+            }
+        }
+        return queryParams
     }
 
     companion object {
