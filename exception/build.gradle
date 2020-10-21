@@ -33,7 +33,7 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
     api "com.github.nextcloud:Android-SingleSignOn:$rootProject.ssoVersion"
-    implementation 'com.github.stefan-niedermann:android-commons:0.0.4'
+    implementation 'com.github.stefan-niedermann:android-commons:0.0.9'
 
     implementation 'com.google.android.material:material:1.2.1'
     implementation 'androidx.recyclerview:recyclerview:1.1.0'
