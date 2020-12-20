@@ -29,5 +29,5 @@ task clean(type: Delete) {
 }
 
 ext {
-    ssoVersion = '0.5.3'
+    ssoVersion = '0.5.4'
 }

@@ -8,8 +8,8 @@ android {
     defaultConfig {
         minSdkVersion 17
         targetSdkVersion 30
-        versionCode 1002001
-        versionName versionName = '1.2.1'
+        versionCode 1002002
+        versionName versionName = '1.2.2'
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles 'consumer-rules.pro'
@@ -33,7 +33,7 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
     api "com.github.nextcloud:Android-SingleSignOn:$rootProject.ssoVersion"
-    implementation 'com.github.stefan-niedermann:android-commons:0.0.9'
+    implementation 'com.github.stefan-niedermann:android-commons:0.1.1'
 
     implementation 'com.google.android.material:material:1.2.1'
     implementation 'androidx.recyclerview:recyclerview:1.1.0'
