@@ -54,7 +54,7 @@ class SingleSignOnStreamFetcher(private val context: Context, private val url: G
                 val urlObject = url.toURL();
                 requestBuilder = NextcloudRequest.Builder()
                         .setMethod(METHOD_GET)
-                        .setUrl(urlObject.path)
+                        .setUrl(urlObject.path.substring(URL(ssoAccount.url).path.length))
                 val header: MutableMap<String, List<String>> = HashMap()
                 for ((key, value) in url.headers) {
                     if (X_HEADER_SSO_ACCOUNT_NAME != key) {
