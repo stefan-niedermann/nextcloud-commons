@@ -49,10 +49,17 @@ object ExceptionUtil {
                 App Version: ${pInfo.versionName}
                 
                 """.trimIndent()
-            versions += """
-                App Version Code: ${pInfo.versionCode}
-                
-                """.trimIndent()
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                versions += """
+                    App Version Code: ${pInfo.longVersionCode}
+                    
+                    """.trimIndent()
+            } else {
+                versions += """
+                    App Version Code: ${pInfo.versionCode}
+                    
+                    """.trimIndent()
+            }
         } catch (e: PackageManager.NameNotFoundException) {
             versions += """
                 App Version: ${e.message}
@@ -76,10 +83,14 @@ object ExceptionUtil {
         }
         versions += "\n"
         try {
-            versions += "Files App Version Code: " + VersionCheckHelper.getNextcloudFilesVersionCode(context)
+            versions += "Files App Version Code: " + VersionCheckHelper.getNextcloudFilesVersionCode(context, true)
         } catch (e: PackageManager.NameNotFoundException) {
-            versions += "Files App Version Code: " + e.message
-            e.printStackTrace()
+            try {
+                versions += "Files App Version Code: " + VersionCheckHelper.getNextcloudFilesVersionCode(context, false)
+            } catch (e: PackageManager.NameNotFoundException) {
+                versions += "Files App Version Code: " + e.message
+                e.printStackTrace()
+            }
         }
         return versions
     }
