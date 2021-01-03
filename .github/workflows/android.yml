@@ -32,4 +32,5 @@ jobs:
       - name: Upload AAR
         uses: actions/upload-artifact@v2
         with:
+          name: aar
           path: ./**/build/outputs/aar/**.aar
