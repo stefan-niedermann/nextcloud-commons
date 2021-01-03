@@ -1,21 +1,34 @@
 package it.niedermann.nextcloud.exception
 
-import androidx.test.ext.junit.runners.AndroidJUnit4
+import android.os.Build
 import androidx.test.platform.app.InstrumentationRegistry
+import com.nextcloud.android.sso.helper.VersionCheckHelper
+import io.mockk.every
+import io.mockk.mockkStatic
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
 
-@RunWith(AndroidJUnit4::class)
+@RunWith(RobolectricTestRunner::class)
+@Config(maxSdk = Build.VERSION_CODES.P)
 class ExceptionUtilTest {
+    @Before
+    fun setup() {
+        mockkStatic(VersionCheckHelper::class);
+        every { VersionCheckHelper.getNextcloudFilesVersionCode(any(), any()) } returns 4711
+    }
+
     @Test
     fun containAllInformation() {
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
         val debug = ExceptionUtil.getDebugInfos(appContext, IllegalStateException())
         assertTrue(debug.contains("App Version:"))
         assertTrue(debug.contains("App Version Code:"))
-        assertTrue(debug.contains("Files App Version Code:"))
+        assertTrue(debug.contains("Files App Version Code: 4711"))
         assertTrue(debug.contains("OS Version:"))
         assertTrue(debug.contains("OS API Level:"))
         assertTrue(debug.contains("Device:"))
