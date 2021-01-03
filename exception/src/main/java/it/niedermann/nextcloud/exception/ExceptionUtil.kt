@@ -55,6 +55,7 @@ object ExceptionUtil {
                     
                     """.trimIndent()
             } else {
+                @Suppress("DEPRECATION")
                 versions += """
                     App Version Code: ${pInfo.versionCode}
                     
