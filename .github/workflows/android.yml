@@ -33,4 +33,6 @@ jobs:
         uses: actions/upload-artifact@v1
         with:
           name: aar
-          path: ./**/build/outputs/aar/**.aar
+          path: |
+            exception/build/outputs/aar/**.aar
+            sso-glide/build/outputs/aar/**.aar
