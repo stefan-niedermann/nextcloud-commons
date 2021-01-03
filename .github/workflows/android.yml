@@ -34,5 +34,7 @@ jobs:
         with:
           name: aar
           path: |
-            exception/build/outputs/aar/**.aar
-            sso-glide/build/outputs/aar/**.aar
+            exception/build/outputs/aar/exception-debug.aar
+            exception/build/outputs/aar/exception-release.aar
+            sso-glide/build/outputs/aar/sso-glide-debug.aar
+            sso-glide/build/outputs/aar/sso-glide-release.aar
