@@ -14,7 +14,7 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
-@Config(maxSdk = Build.VERSION_CODES.P)
+@Config(sdk = [Build.VERSION_CODES.P])
 class ExceptionUtilTest {
     @Before
     fun setup() {

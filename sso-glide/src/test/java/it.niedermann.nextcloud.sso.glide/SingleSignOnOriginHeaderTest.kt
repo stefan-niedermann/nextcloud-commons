@@ -11,7 +11,7 @@ import org.robolectric.annotation.Config
 import java.util.*
 
 @RunWith(RobolectricTestRunner::class)
-@Config(maxSdk = Build.VERSION_CODES.P)
+@Config(sdk = [Build.VERSION_CODES.P])
 class SingleSignOnOriginHeaderTest {
     @Test
     fun addSpecialHeader() {
