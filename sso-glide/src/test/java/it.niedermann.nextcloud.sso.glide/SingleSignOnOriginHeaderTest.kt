@@ -30,6 +30,6 @@ class SingleSignOnOriginHeaderTest {
         }
         assertEquals(3, headersWithExistingHeaders.headers.size.toLong())
         assertTrue(headersWithExistingHeaders.headers.containsKey(SingleSignOnStreamFetcher.X_HEADER_SSO_ACCOUNT_NAME))
-        assertEquals("foo@mexample.com", headers.headers.get(SingleSignOnStreamFetcher.X_HEADER_SSO_ACCOUNT_NAME))
+        assertEquals("foo@example.com", headers.headers.get(SingleSignOnStreamFetcher.X_HEADER_SSO_ACCOUNT_NAME))
     }
 }
