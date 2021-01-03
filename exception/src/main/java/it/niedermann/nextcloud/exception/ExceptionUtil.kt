@@ -86,7 +86,7 @@ object ExceptionUtil {
             versions += "Files App Version Code: " + VersionCheckHelper.getNextcloudFilesVersionCode(context, true)
         } catch (e: PackageManager.NameNotFoundException) {
             try {
-                versions += "Files App Version Code: " + VersionCheckHelper.getNextcloudFilesVersionCode(context, false)
+                versions += "Files App Version Code: " + VersionCheckHelper.getNextcloudFilesVersionCode(context, false) + " (Beta)"
             } catch (e: PackageManager.NameNotFoundException) {
                 versions += "Files App Version Code: " + e.message
                 e.printStackTrace()
