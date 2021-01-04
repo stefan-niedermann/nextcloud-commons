@@ -61,6 +61,7 @@ class SingleSignOnStreamFetcher(private val context: Context, private val url: G
                         header[key] = listOf(value)
                     }
                 }
+                requestBuilder.setFollowRedirects(true)
                 requestBuilder.setHeader(header)
                 requestBuilder.setParameter(getQueryParams(urlObject))
                 val nextcloudRequest = requestBuilder.build()
