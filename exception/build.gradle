@@ -20,6 +20,10 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
 
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_1_8.toString()
+    }
+
     buildTypes {
         release {
             minifyEnabled false
@@ -43,7 +47,7 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 
     testImplementation 'junit:junit:4.13.2'
-    testImplementation "io.mockk:mockk:1.10.6"
+    testImplementation "io.mockk:mockk:1.11.0"
     testImplementation 'org.robolectric:robolectric:4.5.1'
 }
 
