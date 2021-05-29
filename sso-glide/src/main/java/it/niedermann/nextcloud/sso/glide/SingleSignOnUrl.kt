@@ -1,8 +1,10 @@
 package it.niedermann.nextcloud.sso.glide
 
+import android.content.Context
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.load.model.Headers
+import com.nextcloud.android.sso.AccountImporter
 import com.nextcloud.android.sso.helper.SingleAccountHelper
 import com.nextcloud.android.sso.model.SingleSignOnAccount
 import java.net.MalformedURLException
@@ -15,8 +17,11 @@ class SingleSignOnUrl : GlideUrl {
 
     val ssoAccount: SingleSignOnAccount;
 
+    constructor(context: Context, ssoAccountName: String, url: URL) : this(AccountImporter.getSingleSignOnAccount(context, ssoAccountName), url, Headers.DEFAULT)
+    constructor(context: Context, ssoAccountName: String, url: String) : this(AccountImporter.getSingleSignOnAccount(context, ssoAccountName), url, Headers.DEFAULT)
+    constructor(context: Context, ssoAccountName: String, url: URL, headers: Headers) : this(AccountImporter.getSingleSignOnAccount(context, ssoAccountName), url, headers)
+    constructor(context: Context, ssoAccountName: String, url: String, headers: Headers) : this(AccountImporter.getSingleSignOnAccount(context, ssoAccountName), url, headers)
     constructor(ssoAccount: SingleSignOnAccount, url: URL) : this(ssoAccount, url, Headers.DEFAULT)
-
     constructor(ssoAccount: SingleSignOnAccount, url: String) : this(ssoAccount, url, Headers.DEFAULT)
 
     constructor(ssoAccount: SingleSignOnAccount, url: URL, headers: Headers) : super(
