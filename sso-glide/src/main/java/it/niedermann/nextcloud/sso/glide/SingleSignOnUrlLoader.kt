@@ -24,7 +24,7 @@ class SingleSignOnUrlLoader(private val context: Context) : ModelLoader<GlideUrl
             // We are still not sure whether we can handle this, because it might be from another user account.
             // Though we should try it because it is likely.
 
-            // if it does not start with it but is a relative path, like /foo/bar, we should assume that the resources is on this Nextcloud instance
+            // if it does not start with it but is a relative path, like /foo/bar, we should assume that the resource is on this Nextcloud instance
             url.toStringUrl()?.startsWith("/")!! ||
                     // Or if the url is absolute and points to the url of the currently selected SingleSignOnAccount
                     url.toStringUrl()?.startsWith(SingleAccountHelper.getCurrentSingleSignOnAccount(context).url)!!
@@ -35,7 +35,7 @@ class SingleSignOnUrlLoader(private val context: Context) : ModelLoader<GlideUrl
         }
     }
 
-    override fun buildLoadData(url: GlideUrl, width: Int, height: Int, options: Options): LoadData<InputStream>? {
+    override fun buildLoadData(url: GlideUrl, width: Int, height: Int, options: Options): LoadData<InputStream> {
         return LoadData(url, SingleSignOnStreamFetcher(context, url))
     }
 
