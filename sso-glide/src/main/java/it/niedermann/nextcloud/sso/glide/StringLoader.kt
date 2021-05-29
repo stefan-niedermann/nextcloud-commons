@@ -11,6 +11,7 @@ import com.bumptech.glide.signature.ObjectKey
 import com.nextcloud.android.sso.exceptions.NextcloudFilesAppAccountNotFoundException
 import com.nextcloud.android.sso.exceptions.NoCurrentAccountSelectedException
 import com.nextcloud.android.sso.helper.SingleAccountHelper
+import com.nextcloud.android.sso.model.SingleSignOnAccount
 import java.io.InputStream
 
 /**
@@ -23,15 +24,14 @@ class StringLoader(private val context: Context) : ModelLoader<String, InputStre
         Log.i(TAG, "[handles] ------------------------------")
         Log.i(TAG, "[handles] ${url}")
         return try {
-            // We are still not sure whether we can handle this, because it might be from another user account.
-            // Though we should try it because it is likely.
-
             Log.i(TAG, "[handles] starts with / → ${url.startsWith("/")}")
             Log.i(TAG, "[handles] starts with ${SingleAccountHelper.getCurrentSingleSignOnAccount(context).url} → ${url.startsWith(SingleAccountHelper.getCurrentSingleSignOnAccount(context).url)}")
-            // if it does not start with it but is a relative path, like /foo/bar, we should assume that the resource is on this Nextcloud instance
-            url.startsWith("/") ||
-                    // Or if the url is absolute and points to the url of the currently selected SingleSignOnAccount
-                    url.startsWith(SingleAccountHelper.getCurrentSingleSignOnAccount(context).url)
+
+            // We support this url if it starts with the current SingleSignOn accounts url
+            url.startsWith(SingleAccountHelper.getCurrentSingleSignOnAccount(context).url) ||
+                    // We also try to handle relative paths, assuming the requested resource is located at the current SingleSignOn account
+                    url.startsWith("/")
+
         } catch (e: NextcloudFilesAppAccountNotFoundException) {
             Log.i(TAG, "[handles] NextcloudFilesAppAccountNotFoundException → true")
             false
@@ -42,7 +42,11 @@ class StringLoader(private val context: Context) : ModelLoader<String, InputStre
     }
 
     override fun buildLoadData(url: String, width: Int, height: Int, options: Options): LoadData<InputStream> {
-        return LoadData(ObjectKey(url), StringStreamFetcher(context, url))
+        return LoadData(ObjectKey(url), object : AbstractStreamFetcher<String>(context, url) {
+            override fun getSingleSignOnAccount(context: Context, model: String): SingleSignOnAccount {
+                return SingleAccountHelper.getCurrentSingleSignOnAccount(context)
+            }
+        })
     }
 
     /**
