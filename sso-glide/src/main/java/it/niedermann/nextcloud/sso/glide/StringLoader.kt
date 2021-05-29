@@ -2,12 +2,12 @@ package it.niedermann.nextcloud.sso.glide
 
 import android.content.Context
 import android.util.Log
-import com.bumptech.glide.load.Key
 import com.bumptech.glide.load.Options
 import com.bumptech.glide.load.model.ModelLoader
 import com.bumptech.glide.load.model.ModelLoader.LoadData
 import com.bumptech.glide.load.model.ModelLoaderFactory
 import com.bumptech.glide.load.model.MultiModelLoaderFactory
+import com.bumptech.glide.signature.ObjectKey
 import com.nextcloud.android.sso.exceptions.NextcloudFilesAppAccountNotFoundException
 import com.nextcloud.android.sso.exceptions.NoCurrentAccountSelectedException
 import com.nextcloud.android.sso.helper.SingleAccountHelper
@@ -26,7 +26,7 @@ class StringLoader(private val context: Context) : ModelLoader<String, InputStre
             // Though we should try it because it is likely.
 
             Log.i(TAG, "[handles] starts with / → ${url.startsWith("/")}")
-            Log.i(TAG, "[handles] starts with ${SingleAccountHelper.getCurrentSingleSignOnAccount(context).url} → ${url.startsWith(SingleAccountHelper.getCurrentSingleSignOnAccount(context).url)!!}")
+            Log.i(TAG, "[handles] starts with ${SingleAccountHelper.getCurrentSingleSignOnAccount(context).url} → ${url.startsWith(SingleAccountHelper.getCurrentSingleSignOnAccount(context).url)}")
             // if it does not start with it but is a relative path, like /foo/bar, we should assume that the resource is on this Nextcloud instance
             url.startsWith("/") ||
                     // Or if the url is absolute and points to the url of the currently selected SingleSignOnAccount
@@ -41,9 +41,7 @@ class StringLoader(private val context: Context) : ModelLoader<String, InputStre
     }
 
     override fun buildLoadData(url: String, width: Int, height: Int, options: Options): LoadData<InputStream> {
-        return LoadData(Key() {
-
-        }, StringStreamFetcher(context, url))
+        return LoadData(ObjectKey(url), StringStreamFetcher(context, url))
     }
 
     /**
