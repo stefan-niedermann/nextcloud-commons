@@ -20,6 +20,7 @@ class SingleSignOnLibraryGlideModule : LibraryGlideModule() {
     override fun registerComponents(context: Context, glide: Glide, registry: Registry) {
         Log.v(TAG, "Replacing default implementation for " + GlideUrl::class.java.simpleName + " with " + TAG + ".")
         registry.prepend(GlideUrl::class.java, InputStream::class.java, SingleSignOnUrlLoader.Factory(context))
+        registry.prepend(String::class.java, InputStream::class.java, StringLoader.Factory(context))
     }
 
     companion object {
