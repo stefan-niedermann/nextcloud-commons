@@ -21,6 +21,7 @@ class StringLoader(private val context: Context) : ModelLoader<String, InputStre
 
     override fun handles(url: String): Boolean {
         Log.i(TAG, "[handles] ------------------------------")
+        Log.i(TAG, "[handles] ${url}")
         return try {
             // We are still not sure whether we can handle this, because it might be from another user account.
             // Though we should try it because it is likely.

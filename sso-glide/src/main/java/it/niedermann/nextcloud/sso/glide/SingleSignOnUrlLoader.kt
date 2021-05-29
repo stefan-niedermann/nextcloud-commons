@@ -21,6 +21,7 @@ class SingleSignOnUrlLoader(private val context: Context) : ModelLoader<GlideUrl
 
     override fun handles(url: GlideUrl): Boolean {
         Log.i(TAG, "[handles] ------------------------------")
+        Log.i(TAG, "[handles] ${url.toStringUrl()}")
         return if (url is SingleSignOnUrl) {
             // It has explicitly been requested, so yeah, we assume that we support this.
                 Log.i(TAG, "[handles] is SingleSignOnUrl → true")
