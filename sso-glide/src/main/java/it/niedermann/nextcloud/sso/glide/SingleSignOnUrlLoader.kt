@@ -7,6 +7,9 @@ import com.bumptech.glide.load.model.ModelLoader
 import com.bumptech.glide.load.model.ModelLoader.LoadData
 import com.bumptech.glide.load.model.ModelLoaderFactory
 import com.bumptech.glide.load.model.MultiModelLoaderFactory
+import com.nextcloud.android.sso.exceptions.NextcloudFilesAppAccountNotFoundException
+import com.nextcloud.android.sso.exceptions.NoCurrentAccountSelectedException
+import com.nextcloud.android.sso.helper.SingleAccountHelper
 import java.io.InputStream
 
 /**
@@ -14,10 +17,25 @@ import java.io.InputStream
  */
 class SingleSignOnUrlLoader(private val context: Context) : ModelLoader<GlideUrl, InputStream> {
     override fun handles(url: GlideUrl): Boolean {
-        return true
+        return if (url is SingleSignOnUrl) {
+            // It has explicitly been requested, so yeah, we assume that we support this.
+            true
+        } else try {
+            // We are still not sure whether we can handle this, because it might be from another user account.
+            // Though we should try it because it is likely.
+
+            // if it does not start with it but is a relative path, like /foo/bar, we should assume that the resources is on this Nextcloud instance
+            url.toStringUrl()?.startsWith("/")!! ||
+                    // Or if the url is absolute and points to the url of the currently selected SingleSignOnAccount
+                    url.toStringUrl()?.startsWith(SingleAccountHelper.getCurrentSingleSignOnAccount(context).url)!!
+        } catch (e: NextcloudFilesAppAccountNotFoundException) {
+            false
+        } catch (e: NoCurrentAccountSelectedException) {
+            false
+        }
     }
 
-    override fun buildLoadData(url: GlideUrl, width: Int, height: Int, options: Options): LoadData<InputStream>? {
+    override fun buildLoadData(url: GlideUrl, width: Int, height: Int, options: Options): LoadData<InputStream> {
         return LoadData(url, SingleSignOnStreamFetcher(context, url))
     }
 
