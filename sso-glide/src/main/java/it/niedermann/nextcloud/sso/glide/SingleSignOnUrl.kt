@@ -11,12 +11,27 @@ import java.net.URL
  * Use this as kind of [GlideUrl] if you want to do a [Glide] request from a [SingleSignOnAccount] which is not set by [SingleAccountHelper.setCurrentAccount].
  */
 class SingleSignOnUrl : GlideUrl {
+
+    val ssoAccountName: String
+
     constructor(ssoAccount: SingleSignOnAccount, url: String) : this(ssoAccount.name, url)
     constructor(ssoAccount: SingleSignOnAccount, url: URL) : this(ssoAccount.name, url)
     constructor(ssoAccount: SingleSignOnAccount, url: String, headers: Headers) : this(ssoAccount.name, url, headers)
     constructor(ssoAccount: SingleSignOnAccount, url: URL, headers: Headers) : this(ssoAccount.name, url, headers)
-    constructor(ssoAccountName: String, url: String) : super(url, SingleSignOnOriginHeader(ssoAccountName))
-    constructor(ssoAccountName: String, url: URL) : super(url, SingleSignOnOriginHeader(ssoAccountName))
-    constructor(ssoAccountName: String, url: String, headers: Headers) : super(url, SingleSignOnOriginHeader(ssoAccountName, headers))
-    constructor(ssoAccountName: String, url: URL, headers: Headers) : super(url, SingleSignOnOriginHeader(ssoAccountName, headers))
+
+    constructor(ssoAccountName: String, url: String) : super(url) {
+        this.ssoAccountName = ssoAccountName
+    }
+
+    constructor(ssoAccountName: String, url: URL) : super(url) {
+        this.ssoAccountName = ssoAccountName
+    }
+
+    constructor(ssoAccountName: String, url: String, headers: Headers) : super(url, headers) {
+        this.ssoAccountName = ssoAccountName
+    }
+
+    constructor(ssoAccountName: String, url: URL, headers: Headers) : super(url, headers) {
+        this.ssoAccountName = ssoAccountName
+    }
 }

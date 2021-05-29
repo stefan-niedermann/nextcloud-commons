@@ -5,7 +5,6 @@ import android.util.Log
 import com.bumptech.glide.Glide
 import com.bumptech.glide.Registry
 import com.bumptech.glide.annotation.GlideModule
-import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.module.LibraryGlideModule
 import java.io.InputStream
 
@@ -18,11 +17,8 @@ import java.io.InputStream
 @GlideModule
 class SingleSignOnLibraryGlideModule : LibraryGlideModule() {
     override fun registerComponents(context: Context, glide: Glide, registry: Registry) {
-        Log.v(TAG, "Replacing default implementation for " + GlideUrl::class.java.simpleName + " with " + TAG + ".")
-        registry.replace(GlideUrl::class.java, InputStream::class.java, SingleSignOnUrlLoader.Factory(context))
-    }
-
-    companion object {
-        private val TAG = SingleSignOnLibraryGlideModule::class.java.simpleName
+        Log.i(SingleSignOnLibraryGlideModule::class.java.simpleName, "Adding Glide support for Nextcloud SingleSignOn")
+        registry.prepend(SingleSignOnUrl::class.java, InputStream::class.java, SingleSignOnUrlLoader.Factory(context))
+        registry.prepend(String::class.java, InputStream::class.java, StringLoader.Factory(context))
     }
 }

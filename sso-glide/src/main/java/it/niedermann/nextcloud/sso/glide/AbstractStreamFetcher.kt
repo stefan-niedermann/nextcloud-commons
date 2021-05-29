@@ -8,7 +8,6 @@ import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.data.DataFetcher
 import com.bumptech.glide.load.model.GlideUrl
 import com.google.gson.GsonBuilder
-import com.nextcloud.android.sso.AccountImporter
 import com.nextcloud.android.sso.aidl.NextcloudRequest
 import com.nextcloud.android.sso.api.NextcloudAPI
 import com.nextcloud.android.sso.api.NextcloudAPI.ApiConnectedListener
@@ -21,19 +20,16 @@ import java.io.InputStream
 import java.net.MalformedURLException
 import java.net.URL
 import java.util.*
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * Fetches an [InputStream] using the Nextcloud SSO library.
  */
-class SingleSignOnStreamFetcher(private val context: Context, private val url: GlideUrl) : DataFetcher<InputStream> {
+abstract class AbstractStreamFetcher<T>(private val context: Context, private val model: T) : DataFetcher<InputStream> {
     override fun loadData(priority: Priority, callback: DataFetcher.DataCallback<in InputStream?>) {
         var client: NextcloudAPI?
         try {
-            val ssoAccount: SingleSignOnAccount = if (url.headers.containsKey(X_HEADER_SSO_ACCOUNT_NAME)) {
-                AccountImporter.getSingleSignOnAccount(context, url.headers[X_HEADER_SSO_ACCOUNT_NAME])
-            } else {
-                SingleAccountHelper.getCurrentSingleSignOnAccount(context)
-            }
+            val ssoAccount: SingleSignOnAccount = getSingleSignOnAccount(context, model)
             client = INITIALIZED_APIs[ssoAccount.name]
             var didInitialize = false
             if (client == null) {
@@ -49,29 +45,18 @@ class SingleSignOnStreamFetcher(private val context: Context, private val url: G
                 INITIALIZED_APIs[ssoAccount.name] = client
                 didInitialize = true
             }
-            val requestBuilder: NextcloudRequest.Builder
             try {
-                val urlObject = url.toURL();
-                requestBuilder = NextcloudRequest.Builder()
+                val url = getAbsoluteUrl(ssoAccount, model.toString());
+                val nextcloudRequest = NextcloudRequest.Builder()
                         .setMethod(METHOD_GET)
-                        .setUrl(urlObject.path.substring(URL(ssoAccount.url).path.length))
-                val header: MutableMap<String, List<String>> = HashMap()
-                for ((key, value) in url.headers) {
-                    if (X_HEADER_SSO_ACCOUNT_NAME != key) {
-                        header[key] = listOf(value)
-                    }
-                }
-                requestBuilder.setHeader(header)
-                requestBuilder.setParameter(getQueryParams(urlObject))
-                val nextcloudRequest = requestBuilder.build()
-                Log.v(TAG, nextcloudRequest.toString())
+                        .setUrl(url.path.substring(URL(ssoAccount.url).path.length))
+                        .setParameter(getQueryParams(url))
+                        .build()
                 val response = client.performNetworkRequestV2(nextcloudRequest)
                 callback.onDataReady(response.body)
-            } catch (e: MalformedURLException) {
-                callback.onLoadFailed(e)
             } catch (e: TokenMismatchException) {
                 if (!didInitialize) {
-                    Log.w(TAG, "SSO Glide loader failed with " + TokenMismatchException::class.java.simpleName + ", trying to re-initialize...")
+                    Log.w(TAG, "SSO Glide loader failed with " + TokenMismatchException::class.java.simpleName + ", trying to re-initialize…")
                     client.stop()
                     INITIALIZED_APIs.remove(ssoAccount.name)
                     loadData(priority, callback)
@@ -89,30 +74,36 @@ class SingleSignOnStreamFetcher(private val context: Context, private val url: G
         }
     }
 
-    override fun cleanup() {
-        // Nothing to do here...
+    abstract fun getSingleSignOnAccount(context: Context, model: T): SingleSignOnAccount
+
+    private fun getAbsoluteUrl(ssoAccount: SingleSignOnAccount, model: String): URL {
+        return try {
+            // Absolute URL
+            val url = URL(model)
+            // Verify it starts with the given ssoAccount
+            if (model.startsWith(ssoAccount.url)) {
+                url
+            } else {
+                throw IllegalArgumentException("Given ${SingleSignOnAccount::class.java.simpleName} does not match the URL (${ssoAccount.url} vs. ${model}). Pass correct ${SingleSignOnAccount::class.java.simpleName} or use default ${GlideUrl::class.java.simpleName} (or a plain ${String::class.java.simpleName}) to try fetching with the current ${SingleSignOnAccount::class.java.simpleName} stored in ${SingleAccountHelper::class.java.simpleName}.")
+            }
+        } catch (e: MalformedURLException) {
+            // This might be a relative URL, prepend the URL of the ssoAccount
+            if (model.startsWith("/")) {
+                URL(ssoAccount.url + model)
+            } else {
+                throw IllegalArgumentException("URL must be absolute (starting with protocol and host or with a slash character).")
+            }
+        }
     }
 
-    override fun cancel() {
-        // Nothing to do here...
-    }
-
-    override fun getDataClass(): Class<InputStream> {
-        return InputStream::class.java
-    }
-
-    override fun getDataSource(): DataSource {
-        return DataSource.REMOTE
-    }
-
-    fun getQueryParams(url: URL): Map<String?, String?>? {
+    private fun getQueryParams(url: URL): Map<String?, String?> {
         if (TextUtils.isEmpty(url.query)) {
             return emptyMap<String?, String>()
         }
         val queryParams: MutableMap<String?, String?> = HashMap()
         for (param in url.query.split("&").toTypedArray()) {
             if ("c" == param) {
-                Log.w(TAG, "stripped query parameter \"c\". This is usually used as CSRF protection and must not be sent by the client because the SSO authenticates itself.");
+                Log.w(TAG, "Stripped query parameter \"c\". This is usually used as CSRF protection and must not be sent by the client because the SSO authenticates itself.")
             } else {
                 val idx = param.indexOf("=")
                 val key = if (idx > 0) param.substring(0, idx) else param
@@ -123,14 +114,25 @@ class SingleSignOnStreamFetcher(private val context: Context, private val url: G
         return queryParams
     }
 
+    override fun cleanup() {
+        // Nothing to do here…
+    }
+
+    override fun cancel() {
+        // Nothing to do here…
+    }
+
+    override fun getDataClass(): Class<InputStream> {
+        return InputStream::class.java
+    }
+
+    override fun getDataSource(): DataSource {
+        return DataSource.REMOTE
+    }
+
     companion object {
-        /**
-         * Use this header and set the [SingleSignOnAccount] name property as value
-         * Format of the value needs to be
-         */
-        const val X_HEADER_SSO_ACCOUNT_NAME = "X-SSO-Account-Name"
-        private val TAG = SingleSignOnStreamFetcher::class.java.simpleName
+        private val TAG = AbstractStreamFetcher::class.java.simpleName
         private const val METHOD_GET = "GET"
-        private val INITIALIZED_APIs: MutableMap<String, NextcloudAPI> = HashMap()
+        private val INITIALIZED_APIs: MutableMap<String, NextcloudAPI> = ConcurrentHashMap()
     }
 }

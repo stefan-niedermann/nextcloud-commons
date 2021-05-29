@@ -39,7 +39,7 @@ This is a util class which provides methods for generating a rich stacktrace fro
 
 ```java
 try {
-  // ...
+  // …
 } catch (Exception exception) {
   String debug = ExceptionUtil.INSTANCE.getDebugInfos(context, exception);
 }
