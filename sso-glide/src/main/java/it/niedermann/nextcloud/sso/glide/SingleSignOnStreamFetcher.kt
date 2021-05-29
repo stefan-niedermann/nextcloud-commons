@@ -25,12 +25,12 @@ import java.util.*
 /**
  * Fetches an [InputStream] using the Nextcloud SSO library.
  */
-class SingleSignOnStreamFetcher(private val context: Context, private val url: GlideUrl) : DataFetcher<InputStream> {
+class SingleSignOnStreamFetcher(private val context: Context, private val glideUrl: GlideUrl) : DataFetcher<InputStream> {
     override fun loadData(priority: Priority, callback: DataFetcher.DataCallback<in InputStream?>) {
         var client: NextcloudAPI?
         try {
-            val ssoAccount: SingleSignOnAccount = if (url.headers.containsKey(X_HEADER_SSO_ACCOUNT_NAME)) {
-                AccountImporter.getSingleSignOnAccount(context, url.headers[X_HEADER_SSO_ACCOUNT_NAME])
+            val ssoAccount: SingleSignOnAccount = if (glideUrl is SingleSignOnUrl) {
+                AccountImporter.getSingleSignOnAccount(context, glideUrl.ssoAccountName)
             } else {
                 SingleAccountHelper.getCurrentSingleSignOnAccount(context)
             }
@@ -51,18 +51,16 @@ class SingleSignOnStreamFetcher(private val context: Context, private val url: G
             }
             val requestBuilder: NextcloudRequest.Builder
             try {
-                val urlObject = url.toURL();
+                val url = getAbsoluteUrl(ssoAccount, glideUrl);
                 requestBuilder = NextcloudRequest.Builder()
                         .setMethod(METHOD_GET)
-                        .setUrl(urlObject.path.substring(URL(ssoAccount.url).path.length))
+                        .setUrl(url.path.substring(URL(ssoAccount.url).path.length))
                 val header: MutableMap<String, List<String>> = HashMap()
-                for ((key, value) in url.headers) {
-                    if (X_HEADER_SSO_ACCOUNT_NAME != key) {
-                        header[key] = listOf(value)
-                    }
+                for ((key, value) in glideUrl.headers) {
+                    header[key] = listOf(value)
                 }
                 requestBuilder.setHeader(header)
-                requestBuilder.setParameter(getQueryParams(urlObject))
+                requestBuilder.setParameter(getQueryParams(url))
                 val nextcloudRequest = requestBuilder.build()
                 Log.v(TAG, nextcloudRequest.toString())
                 val response = client.performNetworkRequestV2(nextcloudRequest)
@@ -89,6 +87,23 @@ class SingleSignOnStreamFetcher(private val context: Context, private val url: G
         }
     }
 
+    private fun getAbsoluteUrl(ssoAccount: SingleSignOnAccount, glideUrl: GlideUrl): URL {
+        val stringUrl: String = glideUrl.toStringUrl()
+        return try {
+            // Absolute URL
+            val url = URL(stringUrl)
+            // Verify it starts with the given ssoAccount
+            if (stringUrl.startsWith(ssoAccount.url)) {
+                url
+            } else {
+                throw IllegalArgumentException("Given ${SingleSignOnAccount::class.java.simpleName} does not match the URL (${ssoAccount.url} vs. ${glideUrl}). Use correct ${SingleSignOnAccount::class.java.simpleName} or default ${GlideUrl::class.java.simpleName}")
+            }
+        } catch (e: MalformedURLException) {
+            // This might be a relative URL, prepend the URL of the ssoAccount
+            URL(ssoAccount.url + stringUrl)
+        }
+    }
+
     override fun cleanup() {
         // Nothing to do here...
     }
@@ -105,14 +120,14 @@ class SingleSignOnStreamFetcher(private val context: Context, private val url: G
         return DataSource.REMOTE
     }
 
-    fun getQueryParams(url: URL): Map<String?, String?>? {
+    private fun getQueryParams(url: URL): Map<String?, String?> {
         if (TextUtils.isEmpty(url.query)) {
             return emptyMap<String?, String>()
         }
         val queryParams: MutableMap<String?, String?> = HashMap()
         for (param in url.query.split("&").toTypedArray()) {
             if ("c" == param) {
-                Log.w(TAG, "stripped query parameter \"c\". This is usually used as CSRF protection and must not be sent by the client because the SSO authenticates itself.");
+                Log.w(TAG, "stripped query parameter \"c\". This is usually used as CSRF protection and must not be sent by the client because the SSO authenticates itself.")
             } else {
                 val idx = param.indexOf("=")
                 val key = if (idx > 0) param.substring(0, idx) else param
@@ -124,11 +139,6 @@ class SingleSignOnStreamFetcher(private val context: Context, private val url: G
     }
 
     companion object {
-        /**
-         * Use this header and set the [SingleSignOnAccount] name property as value
-         * Format of the value needs to be
-         */
-        const val X_HEADER_SSO_ACCOUNT_NAME = "X-SSO-Account-Name"
         private val TAG = SingleSignOnStreamFetcher::class.java.simpleName
         private const val METHOD_GET = "GET"
         private val INITIALIZED_APIs: MutableMap<String, NextcloudAPI> = HashMap()
