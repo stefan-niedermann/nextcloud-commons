@@ -45,24 +45,18 @@ abstract class AbstractStreamFetcher<T>(private val context: Context, private va
                 INITIALIZED_APIs[ssoAccount.name] = client
                 didInitialize = true
             }
-            val requestBuilder: NextcloudRequest.Builder
             try {
                 val url = getAbsoluteUrl(ssoAccount, model.toString());
-                requestBuilder = NextcloudRequest.Builder()
+                val nextcloudRequest = NextcloudRequest.Builder()
                         .setMethod(METHOD_GET)
                         .setUrl(url.path.substring(URL(ssoAccount.url).path.length))
-                val header: MutableMap<String, List<String>> = HashMap()
-                requestBuilder.setHeader(header)
-                requestBuilder.setParameter(getQueryParams(url))
-                val nextcloudRequest = requestBuilder.build()
-                Log.v(TAG, nextcloudRequest.toString())
+                        .setParameter(getQueryParams(url))
+                        .build()
                 val response = client.performNetworkRequestV2(nextcloudRequest)
                 callback.onDataReady(response.body)
-            } catch (e: MalformedURLException) {
-                callback.onLoadFailed(e)
             } catch (e: TokenMismatchException) {
                 if (!didInitialize) {
-                    Log.w(TAG, "SSO Glide loader failed with " + TokenMismatchException::class.java.simpleName + ", trying to re-initialize...")
+                    Log.w(TAG, "SSO Glide loader failed with " + TokenMismatchException::class.java.simpleName + ", trying to re-initialize…")
                     client.stop()
                     INITIALIZED_APIs.remove(ssoAccount.name)
                     loadData(priority, callback)
@@ -121,11 +115,11 @@ abstract class AbstractStreamFetcher<T>(private val context: Context, private va
     }
 
     override fun cleanup() {
-        // Nothing to do here...
+        // Nothing to do here…
     }
 
     override fun cancel() {
-        // Nothing to do here...
+        // Nothing to do here…
     }
 
     override fun getDataClass(): Class<InputStream> {

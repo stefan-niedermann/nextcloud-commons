@@ -1,7 +1,6 @@
 package it.niedermann.nextcloud.sso.glide
 
 import android.content.Context
-import android.util.Log
 import com.bumptech.glide.load.Options
 import com.bumptech.glide.load.model.ModelLoader
 import com.bumptech.glide.load.model.ModelLoader.LoadData
@@ -12,15 +11,12 @@ import com.nextcloud.android.sso.model.SingleSignOnAccount
 import java.io.InputStream
 
 /**
- * A simple model loader for fetching media over http/https using OkHttp.
+ * Responsible for fetching resources of explicit a given [SingleSignOnAccount] via [SingleSignOnUrl]
+ * regardless the currently active [SingleSignOnAccount].
  */
 class SingleSignOnUrlLoader(private val context: Context) : ModelLoader<SingleSignOnUrl, InputStream> {
-    private val TAG = SingleSignOnUrlLoader::class.java.simpleName
 
     override fun handles(url: SingleSignOnUrl): Boolean {
-        Log.i(TAG, "[handles] ------------------------------")
-        Log.i(TAG, "[handles] ${url.toStringUrl()}")
-        Log.i(TAG, "[handles] is SingleSignOnUrl → true")
         return true;
     }
 
@@ -32,11 +28,9 @@ class SingleSignOnUrlLoader(private val context: Context) : ModelLoader<SingleSi
         })
     }
 
-    /**
-     * The default factory for [SingleSignOnUrlLoader]s.
-     */
     class Factory(context: Context) : ModelLoaderFactory<SingleSignOnUrl, InputStream> {
         private val loader: SingleSignOnUrlLoader = SingleSignOnUrlLoader(context)
+
         override fun build(multiFactory: MultiModelLoaderFactory): ModelLoader<SingleSignOnUrl, InputStream> {
             return loader
         }
@@ -44,6 +38,5 @@ class SingleSignOnUrlLoader(private val context: Context) : ModelLoader<SingleSi
         override fun teardown() {
             // Do nothing, this instance doesn't own the client.
         }
-
     }
 }
