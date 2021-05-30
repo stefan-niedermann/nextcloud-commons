@@ -39,7 +39,7 @@ class AbstractStreamFetcherTest {
     }
 
     @Test
-    fun `Happy path - Given an absolute SingleSignOnUrl`() {
+    fun `Happy path - Given an absolute SingleSignOnUrl with one query param`() {
         val fetcher = object : AbstractStreamFetcher<SingleSignOnUrl>(
             ApplicationProvider.getApplicationContext(),
             SingleSignOnUrl(ssoAccount, "https://nc.example.com/avatar?width=15"),
@@ -67,10 +67,10 @@ class AbstractStreamFetcherTest {
     }
 
     @Test
-    fun `Happy path - Given an absolute String URL`() {
+    fun `Happy path - Given an absolute String URL without query params`() {
         val fetcher = object : AbstractStreamFetcher<String>(
             ApplicationProvider.getApplicationContext(),
-            "https://nc.example.com/avatar?width=15&height=16",
+            "https://nc.example.com/avatar?",
             apiFactory
         ) {
             override fun getSingleSignOnAccount(
@@ -86,9 +86,7 @@ class AbstractStreamFetcherTest {
             api.performNetworkRequestV2(withArg {
                 assertEquals("GET", it.method)
                 assertEquals("/avatar", it.url)
-                assertEquals(2, it.parameter.size)
-                assertEquals("15", it.parameter["width"])
-                assertEquals("16", it.parameter["height"])
+                assertEquals(0, it.parameter.size)
             })
         }
         verify(exactly = 1) { callback.onDataReady(any()) }
@@ -96,7 +94,7 @@ class AbstractStreamFetcherTest {
     }
 
     @Test
-    fun `Happy path - Given a relative SingleSignOnUrl`() {
+    fun `Happy path - Given a relative SingleSignOnUrl with two query params`() {
         val fetcher = object : AbstractStreamFetcher<SingleSignOnUrl>(
             ApplicationProvider.getApplicationContext(),
             SingleSignOnUrl(ssoAccount, "/avatar?width=15&height=16"),
@@ -125,7 +123,7 @@ class AbstractStreamFetcherTest {
     }
 
     @Test
-    fun `Happy path - Given a relative String URL`() {
+    fun `Happy path - Given a relative String URL with one query param and a trailing ampersand`() {
         val fetcher = object : AbstractStreamFetcher<String>(
             ApplicationProvider.getApplicationContext(),
             "/avatar?width=15&",
