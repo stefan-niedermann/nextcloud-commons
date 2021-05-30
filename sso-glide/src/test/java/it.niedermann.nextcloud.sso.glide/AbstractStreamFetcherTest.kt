@@ -7,6 +7,8 @@ import com.bumptech.glide.Priority
 import com.bumptech.glide.load.data.DataFetcher
 import com.nextcloud.android.sso.api.NextcloudAPI
 import com.nextcloud.android.sso.api.Response
+import com.nextcloud.android.sso.exceptions.NextcloudFilesAppAccountNotFoundException
+import com.nextcloud.android.sso.exceptions.TokenMismatchException
 import com.nextcloud.android.sso.model.SingleSignOnAccount
 import io.mockk.clearMocks
 import io.mockk.every
@@ -40,7 +42,7 @@ class AbstractStreamFetcherTest {
     fun `Happy path - Given an absolute SingleSignOnUrl`() {
         val fetcher = object : AbstractStreamFetcher<SingleSignOnUrl>(
             ApplicationProvider.getApplicationContext(),
-            SingleSignOnUrl(ssoAccount, "https://nc.example.com/avatar?width=15&height=16"),
+            SingleSignOnUrl(ssoAccount, "https://nc.example.com/avatar?width=15"),
             apiFactory
         ) {
             override fun getSingleSignOnAccount(
@@ -56,9 +58,8 @@ class AbstractStreamFetcherTest {
             api.performNetworkRequestV2(withArg {
                 assertEquals("GET", it.method)
                 assertEquals("/avatar", it.url)
-                assertEquals(2, it.parameter.size)
+                assertEquals(1, it.parameter.size)
                 assertEquals("15", it.parameter["width"])
-                assertEquals("16", it.parameter["height"])
             })
         }
         verify(exactly = 1) { callback.onDataReady(any()) }
@@ -127,7 +128,7 @@ class AbstractStreamFetcherTest {
     fun `Happy path - Given a relative String URL`() {
         val fetcher = object : AbstractStreamFetcher<String>(
             ApplicationProvider.getApplicationContext(),
-            "/avatar?width=15&height=16",
+            "/avatar?width=15&",
             apiFactory
         ) {
             override fun getSingleSignOnAccount(
@@ -143,9 +144,8 @@ class AbstractStreamFetcherTest {
             api.performNetworkRequestV2(withArg {
                 assertEquals("GET", it.method)
                 assertEquals("/avatar", it.url)
-                assertEquals(2, it.parameter.size)
+                assertEquals(1, it.parameter.size)
                 assertEquals("15", it.parameter["width"])
-                assertEquals("16", it.parameter["height"])
             })
         }
         verify(exactly = 1) { callback.onDataReady(any()) }
@@ -234,5 +234,83 @@ class AbstractStreamFetcherTest {
         verify(exactly = 0) { api.performNetworkRequestV2(any()) }
         verify(exactly = 0) { callback.onDataReady(any()) }
         verify(exactly = 1) { callback.onLoadFailed(withArg { it is IllegalArgumentException }) }
+    }
+
+    @Test
+    fun `Given getting the SingleSignOnAccount throws an exception, it should be passed to the callback`() {
+        val fetcher = object : AbstractStreamFetcher<String>(
+            ApplicationProvider.getApplicationContext(),
+            "avatar?width=15&height=16",
+            apiFactory
+        ) {
+            override fun getSingleSignOnAccount(
+                context: Context,
+                model: String
+            ): SingleSignOnAccount {
+                throw NextcloudFilesAppAccountNotFoundException()
+            }
+        }
+        fetcher.loadData(Priority.NORMAL, callback)
+
+        verify(exactly = 0) { api.performNetworkRequestV2(any()) }
+        verify(exactly = 0) { callback.onDataReady(any()) }
+        verify(exactly = 1) { callback.onLoadFailed(withArg { it is NextcloudFilesAppAccountNotFoundException }) }
+    }
+
+    @Test
+    fun `Given a TokenMismatchException is thrown while performing the request directly after API creation, it should reset this API instance and call the error handler of the callback`() {
+        every { api.performNetworkRequestV2(any()) } throws TokenMismatchException()
+
+        val fetcher = object : AbstractStreamFetcher<String>(
+            ApplicationProvider.getApplicationContext(),
+            "/avatar?width=15&height=16",
+            apiFactory
+        ) {
+            override fun getSingleSignOnAccount(
+                context: Context,
+                model: String
+            ): SingleSignOnAccount {
+                return ssoAccount
+            }
+        }
+        fetcher.loadData(Priority.NORMAL, callback)
+
+        verify(exactly = 1) { api.performNetworkRequestV2(any()) }
+        verify(exactly = 1) { api.stop() }
+        verify(exactly = 0) { callback.onDataReady(any()) }
+        verify(exactly = 1) { callback.onLoadFailed(withArg { it is TokenMismatchException }) }
+    }
+
+    @Test
+    fun `Given a TokenMismatchException is thrown while performing the request after a successful request, it should retry with a new instance and then call the error handler of the callback`() {
+        val recreatedApi = mockk<NextcloudAPI>(relaxed = true)
+        every { api.performNetworkRequestV2(any()) } returns Response(
+            mockk(),
+            mockk()
+        ) andThenThrows TokenMismatchException()
+        every { recreatedApi.performNetworkRequestV2(any()) } throws TokenMismatchException()
+        every { apiFactory.build(any(), any(), any(), any()) } returnsMany listOf(api, recreatedApi)
+
+        val fetcher = object : AbstractStreamFetcher<String>(
+            ApplicationProvider.getApplicationContext(),
+            "/avatar?width=15&height=16",
+            apiFactory
+        ) {
+            override fun getSingleSignOnAccount(
+                context: Context,
+                model: String
+            ): SingleSignOnAccount {
+                return ssoAccount
+            }
+        }
+        fetcher.loadData(Priority.NORMAL, callback) // Successful call
+        fetcher.loadData(Priority.NORMAL, callback) // TokenMismatchException
+
+        verify(exactly = 2) { api.performNetworkRequestV2(any()) } // First call is successful, second fails
+        verify(exactly = 1) { callback.onDataReady(any()) } // The very first call was successful
+        verify(exactly = 1) { api.stop() } // after failing call, clear the API instance. It worked before, so we will try to create a new API before giving up
+        verify(exactly = 1) { recreatedApi.performNetworkRequestV2(any()) } // First call to the new API also fails
+        verify(exactly = 1) { recreatedApi.stop() } // So we clear also this API instance. This instance did never work, so we don't even try to create a new API but
+        verify(exactly = 1) { callback.onLoadFailed(withArg { it is TokenMismatchException }) } // fail now
     }
 }

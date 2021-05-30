@@ -13,8 +13,6 @@ import com.google.gson.GsonBuilder
 import com.nextcloud.android.sso.aidl.NextcloudRequest
 import com.nextcloud.android.sso.api.NextcloudAPI
 import com.nextcloud.android.sso.api.NextcloudAPI.ApiConnectedListener
-import com.nextcloud.android.sso.exceptions.NextcloudFilesAppAccountNotFoundException
-import com.nextcloud.android.sso.exceptions.NoCurrentAccountSelectedException
 import com.nextcloud.android.sso.exceptions.TokenMismatchException
 import com.nextcloud.android.sso.helper.SingleAccountHelper
 import com.nextcloud.android.sso.model.SingleSignOnAccount
@@ -27,58 +25,71 @@ import java.util.concurrent.ConcurrentHashMap
 /**
  * Fetches an [InputStream] using the Nextcloud SSO library.
  */
-abstract class AbstractStreamFetcher<T>(private val context: Context,
-                                        private val model: T,
-                                        private val apiFactory: ApiFactory = object : ApiFactory {
-                                            override fun build(context: Context, ssoAccount: SingleSignOnAccount, gson: Gson, callback: ApiConnectedListener): NextcloudAPI {
-                                                return NextcloudAPI(context, ssoAccount, gson, callback)
-                                            }
-                                        }) : DataFetcher<InputStream> {
+abstract class AbstractStreamFetcher<T>(
+    private val context: Context,
+    private val model: T,
+    private val apiFactory: ApiFactory = object : ApiFactory {
+        override fun build(
+            context: Context,
+            ssoAccount: SingleSignOnAccount,
+            gson: Gson,
+            callback: ApiConnectedListener
+        ): NextcloudAPI {
+            return NextcloudAPI(context, ssoAccount, gson, callback)
+        }
+    }
+) : DataFetcher<InputStream> {
     override fun loadData(priority: Priority, callback: DataFetcher.DataCallback<in InputStream?>) {
-        var client: NextcloudAPI?
         try {
             val ssoAccount: SingleSignOnAccount = getSingleSignOnAccount(context, model)
-            client = INITIALIZED_APIs[ssoAccount.name]
-            var didInitialize = false
-            if (client == null) {
-                client = apiFactory.build(context, ssoAccount, GsonBuilder().create(), object : ApiConnectedListener {
-                    override fun onConnected() {
-                        Log.v(TAG, "SSO API successfully initialized")
-                    }
+            var client = INITIALIZED_APIs[ssoAccount.name]
+            val didInitialize = if (client == null) {
+                client = apiFactory.build(
+                    context,
+                    ssoAccount,
+                    GsonBuilder().create(),
+                    object : ApiConnectedListener {
+                        override fun onConnected() {
+                            Log.v(TAG, "SSO API successfully initialized")
+                        }
 
-                    override fun onError(ex: Exception) {
-                        Log.e(TAG, ex.message, ex)
-                    }
-                })
+                        override fun onError(ex: Exception) {
+                            Log.e(TAG, ex.message, ex)
+                        }
+                    })
                 INITIALIZED_APIs[ssoAccount.name] = client
-                didInitialize = true
+                true
+            } else {
+                false
             }
             try {
                 val url = getAbsoluteUrl(ssoAccount, model.toString())
                 val nextcloudRequest = NextcloudRequest.Builder()
-                        .setMethod(METHOD_GET)
-                        .setUrl(url.path.substring(URL(ssoAccount.url).path.length))
-                        .setParameter(getQueryParams(url))
-                        .build()
+                    .setMethod(METHOD_GET)
+                    .setUrl(url.path.substring(URL(ssoAccount.url).path.length))
+                    .setParameter(getQueryParams(url))
+                    .build()
                 val response = client.performNetworkRequestV2(nextcloudRequest)
                 callback.onDataReady(response.body)
             } catch (e: TokenMismatchException) {
-                if (!didInitialize) {
-                    Log.w(TAG, "SSO Glide loader failed with " + TokenMismatchException::class.java.simpleName + ", trying to re-initialize…")
-                    client.stop()
-                    INITIALIZED_APIs.remove(ssoAccount.name)
-                    loadData(priority, callback)
-                } else {
-                    e.printStackTrace()
+                Log.w(
+                    TAG,
+                    "SSO Glide loader failed with ${TokenMismatchException::class.java.simpleName}"
+                )
+                resetInitializedApi(ssoAccount.name)
+                if (didInitialize) {
+                    Log.i(
+                        TAG,
+                        "This API instance failed at the very first call, so we won't try to re-initialize the API this time…"
+                    )
                     callback.onLoadFailed(e)
+                } else {
+                    Log.i(TAG, "This API instance worked before, so we try to re-initialize it…")
+                    loadData(priority, callback)
                 }
-            } catch (e: Exception) {
-                callback.onLoadFailed(e)
             }
-        } catch (e: NextcloudFilesAppAccountNotFoundException) {
-            e.printStackTrace()
-        } catch (e: NoCurrentAccountSelectedException) {
-            e.printStackTrace()
+        } catch (e: Exception) {
+            callback.onLoadFailed(e)
         }
     }
 
@@ -111,12 +122,18 @@ abstract class AbstractStreamFetcher<T>(private val context: Context,
         val queryParams: MutableMap<String?, String?> = HashMap()
         for (param in url.query.split("&").toTypedArray()) {
             if ("c" == param) {
-                Log.w(TAG, "Stripped query parameter \"c\". This is usually used as CSRF protection and must not be sent by the client because the SSO authenticates itself.")
+                Log.w(
+                    TAG,
+                    "Stripped query parameter \"c\". This is usually used as CSRF protection and must not be sent by the client because the SSO authenticates itself."
+                )
             } else {
                 val idx = param.indexOf("=")
                 val key = if (idx > 0) param.substring(0, idx) else param
-                val value = if (idx > 0 && param.length > idx + 1) param.substring(idx + 1) else null
-                queryParams[key] = value
+                val value =
+                    if (idx > 0 && param.length > idx + 1) param.substring(idx + 1) else null
+                if (!TextUtils.isEmpty(key)) {
+                    queryParams[key] = value
+                }
             }
         }
         return queryParams
@@ -139,7 +156,12 @@ abstract class AbstractStreamFetcher<T>(private val context: Context,
     }
 
     interface ApiFactory {
-        fun build(context: Context, ssoAccount: SingleSignOnAccount, gson: Gson, callback: ApiConnectedListener): NextcloudAPI
+        fun build(
+            context: Context,
+            ssoAccount: SingleSignOnAccount,
+            gson: Gson,
+            callback: ApiConnectedListener
+        ): NextcloudAPI
     }
 
     companion object {
@@ -149,10 +171,14 @@ abstract class AbstractStreamFetcher<T>(private val context: Context,
 
         @VisibleForTesting
         fun resetInitializedApis() {
-            for((key, _) in INITIALIZED_APIs) {
-                INITIALIZED_APIs[key]?.stop()
-                INITIALIZED_APIs.remove(key)
+            for ((key, _) in INITIALIZED_APIs) {
+                resetInitializedApi(key)
             }
+        }
+
+        private fun resetInitializedApi(key: String) {
+            INITIALIZED_APIs[key]?.stop()
+            INITIALIZED_APIs.remove(key)
         }
     }
 }
