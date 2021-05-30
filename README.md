@@ -10,7 +10,7 @@
 - [How to use](#how-to-use)
 - [Modules](#modules)
   - [exception](#exception)
-  - [sso-glide](#glide-sso)
+  - [sso-glide](#sso-glide)
 - [License](#notebook-license)
 
 ## What is this

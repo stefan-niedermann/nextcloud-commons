@@ -23,8 +23,8 @@ class StringLoaderTest {
     fun handles() {
         val ssoAccount = SingleSignOnAccount("Test", "test", "", "https://nc.example.com", "")
 
-        mockkStatic(SingleAccountHelper::class);
-        every { SingleAccountHelper.getCurrentSingleSignOnAccount(any()) } returns ssoAccount;
+        mockkStatic(SingleAccountHelper::class)
+        every { SingleAccountHelper.getCurrentSingleSignOnAccount(any()) } returns ssoAccount
 
         assertTrue(loader.handles("https://nc.example.com/avatar"))
         assertTrue(loader.handles("/avatar"))

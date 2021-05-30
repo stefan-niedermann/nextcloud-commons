@@ -17,7 +17,7 @@ import java.io.InputStream
 class SingleSignOnUrlLoader(private val context: Context) : ModelLoader<SingleSignOnUrl, InputStream> {
 
     override fun handles(url: SingleSignOnUrl): Boolean {
-        return true;
+        return true
     }
 
     override fun buildLoadData(url: SingleSignOnUrl, width: Int, height: Int, options: Options): LoadData<InputStream> {

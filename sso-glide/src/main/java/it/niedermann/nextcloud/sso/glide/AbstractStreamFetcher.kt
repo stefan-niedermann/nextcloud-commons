@@ -3,10 +3,12 @@ package it.niedermann.nextcloud.sso.glide
 import android.content.Context
 import android.text.TextUtils
 import android.util.Log
+import androidx.annotation.VisibleForTesting
 import com.bumptech.glide.Priority
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.data.DataFetcher
 import com.bumptech.glide.load.model.GlideUrl
+import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.nextcloud.android.sso.aidl.NextcloudRequest
 import com.nextcloud.android.sso.api.NextcloudAPI
@@ -25,7 +27,13 @@ import java.util.concurrent.ConcurrentHashMap
 /**
  * Fetches an [InputStream] using the Nextcloud SSO library.
  */
-abstract class AbstractStreamFetcher<T>(private val context: Context, private val model: T) : DataFetcher<InputStream> {
+abstract class AbstractStreamFetcher<T>(private val context: Context,
+                                        private val model: T,
+                                        private val apiFactory: ApiFactory = object : ApiFactory {
+                                            override fun build(context: Context, ssoAccount: SingleSignOnAccount, gson: Gson, callback: ApiConnectedListener): NextcloudAPI {
+                                                return NextcloudAPI(context, ssoAccount, gson, callback)
+                                            }
+                                        }) : DataFetcher<InputStream> {
     override fun loadData(priority: Priority, callback: DataFetcher.DataCallback<in InputStream?>) {
         var client: NextcloudAPI?
         try {
@@ -33,7 +41,7 @@ abstract class AbstractStreamFetcher<T>(private val context: Context, private va
             client = INITIALIZED_APIs[ssoAccount.name]
             var didInitialize = false
             if (client == null) {
-                client = NextcloudAPI(context, ssoAccount, GsonBuilder().create(), object : ApiConnectedListener {
+                client = apiFactory.build(context, ssoAccount, GsonBuilder().create(), object : ApiConnectedListener {
                     override fun onConnected() {
                         Log.v(TAG, "SSO API successfully initialized")
                     }
@@ -46,7 +54,7 @@ abstract class AbstractStreamFetcher<T>(private val context: Context, private va
                 didInitialize = true
             }
             try {
-                val url = getAbsoluteUrl(ssoAccount, model.toString());
+                val url = getAbsoluteUrl(ssoAccount, model.toString())
                 val nextcloudRequest = NextcloudRequest.Builder()
                         .setMethod(METHOD_GET)
                         .setUrl(url.path.substring(URL(ssoAccount.url).path.length))
@@ -130,9 +138,21 @@ abstract class AbstractStreamFetcher<T>(private val context: Context, private va
         return DataSource.REMOTE
     }
 
+    interface ApiFactory {
+        fun build(context: Context, ssoAccount: SingleSignOnAccount, gson: Gson, callback: ApiConnectedListener): NextcloudAPI
+    }
+
     companion object {
         private val TAG = AbstractStreamFetcher::class.java.simpleName
         private const val METHOD_GET = "GET"
         private val INITIALIZED_APIs: MutableMap<String, NextcloudAPI> = ConcurrentHashMap()
+
+        @VisibleForTesting
+        fun resetInitializedApis() {
+            for((key, _) in INITIALIZED_APIs) {
+                INITIALIZED_APIs[key]?.stop()
+                INITIALIZED_APIs.remove(key)
+            }
+        }
     }
 }

@@ -18,7 +18,7 @@ import org.robolectric.annotation.Config
 class ExceptionUtilTest {
     @Before
     fun setup() {
-        mockkStatic(VersionCheckHelper::class);
+        mockkStatic(VersionCheckHelper::class)
         every { VersionCheckHelper.getNextcloudFilesVersionCode(any(), any()) } returns 4711
     }
 
