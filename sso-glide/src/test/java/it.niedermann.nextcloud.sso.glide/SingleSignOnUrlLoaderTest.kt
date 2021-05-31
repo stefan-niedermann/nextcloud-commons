@@ -1,6 +1,5 @@
 package it.niedermann.nextcloud.sso.glide
 
-import android.os.Build
 import androidx.test.core.app.ApplicationProvider
 import com.bumptech.glide.load.model.Headers
 import com.nextcloud.android.sso.helper.SingleAccountHelper
@@ -11,11 +10,9 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
-import org.robolectric.annotation.Config
 import java.net.URL
 
 @RunWith(RobolectricTestRunner::class)
-@Config(sdk = [Build.VERSION_CODES.P])
 class SingleSignOnUrlLoaderTest {
 
     private val loader = SingleSignOnUrlLoader(ApplicationProvider.getApplicationContext())
@@ -29,18 +26,57 @@ class SingleSignOnUrlLoaderTest {
 
         assertTrue(loader.handles(SingleSignOnUrl(ssoAccount, "/avatar")))
         assertTrue(loader.handles(SingleSignOnUrl(ssoAccount, "https://nc.example.com/avatar")))
-        assertTrue(loader.handles(SingleSignOnUrl(ssoAccount, URL("https://nc.example.com/avatar"))))
+        assertTrue(
+            loader.handles(
+                SingleSignOnUrl(
+                    ssoAccount,
+                    URL("https://nc.example.com/avatar")
+                )
+            )
+        )
 
         assertTrue(loader.handles(SingleSignOnUrl(ssoAccount, "/avatar", Headers.DEFAULT)))
-        assertTrue(loader.handles(SingleSignOnUrl(ssoAccount, "https://nc.example.com/avatar", Headers.DEFAULT)))
-        assertTrue(loader.handles(SingleSignOnUrl(ssoAccount, URL("https://nc.example.com/avatar"), Headers.DEFAULT)))
+        assertTrue(
+            loader.handles(
+                SingleSignOnUrl(
+                    ssoAccount,
+                    "https://nc.example.com/avatar",
+                    Headers.DEFAULT
+                )
+            )
+        )
+        assertTrue(
+            loader.handles(
+                SingleSignOnUrl(
+                    ssoAccount,
+                    URL("https://nc.example.com/avatar"),
+                    Headers.DEFAULT
+                )
+            )
+        )
 
         assertTrue(loader.handles(SingleSignOnUrl("foo", "/avatar")))
         assertTrue(loader.handles(SingleSignOnUrl("bar", "https://nc.example.com/avatar")))
         assertTrue(loader.handles(SingleSignOnUrl("baz", URL("https://nc.example.com/avatar"))))
 
         assertTrue(loader.handles(SingleSignOnUrl("foo", "/avatar", Headers.DEFAULT)))
-        assertTrue(loader.handles(SingleSignOnUrl("bar", "https://nc.example.com/avatar", Headers.DEFAULT)))
-        assertTrue(loader.handles(SingleSignOnUrl("baz", URL("https://nc.example.com/avatar"), Headers.DEFAULT)))
+        assertTrue(
+            loader.handles(
+                SingleSignOnUrl(
+                    "bar",
+                    "https://nc.example.com/avatar",
+                    Headers.DEFAULT
+                )
+            )
+        )
+        assertTrue(
+            loader.handles(
+                SingleSignOnUrl(
+                    "baz",
+                    URL("https://nc.example.com/avatar"),
+                    Headers.DEFAULT
+                )
+            )
+        )
     }
 }

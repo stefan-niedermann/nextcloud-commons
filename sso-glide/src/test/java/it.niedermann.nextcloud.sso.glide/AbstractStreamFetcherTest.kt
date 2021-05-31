@@ -1,7 +1,6 @@
 package it.niedermann.nextcloud.sso.glide
 
 import android.content.Context
-import android.os.Build
 import androidx.test.core.app.ApplicationProvider
 import com.bumptech.glide.Priority
 import com.bumptech.glide.load.data.DataFetcher
@@ -19,11 +18,9 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
-import org.robolectric.annotation.Config
 import java.io.InputStream
 
 @RunWith(RobolectricTestRunner::class)
-@Config(sdk = [Build.VERSION_CODES.P])
 class AbstractStreamFetcherTest {
     private val ssoAccount = SingleSignOnAccount("Test", "test", "", "https://nc.example.com", "")
     private val callback = mockk<DataFetcher.DataCallback<in InputStream?>>(relaxed = true)

@@ -1,6 +1,5 @@
 package it.niedermann.nextcloud.sso.glide
 
-import android.os.Build
 import androidx.test.core.app.ApplicationProvider
 import com.nextcloud.android.sso.helper.SingleAccountHelper
 import com.nextcloud.android.sso.model.SingleSignOnAccount
@@ -11,10 +10,8 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
-import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
-@Config(sdk = [Build.VERSION_CODES.P])
 class StringLoaderTest {
 
     private val ssoAccount = SingleSignOnAccount("Test", "test", "", "https://nc.example.com", "")
