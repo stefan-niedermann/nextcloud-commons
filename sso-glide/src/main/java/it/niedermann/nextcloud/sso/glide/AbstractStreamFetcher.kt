@@ -62,13 +62,13 @@ abstract class AbstractStreamFetcher<T>(
             } else {
                 false
             }
+            val url = getAbsoluteUrl(ssoAccount, model.toString())
+            val nextcloudRequest = NextcloudRequest.Builder()
+                .setMethod(METHOD_GET)
+                .setUrl(url.path.substring(URL(ssoAccount.url).path.length))
+                .setParameter(getQueryParams(url))
+                .build()
             try {
-                val url = getAbsoluteUrl(ssoAccount, model.toString())
-                val nextcloudRequest = NextcloudRequest.Builder()
-                    .setMethod(METHOD_GET)
-                    .setUrl(url.path.substring(URL(ssoAccount.url).path.length))
-                    .setParameter(getQueryParams(url))
-                    .build()
                 val response = client.performNetworkRequestV2(nextcloudRequest)
                 callback.onDataReady(response.body)
             } catch (e: TokenMismatchException) {
