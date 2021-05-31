@@ -54,7 +54,7 @@ class AbstractStreamFetcherTest {
         verify(exactly = 1) {
             api.performNetworkRequestV2(withArg {
                 assertEquals("GET", it.method)
-                assertEquals("/avaktar", it.url)
+                assertEquals("/avatar", it.url)
                 assertEquals(1, it.parameter.size)
                 assertEquals("15", it.parameter["width"])
             })
