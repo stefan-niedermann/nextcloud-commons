@@ -180,8 +180,8 @@ abstract class AbstractStreamFetcher<T>(
         private val TAG = AbstractStreamFetcher::class.java.simpleName
         private const val METHOD_GET = "GET"
         private val INITIALIZED_APIs: MutableMap<String, NextcloudAPI> = ConcurrentHashMap()
-        private val REGEX_FILE_ID = Regex("^(/index\\.php)?/f/(\\d+)$")
-        private val REGEX_SHARE_ID = Regex("^(/index\\.php)?/s/(\\w+)(/)?$")
+        private val REGEX_FILE_ID = Regex("^(/index\\.php)?/f/(\\d+)(/)?$")
+        private val REGEX_SHARE_ID = Regex("^(/index\\.php)?/s/(\\w+)(/|/download|/download/)?$")
 
         @VisibleForTesting
         fun resetInitializedApis() {

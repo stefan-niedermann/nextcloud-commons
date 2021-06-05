@@ -14,11 +14,13 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import java.io.InputStream
+import java.net.URL
 
 @RunWith(RobolectricTestRunner::class)
 class AbstractStreamFetcherTest {
@@ -205,8 +207,6 @@ class AbstractStreamFetcherTest {
         verify(exactly = 0) { callback.onLoadFailed(any()) }
     }
 
-    // ---------------
-
     @Test
     fun `Happy path - Given an absolute SingleSignOnUrl with a share ID`() {
         val fetcher = object : AbstractStreamFetcher<SingleSignOnUrl>(
@@ -259,6 +259,123 @@ class AbstractStreamFetcherTest {
         }
         verify(exactly = 1) { callback.onDataReady(any()) }
         verify(exactly = 0) { callback.onLoadFailed(any()) }
+    }
+
+    @Test
+    fun `Test conversion of fileId URLs and shareId URLs`() {
+        val fetcher = object : AbstractStreamFetcher<String>(
+            ApplicationProvider.getApplicationContext(),
+            "",
+            apiFactory
+        ) {
+            override fun getSingleSignOnAccount(
+                context: Context,
+                model: String
+            ): SingleSignOnAccount {
+                return ssoAccount
+            }
+        }
+
+        AbstractStreamFetcher::class.java.declaredMethods.find { it.name == "convertFileIdUrlToPreviewUrl" }
+            ?.let {
+                it.isAccessible = true
+
+                var fileIdRes = (it.invoke(
+                    fetcher,
+                    ssoAccount,
+                    URL("https://nc.example.com/f/1234")
+                ) as URL?);
+                assertEquals("/index.php/core/preview", fileIdRes?.path)
+                assertTrue(fileIdRes?.query?.contains("fileId=1234")!!)
+
+                fileIdRes = (it.invoke(
+                    fetcher,
+                    ssoAccount,
+                    URL("https://nc.example.com/f/1234/")
+                ) as URL?);
+                assertEquals("/index.php/core/preview", fileIdRes?.path)
+                assertTrue(fileIdRes?.query?.contains("fileId=1234")!!)
+
+                fileIdRes = (it.invoke(
+                    fetcher,
+                    ssoAccount,
+                    URL("https://nc.example.com/index.php/f/1234")
+                ) as URL?);
+                assertEquals("/index.php/core/preview", fileIdRes?.path)
+                assertTrue(fileIdRes?.query?.contains("fileId=1234")!!)
+
+                fileIdRes = (it.invoke(
+                    fetcher,
+                    ssoAccount,
+                    URL("https://nc.example.com/index.php/f/1234/")
+                ) as URL?);
+                assertEquals("/index.php/core/preview", fileIdRes?.path)
+                assertTrue(fileIdRes?.query?.contains("fileId=1234")!!)
+
+                assertEquals(
+                    "/index.php/s/DQzqy7zEB4abqEb/download", (it.invoke(
+                        fetcher,
+                        ssoAccount,
+                        URL("https://nc.example.com/s/DQzqy7zEB4abqEb")
+                    ) as URL?)?.path
+                )
+
+                assertEquals(
+                    "/index.php/s/DQzqy7zEB4abqEb/download", (it.invoke(
+                        fetcher,
+                        ssoAccount,
+                        URL("https://nc.example.com/s/DQzqy7zEB4abqEb/")
+                    ) as URL?)?.path
+                )
+
+                assertEquals(
+                    "/index.php/s/DQzqy7zEB4abqEb/download", (it.invoke(
+                        fetcher,
+                        ssoAccount,
+                        URL("https://nc.example.com/index.php/s/DQzqy7zEB4abqEb")
+                    ) as URL?)?.path
+                )
+
+                assertEquals(
+                    "/index.php/s/DQzqy7zEB4abqEb/download", (it.invoke(
+                        fetcher,
+                        ssoAccount,
+                        URL("https://nc.example.com/index.php/s/DQzqy7zEB4abqEb/")
+                    ) as URL?)?.path
+                )
+
+                assertEquals(
+                    "/index.php/s/DQzqy7zEB4abqEb/download", (it.invoke(
+                        fetcher,
+                        ssoAccount,
+                        URL("https://nc.example.com/s/DQzqy7zEB4abqEb/download")
+                    ) as URL?)?.path
+                )
+
+                assertEquals(
+                    "/index.php/s/DQzqy7zEB4abqEb/download", (it.invoke(
+                        fetcher,
+                        ssoAccount,
+                        URL("https://nc.example.com/s/DQzqy7zEB4abqEb/download/")
+                    ) as URL?)?.path
+                )
+
+                assertEquals(
+                    "/index.php/s/DQzqy7zEB4abqEb/download", (it.invoke(
+                        fetcher,
+                        ssoAccount,
+                        URL("https://nc.example.com/index.php/s/DQzqy7zEB4abqEb/download")
+                    ) as URL?)?.path
+                )
+
+                assertEquals(
+                    "/index.php/s/DQzqy7zEB4abqEb/download", (it.invoke(
+                        fetcher,
+                        ssoAccount,
+                        URL("https://nc.example.com/index.php/s/DQzqy7zEB4abqEb/download/")
+                    ) as URL?)?.path
+                )
+            }
     }
 
     @Test
