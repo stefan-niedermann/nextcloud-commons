@@ -148,6 +148,120 @@ class AbstractStreamFetcherTest {
     }
 
     @Test
+    fun `Happy path - Given an absolute SingleSignOnUrl with a file ID`() {
+        val fetcher = object : AbstractStreamFetcher<SingleSignOnUrl>(
+            ApplicationProvider.getApplicationContext(),
+            SingleSignOnUrl(ssoAccount, "https://nc.example.com/f/4711"),
+            apiFactory
+        ) {
+            override fun getSingleSignOnAccount(
+                context: Context,
+                model: SingleSignOnUrl
+            ): SingleSignOnAccount {
+                return ssoAccount
+            }
+        }
+        fetcher.loadData(Priority.NORMAL, callback)
+
+        verify(exactly = 1) {
+            api.performNetworkRequestV2(withArg {
+                assertEquals("GET", it.method)
+                assertEquals("/index.php/core/preview", it.url)
+                assertEquals(4, it.parameter.size)
+                assertEquals("true", it.parameter["a"])
+                assertEquals("4711", it.parameter["fileId"])
+            })
+        }
+        verify(exactly = 1) { callback.onDataReady(any()) }
+        verify(exactly = 0) { callback.onLoadFailed(any()) }
+    }
+
+    @Test
+    fun `Happy path - Given a relative String fileId URL`() {
+        val fetcher = object : AbstractStreamFetcher<String>(
+            ApplicationProvider.getApplicationContext(),
+            "/f/123456",
+            apiFactory
+        ) {
+            override fun getSingleSignOnAccount(
+                context: Context,
+                model: String
+            ): SingleSignOnAccount {
+                return ssoAccount
+            }
+        }
+        fetcher.loadData(Priority.NORMAL, callback)
+
+        verify(exactly = 1) {
+            api.performNetworkRequestV2(withArg {
+                assertEquals("GET", it.method)
+                assertEquals("/index.php/core/preview", it.url)
+                assertEquals(4, it.parameter.size)
+                assertEquals("123456", it.parameter["fileId"])
+                assertEquals("true", it.parameter["a"])
+            })
+        }
+        verify(exactly = 1) { callback.onDataReady(any()) }
+        verify(exactly = 0) { callback.onLoadFailed(any()) }
+    }
+
+    // ---------------
+
+    @Test
+    fun `Happy path - Given an absolute SingleSignOnUrl with a share ID`() {
+        val fetcher = object : AbstractStreamFetcher<SingleSignOnUrl>(
+            ApplicationProvider.getApplicationContext(),
+            SingleSignOnUrl(ssoAccount, "https://nc.example.com/index.php/s/DQzqy7zEB4abqEb"),
+            apiFactory
+        ) {
+            override fun getSingleSignOnAccount(
+                context: Context,
+                model: SingleSignOnUrl
+            ): SingleSignOnAccount {
+                return ssoAccount
+            }
+        }
+        fetcher.loadData(Priority.NORMAL, callback)
+
+        verify(exactly = 1) {
+            api.performNetworkRequestV2(withArg {
+                assertEquals("GET", it.method)
+                assertEquals("/index.php/s/DQzqy7zEB4abqEb/download", it.url)
+                assertEquals(0, it.parameter.size)
+            })
+        }
+        verify(exactly = 1) { callback.onDataReady(any()) }
+        verify(exactly = 0) { callback.onLoadFailed(any()) }
+    }
+
+    @Test
+    fun `Happy path - Given a relative String shareId URL`() {
+        val fetcher = object : AbstractStreamFetcher<String>(
+            ApplicationProvider.getApplicationContext(),
+            "/s/DQzqy7zEB4abqEb/",
+            apiFactory
+        ) {
+            override fun getSingleSignOnAccount(
+                context: Context,
+                model: String
+            ): SingleSignOnAccount {
+                return ssoAccount
+            }
+        }
+        fetcher.loadData(Priority.NORMAL, callback)
+
+        verify(exactly = 1) {
+            api.performNetworkRequestV2(withArg {
+                assertEquals("GET", it.method)
+                assertEquals("/index.php/s/DQzqy7zEB4abqEb/download", it.url)
+                assertEquals(0, it.parameter.size)
+            })
+        }
+        verify(exactly = 1) { callback.onDataReady(any()) }
+        verify(exactly = 0) { callback.onLoadFailed(any()) }
+    }
+
+    @Test
     fun `Given the absolute SingleSignOnUrl does not match the SingleSignOnAccount, an IllegalArgumentException should be passed to the callback`() {
         val fetcher = object : AbstractStreamFetcher<SingleSignOnUrl>(
             ApplicationProvider.getApplicationContext(),

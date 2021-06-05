@@ -101,18 +101,30 @@ abstract class AbstractStreamFetcher<T>(
             val url = URL(model)
             // Verify it starts with the given ssoAccount
             if (model.startsWith(ssoAccount.url)) {
-                url
+                convertFileIdUrlToPreviewUrl(ssoAccount, url)
             } else {
                 throw IllegalArgumentException("Given ${SingleSignOnAccount::class.java.simpleName} does not match the URL (${ssoAccount.url} vs. ${model}). Pass correct ${SingleSignOnAccount::class.java.simpleName} or use default ${GlideUrl::class.java.simpleName} (or a plain ${String::class.java.simpleName}) to try fetching with the current ${SingleSignOnAccount::class.java.simpleName} stored in ${SingleAccountHelper::class.java.simpleName}.")
             }
         } catch (e: MalformedURLException) {
             // This might be a relative URL, prepend the URL of the ssoAccount
             if (model.startsWith("/")) {
-                URL(ssoAccount.url + model)
+                convertFileIdUrlToPreviewUrl(ssoAccount, URL(ssoAccount.url + model))
             } else {
                 throw IllegalArgumentException("URL must be absolute (starting with protocol and host or with a slash character).")
             }
         }
+    }
+
+    private fun convertFileIdUrlToPreviewUrl(ssoAccount: SingleSignOnAccount, url: URL): URL {
+        val fileId = REGEX_FILE_ID.find(url.path)?.groupValues?.get(2)
+        if (fileId != null) {
+            return URL("${ssoAccount.url}/index.php/core/preview?fileId=${fileId}&x=${context.resources.displayMetrics.widthPixels}&y=${context.resources.displayMetrics.heightPixels}&a=true")
+        }
+        val shareId = REGEX_SHARE_ID.find(url.path)?.groupValues?.get(2)
+        if (shareId != null) {
+            return URL("${ssoAccount.url}/index.php/s/${shareId}/download")
+        }
+        return url
     }
 
     private fun getQueryParams(url: URL): Map<String?, String?> {
@@ -168,6 +180,8 @@ abstract class AbstractStreamFetcher<T>(
         private val TAG = AbstractStreamFetcher::class.java.simpleName
         private const val METHOD_GET = "GET"
         private val INITIALIZED_APIs: MutableMap<String, NextcloudAPI> = ConcurrentHashMap()
+        private val REGEX_FILE_ID = Regex("^(/index\\.php)?/f/(\\d+)$")
+        private val REGEX_SHARE_ID = Regex("^(/index\\.php)?/s/(\\w+)(/)?$")
 
         @VisibleForTesting
         fun resetInitializedApis() {
