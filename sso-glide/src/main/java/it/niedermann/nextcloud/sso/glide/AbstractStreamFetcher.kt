@@ -116,14 +116,24 @@ abstract class AbstractStreamFetcher<T>(
     }
 
     private fun convertFileIdUrlToPreviewUrl(ssoAccount: SingleSignOnAccount, url: URL): URL {
-        val fileId = REGEX_FILE_ID.find(url.path)?.groupValues?.get(2)
+        // Exclude potential sub directory from url path (if Nextcloud instance is hosted at https://example.com/nextcloud)
+        val urlString = url.toString();
+        val pathStartingFromNextcloudRoot = if (urlString.startsWith(ssoAccount.url)) {
+            urlString.substring(ssoAccount.url.length)
+        } else {
+            url.path
+        }
+
+        val fileId = REGEX_FILE_ID.find(pathStartingFromNextcloudRoot)?.groupValues?.get(2)
         if (fileId != null) {
             return URL("${ssoAccount.url}/index.php/core/preview?fileId=${fileId}&x=${context.resources.displayMetrics.widthPixels}&y=${context.resources.displayMetrics.heightPixels}&a=true")
         }
-        val shareId = REGEX_SHARE_ID.find(url.path)?.groupValues?.get(2)
+
+        val shareId = REGEX_SHARE_ID.find(pathStartingFromNextcloudRoot)?.groupValues?.get(2)
         if (shareId != null) {
             return URL("${ssoAccount.url}/index.php/s/${shareId}/download")
         }
+
         return url
     }
 

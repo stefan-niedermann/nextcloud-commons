@@ -262,7 +262,7 @@ class AbstractStreamFetcherTest {
     }
 
     @Test
-    fun `Test conversion of fileId URLs and shareId URLs`() {
+    fun `Test conversion of fileId URLs on a root instance`() {
         val fetcher = object : AbstractStreamFetcher<String>(
             ApplicationProvider.getApplicationContext(),
             "",
@@ -311,6 +311,27 @@ class AbstractStreamFetcherTest {
                 ) as URL?);
                 assertEquals("/index.php/core/preview", fileIdRes?.path)
                 assertTrue(fileIdRes?.query?.contains("fileId=1234")!!)
+            }
+    }
+
+    @Test
+    fun `Test conversion of shareId URLs on a root instance`() {
+        val fetcher = object : AbstractStreamFetcher<String>(
+            ApplicationProvider.getApplicationContext(),
+            "",
+            apiFactory
+        ) {
+            override fun getSingleSignOnAccount(
+                context: Context,
+                model: String
+            ): SingleSignOnAccount {
+                return ssoAccount
+            }
+        }
+
+        AbstractStreamFetcher::class.java.declaredMethods.find { it.name == "convertFileIdUrlToPreviewUrl" }
+            ?.let {
+                it.isAccessible = true
 
                 assertEquals(
                     "/index.php/s/DQzqy7zEB4abqEb/download", (it.invoke(
@@ -373,6 +394,146 @@ class AbstractStreamFetcherTest {
                         fetcher,
                         ssoAccount,
                         URL("https://nc.example.com/index.php/s/DQzqy7zEB4abqEb/download/")
+                    ) as URL?)?.path
+                )
+            }
+    }
+
+    @Test
+    fun `Test conversion of fileId URLs on a subdirectory instance`() {
+        val subdirSingleSignOnAccount = SingleSignOnAccount("Foo", "bar", "", "https://example.com/nextcloud", "")
+        val fetcher = object : AbstractStreamFetcher<String>(
+            ApplicationProvider.getApplicationContext(),
+            "",
+            apiFactory
+        ) {
+            override fun getSingleSignOnAccount(
+                context: Context,
+                model: String
+            ): SingleSignOnAccount {
+                return subdirSingleSignOnAccount
+            }
+        }
+
+        AbstractStreamFetcher::class.java.declaredMethods.find { it.name == "convertFileIdUrlToPreviewUrl" }
+            ?.let {
+                it.isAccessible = true
+
+                var fileIdRes = (it.invoke(
+                    fetcher,
+                    subdirSingleSignOnAccount,
+                    URL("https://example.com/nextcloud/f/1234")
+                ) as URL?);
+                assertEquals("/nextcloud/index.php/core/preview", fileIdRes?.path)
+                assertTrue(fileIdRes?.query?.contains("fileId=1234")!!)
+
+                fileIdRes = (it.invoke(
+                    fetcher,
+                    subdirSingleSignOnAccount,
+                    URL("https://example.com/nextcloud/f/1234/")
+                ) as URL?);
+                assertEquals("/nextcloud/index.php/core/preview", fileIdRes?.path)
+                assertTrue(fileIdRes?.query?.contains("fileId=1234")!!)
+
+                fileIdRes = (it.invoke(
+                    fetcher,
+                    subdirSingleSignOnAccount,
+                    URL("https://example.com/nextcloud/index.php/f/1234")
+                ) as URL?);
+                assertEquals("/nextcloud/index.php/core/preview", fileIdRes?.path)
+                assertTrue(fileIdRes?.query?.contains("fileId=1234")!!)
+
+                fileIdRes = (it.invoke(
+                    fetcher,
+                    subdirSingleSignOnAccount,
+                    URL("https://example.com/nextcloud/index.php/f/1234/")
+                ) as URL?);
+                assertEquals("/nextcloud/index.php/core/preview", fileIdRes?.path)
+                assertTrue(fileIdRes?.query?.contains("fileId=1234")!!)
+            }
+    }
+
+    @Test
+    fun `Test conversion of shareId URLs on a subdirectory instance`() {
+        val subdirSingleSignOnAccount = SingleSignOnAccount("Foo", "bar", "", "https://example.com/nextcloud", "")
+        val fetcher = object : AbstractStreamFetcher<String>(
+            ApplicationProvider.getApplicationContext(),
+            "",
+            apiFactory
+        ) {
+            override fun getSingleSignOnAccount(
+                context: Context,
+                model: String
+            ): SingleSignOnAccount {
+                return subdirSingleSignOnAccount
+            }
+        }
+
+        AbstractStreamFetcher::class.java.declaredMethods.find { it.name == "convertFileIdUrlToPreviewUrl" }
+            ?.let {
+                it.isAccessible = true
+
+                assertEquals(
+                    "/nextcloud/index.php/s/DQzqy7zEB4abqEb/download", (it.invoke(
+                        fetcher,
+                        subdirSingleSignOnAccount,
+                        URL("https://example.com/nextcloud/s/DQzqy7zEB4abqEb")
+                    ) as URL?)?.path
+                )
+
+                assertEquals(
+                    "/nextcloud/index.php/s/DQzqy7zEB4abqEb/download", (it.invoke(
+                        fetcher,
+                        subdirSingleSignOnAccount,
+                        URL("https://example.com/nextcloud/s/DQzqy7zEB4abqEb/")
+                    ) as URL?)?.path
+                )
+
+                assertEquals(
+                    "/nextcloud/index.php/s/DQzqy7zEB4abqEb/download", (it.invoke(
+                        fetcher,
+                        subdirSingleSignOnAccount,
+                        URL("https://example.com/nextcloud/index.php/s/DQzqy7zEB4abqEb")
+                    ) as URL?)?.path
+                )
+
+                assertEquals(
+                    "/nextcloud/index.php/s/DQzqy7zEB4abqEb/download", (it.invoke(
+                        fetcher,
+                        subdirSingleSignOnAccount,
+                        URL("https://example.com/nextcloud/index.php/s/DQzqy7zEB4abqEb/")
+                    ) as URL?)?.path
+                )
+
+                assertEquals(
+                    "/nextcloud/index.php/s/DQzqy7zEB4abqEb/download", (it.invoke(
+                        fetcher,
+                        subdirSingleSignOnAccount,
+                        URL("https://example.com/nextcloud/s/DQzqy7zEB4abqEb/download")
+                    ) as URL?)?.path
+                )
+
+                assertEquals(
+                    "/nextcloud/index.php/s/DQzqy7zEB4abqEb/download", (it.invoke(
+                        fetcher,
+                        subdirSingleSignOnAccount,
+                        URL("https://example.com/nextcloud/s/DQzqy7zEB4abqEb/download/")
+                    ) as URL?)?.path
+                )
+
+                assertEquals(
+                    "/nextcloud/index.php/s/DQzqy7zEB4abqEb/download", (it.invoke(
+                        fetcher,
+                        subdirSingleSignOnAccount,
+                        URL("https://example.com/nextcloud/index.php/s/DQzqy7zEB4abqEb/download")
+                    ) as URL?)?.path
+                )
+
+                assertEquals(
+                    "/nextcloud/index.php/s/DQzqy7zEB4abqEb/download", (it.invoke(
+                        fetcher,
+                        subdirSingleSignOnAccount,
+                        URL("https://example.com/nextcloud/index.php/s/DQzqy7zEB4abqEb/download/")
                     ) as URL?)?.path
                 )
             }

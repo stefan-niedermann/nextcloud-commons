@@ -22,7 +22,7 @@ Many Android clients for Nextcloud apps need similar mechanisms. To reduce maint
 Add this dependency to your `build.gradle`-file to include *all* modules at once:
 
 ```groovy
-implementation 'com.github.stefan-niedermann:nextcloud-commons:1.3.3'
+implementation 'com.github.stefan-niedermann:nextcloud-commons:1.3.4'
 ```
 
 ## Modules
@@ -30,7 +30,7 @@ implementation 'com.github.stefan-niedermann:nextcloud-commons:1.3.3'
 ### exception
 
 ```groovy
-implementation 'com.github.stefan-niedermann.nextcloud-commons:exception:1.3.3'
+implementation 'com.github.stefan-niedermann.nextcloud-commons:exception:1.3.4'
 ```
 
 This is a util class which provides methods for generating a rich stacktrace from a throwable containing additional information like the used files app and OS versions.
@@ -93,7 +93,7 @@ Caused by: java.lang.NumberFormatException: For input string: "ASDF"
 ### sso-glide
 
 ```groovy
-implementation 'com.github.stefan-niedermann.nextcloud-commons:sso-glide:1.3.3'
+implementation 'com.github.stefan-niedermann.nextcloud-commons:sso-glide:1.3.4'
 ```
 
 This is a Glide-integration module. If you are using [Single Sign On](https://github.com/nextcloud/Android-SingleSignOn) you may want to also fetch avatars or other images via Glide but with the SSO network stack to avoid problems with self-signed certificates, 2fa and so on.
@@ -134,6 +134,27 @@ If you need to perform the request from another account (for example to display 
 ```java
 Glide.with(context)
      .load(new SingleSignOnUrl(ssoAccount, "https://nextcloud.example.com/index.php/avatar/username/32"))
+     .into(myImageView);
+```
+
+The `sso-glide` module also supports some automatic URL rewrites, such as:
+
+```java
+Glide.with(context)
+   // URLs from file shares with and without /index.php segment, with and without trailing / character
+     .load("https://nextcloud.example.com/s/Wr99tjfBCs96kxZ")
+     .load("https://nextcloud.example.com/s/Wr99tjfBCs96kxZ/")
+     .load("https://nextcloud.example.com/index.php/s/Wr99tjfBCs96kxZ")
+     .load("https://nextcloud.example.com/index.php/s/Wr99tjfBCs96kxZ/")
+     .load("https://nextcloud.example.com/index.php/s/Wr99tjfBCs96kxZ/download")
+     .load("https://nextcloud.example.com/index.php/s/Wr99tjfBCs96kxZ/download/")
+   // File ID URLs with and without /index.php segment, with and without trailing / character
+     .load("https://nextcloud.example.com/f/123456")
+     .load("https://nextcloud.example.com/f/123456/")
+     .load("https://nextcloud.example.com/index.php/f/123456")
+     .load("https://nextcloud.example.com/index.php/f/123456/")
+   // Everything mentioned above, if the nextcloud is not located at the root directory
+     .load("https://example.com/my-fancy-nextcloud/f/123456")
      .into(myImageView);
 ```
 
