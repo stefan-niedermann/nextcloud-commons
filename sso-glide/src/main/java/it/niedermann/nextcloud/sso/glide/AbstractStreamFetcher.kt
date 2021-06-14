@@ -122,7 +122,8 @@ abstract class AbstractStreamFetcher<T>(
             if (url.query == null) {
                 urlString.substring(ssoAccount.url.length)
             } else {
-                urlString.substring(ssoAccount.url.length).substring(0, urlString.length - url.query.length - 1)
+                val urlStringWithoutLeadingAccount = urlString.substring(ssoAccount.url.length)
+                urlStringWithoutLeadingAccount.substring(0, urlStringWithoutLeadingAccount.length - url.query.length - 1)
             }
         } else {
             url.path
