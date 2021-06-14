@@ -119,11 +119,11 @@ abstract class AbstractStreamFetcher<T>(
         // Exclude potential sub directory from url path (if Nextcloud instance is hosted at https://example.com/nextcloud)
         val urlString = url.toString()
         val pathStartingFromNextcloudRoot = if (urlString.startsWith(ssoAccount.url)) {
-            if (url.query != null) {
+            if (url.query == null) {
+                urlString.substring(ssoAccount.url.length)
+            } else {
                 urlString.substring(0, urlString.length - url.query.length - 1)
                     .substring(ssoAccount.url.length)
-            } else {
-                urlString.substring(ssoAccount.url.length)
             }
         } else {
             url.path
@@ -175,7 +175,11 @@ abstract class AbstractStreamFetcher<T>(
             pathStartingFromNextcloudRoot.startsWith("/remote.php")
         ) {
             // This leads to /index.php/apps/... or somewhere else. We should not manipulate this.
-            return URL("${ssoAccount.url}${pathStartingFromNextcloudRoot}")
+            return if(url.query == null) {
+                URL("${ssoAccount.url}${pathStartingFromNextcloudRoot}")
+            } else {
+                URL("${ssoAccount.url}${pathStartingFromNextcloudRoot}?${url.query}")
+            }
         } else {
             throw IllegalArgumentException("URL can not be handled by the Glide SSO module: ${url}")
         }
