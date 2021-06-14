@@ -41,7 +41,7 @@ class AbstractStreamFetcherTest {
     fun `Happy path - Given an absolute SingleSignOnUrl with one query param`() {
         val fetcher = object : AbstractStreamFetcher<SingleSignOnUrl>(
             ApplicationProvider.getApplicationContext(),
-            SingleSignOnUrl(ssoAccount, "https://nc.example.com/avatar?width=15"),
+            SingleSignOnUrl(ssoAccount, "https://nc.example.com/photos/foo bar.png?width=15"),
             apiFactory
         ) {
             override fun getSingleSignOnAccount(
@@ -56,7 +56,7 @@ class AbstractStreamFetcherTest {
         verify(exactly = 1) {
             api.performNetworkRequestV2(withArg {
                 assertEquals("GET", it.method)
-                assertEquals("/avatar", it.url)
+                assertEquals("/remote.php/webdav/photos/foo%20bar.png", it.url)
                 assertEquals(1, it.parameter.size)
                 assertEquals("15", it.parameter["width"])
             })
@@ -69,7 +69,7 @@ class AbstractStreamFetcherTest {
     fun `Happy path - Given an absolute String URL without query params`() {
         val fetcher = object : AbstractStreamFetcher<String>(
             ApplicationProvider.getApplicationContext(),
-            "https://nc.example.com/avatar?",
+            "https://nc.example.com/f/123456?",
             apiFactory
         ) {
             override fun getSingleSignOnAccount(
@@ -84,8 +84,8 @@ class AbstractStreamFetcherTest {
         verify(exactly = 1) {
             api.performNetworkRequestV2(withArg {
                 assertEquals("GET", it.method)
-                assertEquals("/avatar", it.url)
-                assertEquals(0, it.parameter.size)
+                assertEquals("/index.php/core/preview", it.url)
+                assertEquals(4, it.parameter.size)
             })
         }
         verify(exactly = 1) { callback.onDataReady(any()) }
@@ -96,7 +96,7 @@ class AbstractStreamFetcherTest {
     fun `Happy path - Given a relative SingleSignOnUrl with two query params`() {
         val fetcher = object : AbstractStreamFetcher<SingleSignOnUrl>(
             ApplicationProvider.getApplicationContext(),
-            SingleSignOnUrl(ssoAccount, "/avatar?width=15&height=16"),
+            SingleSignOnUrl(ssoAccount, "/avatar/foo/13?width=15&height=16"),
             apiFactory
         ) {
             override fun getSingleSignOnAccount(
@@ -111,7 +111,7 @@ class AbstractStreamFetcherTest {
         verify(exactly = 1) {
             api.performNetworkRequestV2(withArg {
                 assertEquals("GET", it.method)
-                assertEquals("/avatar", it.url)
+                assertEquals("/index.php/avatar/foo/13", it.url)
                 assertEquals(2, it.parameter.size)
                 assertEquals("15", it.parameter["width"])
                 assertEquals("16", it.parameter["height"])
@@ -125,7 +125,7 @@ class AbstractStreamFetcherTest {
     fun `Happy path - Given a relative String URL with one query param and a trailing ampersand`() {
         val fetcher = object : AbstractStreamFetcher<String>(
             ApplicationProvider.getApplicationContext(),
-            "/avatar?width=15&",
+            "/f/123456?width=15&",
             apiFactory
         ) {
             override fun getSingleSignOnAccount(
@@ -140,8 +140,8 @@ class AbstractStreamFetcherTest {
         verify(exactly = 1) {
             api.performNetworkRequestV2(withArg {
                 assertEquals("GET", it.method)
-                assertEquals("/avatar", it.url)
-                assertEquals(1, it.parameter.size)
+                assertEquals("/index.php/core/preview", it.url)
+                assertEquals(5, it.parameter.size)
                 assertEquals("15", it.parameter["width"])
             })
         }
@@ -650,7 +650,7 @@ class AbstractStreamFetcherTest {
 
         val fetcher = object : AbstractStreamFetcher<String>(
             ApplicationProvider.getApplicationContext(),
-            "/avatar?width=15&height=16",
+            "/f/123456?width=15&height=16",
             apiFactory
         ) {
             override fun getSingleSignOnAccount(
@@ -680,7 +680,7 @@ class AbstractStreamFetcherTest {
 
         val fetcher = object : AbstractStreamFetcher<String>(
             ApplicationProvider.getApplicationContext(),
-            "/avatar?width=15&height=16",
+            "/f/123456?width=15&height=16",
             apiFactory
         ) {
             override fun getSingleSignOnAccount(
