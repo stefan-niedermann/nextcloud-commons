@@ -175,11 +175,7 @@ abstract class AbstractStreamFetcher<T>(
             pathStartingFromNextcloudRoot.startsWith("/remote.php")
         ) {
             // This leads to /index.php/apps/... or somewhere else. We should not manipulate this.
-            return if(url.query == null) {
-                URL("${ssoAccount.url}${pathStartingFromNextcloudRoot}")
-            } else {
-                URL("${ssoAccount.url}${pathStartingFromNextcloudRoot}?${url.query}")
-            }
+            return url
         } else {
             throw IllegalArgumentException("URL can not be handled by the Glide SSO module: ${url}")
         }

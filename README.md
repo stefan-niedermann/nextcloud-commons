@@ -155,6 +155,11 @@ Glide.with(context)
      .load("https://nextcloud.example.com/index.php/f/123456/")
    // Everything mentioned above, if the nextcloud is not located at the root directory
      .load("https://example.com/my-fancy-nextcloud/f/123456")
+   // There is a fallback for every URL or path which does not start with /index.php or /remote.php
+   // In this case we will assume a path in the users directory (which needs to be properly URL encoded)
+     .load("/foo.png")
+     .load("/foo%20bar.png")
+     .load("/foo/bar%20baz.png")
      .into(myImageView);
 ```
 
