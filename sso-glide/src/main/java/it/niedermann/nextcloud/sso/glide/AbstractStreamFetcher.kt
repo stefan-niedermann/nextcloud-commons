@@ -171,14 +171,8 @@ abstract class AbstractStreamFetcher<T>(
             }
         }
 
-        if (pathStartingFromNextcloudRoot.startsWith("/index.php") ||
-            pathStartingFromNextcloudRoot.startsWith("/remote.php")
-        ) {
-            // This leads to /index.php/apps/... or somewhere else. We should not manipulate this.
-            return url
-        } else {
-            throw IllegalArgumentException("URL can not be handled by the Glide SSO module: ${url}")
-        }
+        // This leads to /index.php/apps/... or somewhere else. We should not manipulate this.
+        return url
     }
 
     private fun getQueryParams(url: URL): Map<String?, String?> {
