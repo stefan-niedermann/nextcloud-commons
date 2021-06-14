@@ -1,7 +1,6 @@
 package it.niedermann.nextcloud.sso.glide
 
 import android.content.Context
-import android.net.Uri
 import android.text.TextUtils
 import android.util.Log
 import androidx.annotation.VisibleForTesting
@@ -166,9 +165,9 @@ abstract class AbstractStreamFetcher<T>(
         val propfind = REGEX_PROPFIND.find(pathStartingFromNextcloudRoot)?.groupValues?.get(2)
         if (propfind != null) {
             return if (url.query == null) {
-                URL("${ssoAccount.url}/remote.php/webdav/${Uri.encode(propfind, "/")}")
+                URL("${ssoAccount.url}/remote.php/webdav/${propfind}")
             } else {
-                URL("${ssoAccount.url}/remote.php/webdav/${Uri.encode(propfind, "/")}?${url.query}")
+                URL("${ssoAccount.url}/remote.php/webdav/${propfind}?${url.query}")
             }
         }
 

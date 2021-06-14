@@ -56,7 +56,7 @@ class AbstractStreamFetcherTest {
         verify(exactly = 1) {
             api.performNetworkRequestV2(withArg {
                 assertEquals("GET", it.method)
-                assertEquals("/remote.php/webdav/photos/foo%20bar.png", it.url)
+                assertEquals("/remote.php/webdav/photos/foo bar.png", it.url)
                 assertEquals(1, it.parameter.size)
                 assertEquals("15", it.parameter["width"])
             })
