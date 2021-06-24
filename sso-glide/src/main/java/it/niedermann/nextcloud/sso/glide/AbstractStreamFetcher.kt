@@ -108,7 +108,7 @@ abstract class AbstractStreamFetcher<T>(
         } catch (e: MalformedURLException) {
             // This might be a relative URL, prepend the URL of the ssoAccount
             if (model.startsWith("/")) {
-                convertFileIdUrlToPreviewUrl(ssoAccount, URL(ssoAccount.url + model))
+                convertFileIdUrlToPreviewUrl(ssoAccount, URL(ssoAccount.url.substring(0, ssoAccount.url.length - URL(ssoAccount.url).path.length) + model))
             } else {
                 throw IllegalArgumentException("URL must be absolute (starting with protocol and host or with a slash character).")
             }
@@ -117,23 +117,65 @@ abstract class AbstractStreamFetcher<T>(
 
     private fun convertFileIdUrlToPreviewUrl(ssoAccount: SingleSignOnAccount, url: URL): URL {
         // Exclude potential sub directory from url path (if Nextcloud instance is hosted at https://example.com/nextcloud)
-        val urlString = url.toString();
+        val urlString = url.toString()
         val pathStartingFromNextcloudRoot = if (urlString.startsWith(ssoAccount.url)) {
-            urlString.substring(ssoAccount.url.length)
+            if (url.query == null) {
+                urlString.substring(ssoAccount.url.length)
+            } else {
+                val urlStringWithoutLeadingAccount = urlString.substring(ssoAccount.url.length)
+                urlStringWithoutLeadingAccount.substring(0, urlStringWithoutLeadingAccount.length - url.query.length - 1)
+            }
         } else {
             url.path
         }
 
         val fileId = REGEX_FILE_ID.find(pathStartingFromNextcloudRoot)?.groupValues?.get(2)
         if (fileId != null) {
-            return URL("${ssoAccount.url}/index.php/core/preview?fileId=${fileId}&x=${context.resources.displayMetrics.widthPixels}&y=${context.resources.displayMetrics.heightPixels}&a=true")
+            return if (url.query == null) {
+                URL("${ssoAccount.url}/index.php/core/preview?fileId=${fileId}&x=${context.resources.displayMetrics.widthPixels}&y=${context.resources.displayMetrics.heightPixels}&a=true")
+            } else {
+                URL("${ssoAccount.url}/index.php/core/preview?fileId=${fileId}&x=${context.resources.displayMetrics.widthPixels}&y=${context.resources.displayMetrics.heightPixels}&a=true&${url.query}")
+            }
         }
 
         val shareId = REGEX_SHARE_ID.find(pathStartingFromNextcloudRoot)?.groupValues?.get(2)
         if (shareId != null) {
-            return URL("${ssoAccount.url}/index.php/s/${shareId}/download")
+            return if (url.query == null) {
+                URL("${ssoAccount.url}/index.php/s/${shareId}/download")
+            } else {
+                URL("${ssoAccount.url}/index.php/s/${shareId}/download?${url.query}")
+            }
         }
 
+        val avatarGroupValues = REGEX_AVATAR.find(pathStartingFromNextcloudRoot)?.groupValues
+        val avatarUserId = if (avatarGroupValues?.get(2) == null) {
+            ssoAccount.name
+        } else {
+            avatarGroupValues[2]
+        }
+        val avatarSize = avatarGroupValues?.get(3);
+        if (avatarSize != null) {
+            return if (url.query == null) {
+                URL("${ssoAccount.url}/index.php/avatar/${avatarUserId}/${avatarSize}")
+            } else {
+                URL("${ssoAccount.url}/index.php/avatar/${avatarUserId}/${avatarSize}?${url.query}")
+            }
+        }
+
+        if (pathStartingFromNextcloudRoot.startsWith("/index.php") || pathStartingFromNextcloudRoot.startsWith("/remote.php")) {
+            return url;
+        } else {
+            val propfind = REGEX_PROPFIND.find(pathStartingFromNextcloudRoot)?.groupValues?.get(2)
+            if (propfind != null) {
+                return if (url.query == null) {
+                    URL("${ssoAccount.url}/remote.php/webdav/${propfind}")
+                } else {
+                    URL("${ssoAccount.url}/remote.php/webdav/${propfind}?${url.query}")
+                }
+            }
+        }
+
+        // This leads to /index.php/apps/... or somewhere else. We should not manipulate this.
         return url
     }
 
@@ -192,6 +234,8 @@ abstract class AbstractStreamFetcher<T>(
         private val INITIALIZED_APIs: MutableMap<String, NextcloudAPI> = ConcurrentHashMap()
         private val REGEX_FILE_ID = Regex("^(/index\\.php)?/f/(\\d+)(/)?$")
         private val REGEX_SHARE_ID = Regex("^(/index\\.php)?/s/(\\w+)(/|/download|/download/)?$")
+        private val REGEX_AVATAR = Regex("^(/index\\.php)?/avatar/([\\w-]+)/(\\d+)(/)?$")
+        private val REGEX_PROPFIND = Regex("^(/webdav)?/(.*)$")
 
         @VisibleForTesting
         fun resetInitializedApis() {
