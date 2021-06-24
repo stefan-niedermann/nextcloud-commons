@@ -108,7 +108,7 @@ abstract class AbstractStreamFetcher<T>(
         } catch (e: MalformedURLException) {
             // This might be a relative URL, prepend the URL of the ssoAccount
             if (model.startsWith("/")) {
-                convertFileIdUrlToPreviewUrl(ssoAccount, URL(ssoAccount.url + model))
+                convertFileIdUrlToPreviewUrl(ssoAccount, URL(ssoAccount.url.substring(0, ssoAccount.url.length - URL(ssoAccount.url).path.length) + model))
             } else {
                 throw IllegalArgumentException("URL must be absolute (starting with protocol and host or with a slash character).")
             }
@@ -151,7 +151,7 @@ abstract class AbstractStreamFetcher<T>(
         val avatarUserId = if (avatarGroupValues?.get(2) == null) {
             ssoAccount.name
         } else {
-            avatarGroupValues.get(2)
+            avatarGroupValues[2]
         }
         val avatarSize = avatarGroupValues?.get(3);
         if (avatarSize != null) {
@@ -162,12 +162,16 @@ abstract class AbstractStreamFetcher<T>(
             }
         }
 
-        val propfind = REGEX_PROPFIND.find(pathStartingFromNextcloudRoot)?.groupValues?.get(2)
-        if (propfind != null) {
-            return if (url.query == null) {
-                URL("${ssoAccount.url}/remote.php/webdav/${propfind}")
-            } else {
-                URL("${ssoAccount.url}/remote.php/webdav/${propfind}?${url.query}")
+        if (pathStartingFromNextcloudRoot.startsWith("/index.php") || pathStartingFromNextcloudRoot.startsWith("/remote.php")) {
+            return url;
+        } else {
+            val propfind = REGEX_PROPFIND.find(pathStartingFromNextcloudRoot)?.groupValues?.get(2)
+            if (propfind != null) {
+                return if (url.query == null) {
+                    URL("${ssoAccount.url}/remote.php/webdav/${propfind}")
+                } else {
+                    URL("${ssoAccount.url}/remote.php/webdav/${propfind}?${url.query}")
+                }
             }
         }
 
@@ -230,8 +234,8 @@ abstract class AbstractStreamFetcher<T>(
         private val INITIALIZED_APIs: MutableMap<String, NextcloudAPI> = ConcurrentHashMap()
         private val REGEX_FILE_ID = Regex("^(/index\\.php)?/f/(\\d+)(/)?$")
         private val REGEX_SHARE_ID = Regex("^(/index\\.php)?/s/(\\w+)(/|/download|/download/)?$")
-        private val REGEX_AVATAR = Regex("^(/index\\.php)?/avatar/(\\w+)/(\\d+)$")
-        private val REGEX_PROPFIND = Regex("^(/remote.php|/remote.php/webdav)?/(.*)$")
+        private val REGEX_AVATAR = Regex("^(/index\\.php)?/avatar/([\\w-]+)/(\\d+)(/)?$")
+        private val REGEX_PROPFIND = Regex("^(/webdav)?/(.*)$")
 
         @VisibleForTesting
         fun resetInitializedApis() {
