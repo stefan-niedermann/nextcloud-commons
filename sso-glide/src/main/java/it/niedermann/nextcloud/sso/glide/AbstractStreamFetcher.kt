@@ -93,57 +93,63 @@ abstract class AbstractStreamFetcher<T>(
         }
     }
 
+    /**
+     * @return the [SingleSignOnAccount] from whom to load the [model]
+     */
     abstract fun getSingleSignOnAccount(context: Context, model: T): SingleSignOnAccount
 
+    /**
+     * Generates an [URL] object from the given [model]
+     * @throws [IllegalArgumentException] in case the [model] can not be processed or the [ssoAccount] is not valid for the [model]
+     */
     private fun getAbsoluteUrl(ssoAccount: SingleSignOnAccount, model: String): URL {
         return try {
-            // Absolute URL
+            // Check whether this is a complete URL, will throw an MalformedURLException if not
             val url = URL(model)
             // Verify it starts with the given ssoAccount
             if (model.startsWith(ssoAccount.url)) {
-                convertFileIdUrlToPreviewUrl(ssoAccount, url)
+                rewriteSpecialURLs(ssoAccount, url).orElse(url)
             } else {
                 throw IllegalArgumentException("Given ${SingleSignOnAccount::class.java.simpleName} does not match the URL (${ssoAccount.url} vs. ${model}). Pass correct ${SingleSignOnAccount::class.java.simpleName} or use default ${GlideUrl::class.java.simpleName} (or a plain ${String::class.java.simpleName}) to try fetching with the current ${SingleSignOnAccount::class.java.simpleName} stored in ${SingleAccountHelper::class.java.simpleName}.")
             }
         } catch (e: MalformedURLException) {
-            // This might be a relative URL, prepend the URL of the ssoAccount
             if (model.startsWith("/")) {
-                convertFileIdUrlToPreviewUrl(ssoAccount, URL(ssoAccount.url.substring(0, ssoAccount.url.length - URL(ssoAccount.url).path.length) + model))
+                // This might be an absolute path instead of an URL, so prepend the URL of the ssoAccount, but be aware of accounts which are located in a sub directory!
+                val url = URL(ssoAccount.url.substring(0, ssoAccount.url.length - URL(ssoAccount.url).path.length) + model)
+                rewriteSpecialURLs(ssoAccount, url).orElse(url)
             } else {
                 throw IllegalArgumentException("URL must be absolute (starting with protocol and host or with a slash character).")
             }
         }
     }
 
-    private fun convertFileIdUrlToPreviewUrl(ssoAccount: SingleSignOnAccount, url: URL): URL {
+    /**
+     * @return a rewritten [URL] if something special has been detected, like Share IDs, File IDs or avatars. [Optional.empty] otherwise.
+     */
+    private fun rewriteSpecialURLs(ssoAccount: SingleSignOnAccount, url: URL): Optional<URL> {
         // Exclude potential sub directory from url path (if Nextcloud instance is hosted at https://example.com/nextcloud)
-        val urlString = url.toString()
-        val pathStartingFromNextcloudRoot = if (urlString.startsWith(ssoAccount.url)) {
-            if (url.query == null) {
-                urlString.substring(ssoAccount.url.length)
-            } else {
-                val urlStringWithoutLeadingAccount = urlString.substring(ssoAccount.url.length)
-                urlStringWithoutLeadingAccount.substring(0, urlStringWithoutLeadingAccount.length - url.query.length - 1)
-            }
+        val pathStartingFromNextcloudRoot = if (url.query == null) {
+            url.toString().substring(ssoAccount.url.length)
         } else {
-            url.path
+            val urlStringWithoutLeadingAccount = url.toString().substring(ssoAccount.url.length)
+            urlStringWithoutLeadingAccount.substring(0, urlStringWithoutLeadingAccount.length - url.query.length - 1)
         }
 
         val fileId = REGEX_FILE_ID.find(pathStartingFromNextcloudRoot)?.groupValues?.get(2)
         if (fileId != null) {
             return if (url.query == null) {
-                URL("${ssoAccount.url}/index.php/core/preview?fileId=${fileId}&x=${context.resources.displayMetrics.widthPixels}&y=${context.resources.displayMetrics.heightPixels}&a=true")
+                Optional.of(URL("${ssoAccount.url}/index.php/core/preview?fileId=${fileId}&x=${context.resources.displayMetrics.widthPixels}&y=${context.resources.displayMetrics.heightPixels}&a=true"))
             } else {
-                URL("${ssoAccount.url}/index.php/core/preview?fileId=${fileId}&x=${context.resources.displayMetrics.widthPixels}&y=${context.resources.displayMetrics.heightPixels}&a=true&${url.query}")
+                Optional.of(URL("${ssoAccount.url}/index.php/core/preview?fileId=${fileId}&x=${context.resources.displayMetrics.widthPixels}&y=${context.resources.displayMetrics.heightPixels}&a=true&${url.query}"))
             }
         }
 
         val shareId = REGEX_SHARE_ID.find(pathStartingFromNextcloudRoot)?.groupValues?.get(2)
         if (shareId != null) {
             return if (url.query == null) {
-                URL("${ssoAccount.url}/index.php/s/${shareId}/download")
+                Optional.of(URL("${ssoAccount.url}/index.php/s/${shareId}/download"))
             } else {
-                URL("${ssoAccount.url}/index.php/s/${shareId}/download?${url.query}")
+                Optional.of(URL("${ssoAccount.url}/index.php/s/${shareId}/download?${url.query}"))
             }
         }
 
@@ -156,27 +162,25 @@ abstract class AbstractStreamFetcher<T>(
         val avatarSize = avatarGroupValues?.get(3);
         if (avatarSize != null) {
             return if (url.query == null) {
-                URL("${ssoAccount.url}/index.php/avatar/${avatarUserId}/${avatarSize}")
+                Optional.of(URL("${ssoAccount.url}/index.php/avatar/${avatarUserId}/${avatarSize}"))
             } else {
-                URL("${ssoAccount.url}/index.php/avatar/${avatarUserId}/${avatarSize}?${url.query}")
+                Optional.of(URL("${ssoAccount.url}/index.php/avatar/${avatarUserId}/${avatarSize}?${url.query}"))
             }
         }
 
-        if (pathStartingFromNextcloudRoot.startsWith("/index.php") || pathStartingFromNextcloudRoot.startsWith("/remote.php")) {
-            return url;
-        } else {
-            val propfind = REGEX_PROPFIND.find(pathStartingFromNextcloudRoot)?.groupValues?.get(2)
-            if (propfind != null) {
+        if (!pathStartingFromNextcloudRoot.startsWith("/index.php") && !pathStartingFromNextcloudRoot.startsWith("/remote.php")) {
+            val webDAV = REGEX_WEBDAV.find(pathStartingFromNextcloudRoot)?.groupValues?.get(2)
+            if (webDAV != null) {
                 return if (url.query == null) {
-                    URL("${ssoAccount.url}/remote.php/webdav/${propfind}")
+                    Optional.of(URL("${ssoAccount.url}/remote.php/webdav/${webDAV}"))
                 } else {
-                    URL("${ssoAccount.url}/remote.php/webdav/${propfind}?${url.query}")
+                    Optional.of(URL("${ssoAccount.url}/remote.php/webdav/${webDAV}?${url.query}"))
                 }
             }
         }
 
         // This leads to /index.php/apps/... or somewhere else. We should not manipulate this.
-        return url
+        return Optional.empty()
     }
 
     private fun getQueryParams(url: URL): Map<String?, String?> {
@@ -185,11 +189,8 @@ abstract class AbstractStreamFetcher<T>(
         }
         val queryParams: MutableMap<String?, String?> = HashMap()
         for (param in url.query.split("&").toTypedArray()) {
-            if ("c" == param) {
-                Log.w(
-                    TAG,
-                    "Stripped query parameter \"c\". This is usually used as CSRF protection and must not be sent by the client because the SSO authenticates itself."
-                )
+            if (param == "c") {
+                Log.w(TAG, "Stripped query parameter \"c\". This is usually used as CSRF protection and must not be sent by the client because the SSO authenticates itself.")
             } else {
                 val idx = param.indexOf("=")
                 val key = if (idx > 0) param.substring(0, idx) else param
@@ -235,7 +236,7 @@ abstract class AbstractStreamFetcher<T>(
         private val REGEX_FILE_ID = Regex("^(/index\\.php)?/f/(\\d+)(/)?$")
         private val REGEX_SHARE_ID = Regex("^(/index\\.php)?/s/(\\w+)(/|/download|/download/)?$")
         private val REGEX_AVATAR = Regex("^(/index\\.php)?/avatar/([\\w-]+)/(\\d+)(/)?$")
-        private val REGEX_PROPFIND = Regex("^(/webdav)?/(.*)$")
+        private val REGEX_WEBDAV = Regex("^(/webdav)?/(.*)$")
 
         @VisibleForTesting
         fun resetInitializedApis() {
