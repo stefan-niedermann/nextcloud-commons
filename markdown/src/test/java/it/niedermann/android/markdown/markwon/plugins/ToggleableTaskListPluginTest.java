@@ -22,6 +22,7 @@ import org.robolectric.RobolectricTestRunner;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -60,7 +61,7 @@ public class ToggleableTaskListPluginTest extends TestCase {
         final var spans = builder.getSpans(0, builder.length())
                 .stream()
                 .filter(span -> span.what.getClass() != ToggleableTaskListPlugin.ToggleMarkerSpan.class)
-                .sorted((o1, o2) -> o1.start - o2.start)
+                .sorted(Comparator.comparingInt(o -> o.start))
                 .collect(Collectors.toList());
 
         assertEquals(5, spans.size());
