@@ -174,5 +174,25 @@ implementation('com.github.stefan-niedermann.nextcloud-commons:markdown:1.5.0') 
 
 This contains a markdown editor and viewer based on [Markwon](https://noties.io/Markwon/).
 
+#### Usage
+
+Basically you can just treat it as a `TextView` or an `EditText`:
+
+```xml
+<it.niedermann.android.markdown.MarkdownViewerImpl
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content" />
+```
+```xml
+<it.niedermann.android.markdown.MarkdownEditorImpl
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content" />
+```
+
+You can implement against the `MarkdownEditor` interface, which allows you to add some special behavior like
+- highlight search terms
+- intercept link clicks
+- render user avatars next to `@user` mentions
+
 ## :notebook: License
 This project is licensed under the [GNU GENERAL PUBLIC LICENSE](/LICENSE).
