@@ -176,7 +176,7 @@ This contains a markdown editor and viewer based on [Markwon](https://noties.io/
 
 #### Usage
 
-Basically you can just treat it as a `TextView` or an `EditText`:
+The UI widgets `MarkdownViewerImpl` and `MarkdownEditorImpl` can just be treated as a `TextView` or an `EditText`:
 
 ```xml
 <it.niedermann.android.markdown.MarkdownViewerImpl
@@ -193,6 +193,8 @@ You can implement against the `MarkdownEditor` interface, which allows you to ad
 - highlight search terms
 - intercept link clicks
 - render user avatars next to `@user` mentions
+
+The `MarkdownUtil` provides some helper tools to work with markdown.
 
 ## :notebook: License
 This project is licensed under the [GNU GENERAL PUBLIC LICENSE](/LICENSE).
