@@ -1,3 +1,6 @@
+apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
+
 android {
     compileSdkVersion 31
     buildToolsVersion "31.0.0"
@@ -18,16 +21,16 @@ android {
         targetCompatibility JavaVersion.VERSION_11
     }
 
+    testOptions {
+        unitTests {
+            includeAndroidResources true
+        }
+    }
+
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-        }
-    }
-
-    testOptions {
-        unitTests {
-            includeAndroidResources = true
         }
     }
 }
