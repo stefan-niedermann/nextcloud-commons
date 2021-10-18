@@ -11,6 +11,7 @@
 - [Modules](#modules)
   - [exception](#exception)
   - [sso-glide](#sso-glide)
+  - [markdown](#markdown)
 - [License](#notebook-license)
 
 ## What is this
@@ -162,6 +163,14 @@ Glide.with(context)
      .load("/foo/bar%20baz.png")
      .into(myImageView);
 ```
+
+### markdown
+
+```groovy
+implementation 'com.github.stefan-niedermann.nextcloud-commons:markdown:1.4.0'
+```
+
+This contains a markdown editor and viewer based on [Markwon](https://noties.io/Markwon/).
 
 ## :notebook: License
 This project is licensed under the [GNU GENERAL PUBLIC LICENSE](/LICENSE).

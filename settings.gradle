@@ -1,2 +1,2 @@
-include ':sso-glide', ':exception'
+include ':sso-glide', ':exception', ':markdown'
 rootProject.name='nextcloud-commons'
