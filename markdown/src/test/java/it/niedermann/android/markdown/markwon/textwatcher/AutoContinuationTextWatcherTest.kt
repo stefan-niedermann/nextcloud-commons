@@ -126,6 +126,31 @@ class AutoContinuationTextWatcherTest : TestCase() {
         assertText("\n", 1)
     }
 
+    @Test
+    fun shouldNotDieTicket1382() {
+        editText!!.setText("- [x] Foo")
+        pressEnter(9)
+        assertText("- [x] Foo\n- [ ] ", 16)
+        editText!!.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL))
+        assertText("- [x] Foo\n- [ ]", 15)
+        editText!!.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER))
+        assertText("- [x] Foo\n\n", 11)
+    }
+
+    @Test
+    fun shouldNotDieTicket1382Two() {
+        editText!!.setText("- [x] Foo")
+        pressEnter(9)
+        assertText("- [x] Foo\n- [ ] ", 16)
+        editText!!.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_A))
+        editText!!.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_B))
+        editText!!.setSelection(16)
+        editText!!.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL))
+        assertText("- [x] Foo\n- [ ]ab", 15)
+        editText!!.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER))
+        assertText("- [x] Foo\n\nab", 11)
+    }
+
     private fun assertText(expected: String, cursorPosition: Int) {
         assertEquals(expected, editText!!.text.toString())
         assertEquals(cursorPosition, editText!!.selectionStart)
