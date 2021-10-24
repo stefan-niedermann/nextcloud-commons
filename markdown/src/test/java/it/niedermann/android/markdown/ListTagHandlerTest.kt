@@ -9,7 +9,7 @@ import org.robolectric.RobolectricTestRunner
 @RunWith(RobolectricTestRunner::class)
 class ListTagHandlerTest : TestCase() {
     @Test
-    fun testMarkOrderedListTags() {
+    fun `should mark ordered list tags`() {
         assertTrue(SAMPLE_HTML_WIDGET_TEST.contains("<ol start=\"3\">"))
         assertTrue(SAMPLE_HTML_WIDGET_TEST.contains("</ol>"))
         assertTrue(SAMPLE_HTML_WIDGET_TEST.contains("</ul>"))
@@ -26,7 +26,7 @@ class ListTagHandlerTest : TestCase() {
     }
 
     @Test
-    fun testHandleTag() {
+    fun `should handle tag`() {
         val handler = ListTagHandler()
         assertEquals("\n• Item ", HtmlCompat.fromHtml(ListTagHandler.prepareTagHandling("<ul><li>Item</li></ul>"), 0, null, handler).toString())
         val lines = HtmlCompat.fromHtml(ListTagHandler.prepareTagHandling(SAMPLE_HTML_WIDGET_TEST), 0, null, handler).toString().split("\n").toTypedArray()

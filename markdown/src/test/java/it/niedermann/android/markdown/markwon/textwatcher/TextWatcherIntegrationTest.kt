@@ -12,8 +12,7 @@ import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
 class TextWatcherIntegrationTest : TestCase() {
-    @Suppress("SameParameterValue")
-    private var editText: EditText? = null
+    private lateinit var editText: EditText
 
     @Before
     fun reset() {
@@ -21,8 +20,8 @@ class TextWatcherIntegrationTest : TestCase() {
     }
 
     @Test
-    fun shouldSuccessfullyHandleMultipleTextEdits() {
-        editText!!.setText("")
+    fun `should successfully handle multiple text edits`() {
+        editText.setText("")
         assertEquals("")
         sendKeys(KeyEvent.KEYCODE_F, KeyEvent.KEYCODE_O, KeyEvent.KEYCODE_O)
         assertEquals("foo")
@@ -70,42 +69,42 @@ class TextWatcherIntegrationTest : TestCase() {
     }
 
     private fun assertEquals(expected: CharSequence) {
-        assertEquals(expected.toString(), editText!!.text.toString())
+        assertEquals(expected.toString(), editText.text.toString())
     }
 
     private fun pressEnter(@Suppress("SameParameterValue") atPosition: Int) {
-        editText!!.setSelection(atPosition)
+        editText.setSelection(atPosition)
         pressEnter()
     }
 
     private fun pressEnter() {
-        editText!!.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER))
+        editText.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER))
     }
 
     private fun pressBackspace(@Suppress("SameParameterValue") times: Int, startPosition: Int) {
-        var times = times
-        var startPosition = startPosition
-        require(times <= startPosition) { "startPosition must be bigger or equal to times" }
-        while (times > 0) {
-            times--
-            pressBackspace(startPosition--)
+        var backspaceCounter = times
+        var currentPosition = startPosition
+        require(backspaceCounter <= currentPosition) { "startPosition must be bigger or equal to times" }
+        while (backspaceCounter > 0) {
+            backspaceCounter--
+            pressBackspace(currentPosition--)
         }
     }
 
     private fun pressBackspace(atPosition: Int) {
-        editText!!.setSelection(atPosition)
+        editText.setSelection(atPosition)
         pressBackspace()
     }
 
     private fun pressBackspace() {
-        editText!!.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL))
+        editText.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL))
     }
 
     private fun sendKeys(vararg keyCodes: Int) {
         var release = -1
         for (k in keyCodes) {
             if (release != -1) {
-                editText!!.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_UP, release))
+                editText.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_UP, release))
                 release = -1
             }
             when (k) {
@@ -113,7 +112,7 @@ class TextWatcherIntegrationTest : TestCase() {
                     release = k
                 }
             }
-            editText!!.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, k))
+            editText.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, k))
         }
     }
 }

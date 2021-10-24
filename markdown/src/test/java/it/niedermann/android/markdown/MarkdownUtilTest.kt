@@ -13,12 +13,12 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import java.lang.reflect.InvocationTargetException
-import java.util.*
 
+@Suppress("LocalVariableName")
 @RunWith(RobolectricTestRunner::class)
 class MarkdownUtilTest : TestCase() {
     @Test
-    fun testGetStartOfLine() {
+    fun getStartOfLine() {
         //language=md
         val test = StringBuilder(
             """
@@ -32,28 +32,22 @@ class MarkdownUtilTest : TestCase() {
               
               """.trimIndent() // line start 78
         )
-        for (i in 0 until test.length) {
+        test.indices.forEach { i ->
             val startOfLine = MarkdownUtil.getStartOfLine(test, i)
-            if (i <= 11) {
-                assertEquals(0, startOfLine)
-            } else if (i <= 12) {
-                assertEquals(12, startOfLine)
-            } else if (i <= 38) {
-                assertEquals(13, startOfLine)
-            } else if (i <= 49) {
-                assertEquals(39, startOfLine)
-            } else if (i <= 77) {
-                assertEquals(50, startOfLine)
-            } else if (i <= 78) {
-                assertEquals(78, startOfLine)
-            } else if (i <= 79) {
-                assertEquals(79, startOfLine)
+            when {
+                i <= 11 -> assertEquals(0, startOfLine)
+                i <= 12 -> assertEquals(12, startOfLine)
+                i <= 38 -> assertEquals(13, startOfLine)
+                i <= 49 -> assertEquals(39, startOfLine)
+                i <= 77 -> assertEquals(50, startOfLine)
+                i <= 78 -> assertEquals(78, startOfLine)
+                i <= 79 -> assertEquals(79, startOfLine)
             }
         }
     }
 
     @Test
-    fun testGetEndOfLine() {
+    fun getEndOfLine() {
         //language=md
         val test = """
             # Test-Note
@@ -65,124 +59,118 @@ class MarkdownUtilTest : TestCase() {
             
             
             """.trimIndent() // line 78 - 79
-        for (i in 0 until test.length) {
+        test.indices.forEach { i ->
             val endOfLine = MarkdownUtil.getEndOfLine(test, i)
-            if (i <= 11) {
-                assertEquals(11, endOfLine)
-            } else if (i <= 12) {
-                assertEquals(12, endOfLine)
-            } else if (i <= 38) {
-                assertEquals(38, endOfLine)
-            } else if (i <= 49) {
-                assertEquals(49, endOfLine)
-            } else if (i <= 77) {
-                assertEquals(77, endOfLine)
-            } else if (i <= 78) {
-                assertEquals(78, endOfLine)
-            } else if (i <= 79) {
-                assertEquals(79, endOfLine)
+            when {
+                i <= 11 -> assertEquals(11, endOfLine)
+                i <= 12 -> assertEquals(12, endOfLine)
+                i <= 38 -> assertEquals(38, endOfLine)
+                i <= 49 -> assertEquals(49, endOfLine)
+                i <= 77 -> assertEquals(77, endOfLine)
+                i <= 78 -> assertEquals(78, endOfLine)
+                i <= 79 -> assertEquals(79, endOfLine)
             }
         }
         assertEquals(3, MarkdownUtil.getEndOfLine(" - ", 2))
     }
 
     @Test
-    fun testGetMarkdownLink() {
+    fun getMarkdownLink() {
         assertEquals("[Foo](https://bar)", MarkdownUtil.getMarkdownLink("Foo", "https://bar"))
     }
 
     @Test
-    fun testLineStartsWithCheckbox() {
-        val lines = HashMap<String, Boolean>()
-        lines["  - [ ] a"] = true
-        lines["  - [x] a"] = true
-        lines["  - [X] a"] = true
-        lines["  * [ ] a"] = true
-        lines["  * [x] a"] = true
-        lines["  * [X] a"] = true
-        lines["  + [ ] a"] = true
-        lines["  + [x] a"] = true
-        lines["  + [X] a"] = true
-        lines["- [ ] a"] = true
-        lines["- [x] a"] = true
-        lines["- [X] a"] = true
-        lines["* [ ] a"] = true
-        lines["* [x] a"] = true
-        lines["* [X] a"] = true
-        lines["+ [ ] a"] = true
-        lines["+ [x] a"] = true
-        lines["+ [X] a"] = true
-        lines["  - [ ] "] = true
-        lines["  - [x] "] = true
-        lines["  - [X] "] = true
-        lines["  * [ ] "] = true
-        lines["  * [x] "] = true
-        lines["  * [X] "] = true
-        lines["  + [ ] "] = true
-        lines["  + [x] "] = true
-        lines["  + [X] "] = true
-        lines["  - [ ]"] = true
-        lines["  - [x]"] = true
-        lines["  - [X]"] = true
-        lines["  * [ ]"] = true
-        lines["  * [x]"] = true
-        lines["  * [X]"] = true
-        lines["  + [ ]"] = true
-        lines["  + [x]"] = true
-        lines["  + [X]"] = true
-        lines["- [ ] "] = true
-        lines["- [x] "] = true
-        lines["- [X] "] = true
-        lines["* [ ] "] = true
-        lines["* [x] "] = true
-        lines["* [X] "] = true
-        lines["+ [ ] "] = true
-        lines["+ [x] "] = true
-        lines["+ [X] "] = true
-        lines["- [ ]"] = true
-        lines["- [x]"] = true
-        lines["- [X]"] = true
-        lines["* [ ]"] = true
-        lines["* [x]"] = true
-        lines["* [X]"] = true
-        lines["+ [ ]"] = true
-        lines["+ [x]"] = true
-        lines["+ [X]"] = true
-        lines["-[ ] "] = false
-        lines["-[x] "] = false
-        lines["-[X] "] = false
-        lines["*[ ] "] = false
-        lines["*[x] "] = false
-        lines["*[X] "] = false
-        lines["+[ ] "] = false
-        lines["+[x] "] = false
-        lines["+[X] "] = false
-        lines["-[ ]"] = false
-        lines["-[x]"] = false
-        lines["-[X]"] = false
-        lines["*[ ]"] = false
-        lines["*[x]"] = false
-        lines["*[X]"] = false
-        lines["+[ ]"] = false
-        lines["+[x]"] = false
-        lines["+[X]"] = false
-        lines["- [] "] = false
-        lines["* [] "] = false
-        lines["+ [] "] = false
-        lines["- []"] = false
-        lines["* []"] = false
-        lines["+ []"] = false
-        lines["-[] "] = false
-        lines["*[] "] = false
-        lines["+[] "] = false
-        lines["-[]"] = false
-        lines["*[]"] = false
-        lines["+[]"] = false
-        lines.forEach { (key: String?, value: Boolean?) -> assertEquals(value, MarkdownUtil.lineStartsWithCheckbox(key)) }
+    fun lineStartsWithCheckbox() {
+        linkedMapOf(
+            Pair("  - [ ] a", true),
+            Pair("  - [x] a", true),
+            Pair("  - [X] a", true),
+            Pair("  * [ ] a", true),
+            Pair("  * [x] a", true),
+            Pair("  * [X] a", true),
+            Pair("  + [ ] a", true),
+            Pair("  + [x] a", true),
+            Pair("  + [X] a", true),
+            Pair("- [ ] a", true),
+            Pair("- [x] a", true),
+            Pair("- [X] a", true),
+            Pair("* [ ] a", true),
+            Pair("* [x] a", true),
+            Pair("* [X] a", true),
+            Pair("+ [ ] a", true),
+            Pair("+ [x] a", true),
+            Pair("+ [X] a", true),
+            Pair("  - [ ] ", true),
+            Pair("  - [x] ", true),
+            Pair("  - [X] ", true),
+            Pair("  * [ ] ", true),
+            Pair("  * [x] ", true),
+            Pair("  * [X] ", true),
+            Pair("  + [ ] ", true),
+            Pair("  + [x] ", true),
+            Pair("  + [X] ", true),
+            Pair("  - [ ]", true),
+            Pair("  - [x]", true),
+            Pair("  - [X]", true),
+            Pair("  * [ ]", true),
+            Pair("  * [x]", true),
+            Pair("  * [X]", true),
+            Pair("  + [ ]", true),
+            Pair("  + [x]", true),
+            Pair("  + [X]", true),
+            Pair("- [ ] ", true),
+            Pair("- [x] ", true),
+            Pair("- [X] ", true),
+            Pair("* [ ] ", true),
+            Pair("* [x] ", true),
+            Pair("* [X] ", true),
+            Pair("+ [ ] ", true),
+            Pair("+ [x] ", true),
+            Pair("+ [X] ", true),
+            Pair("- [ ]", true),
+            Pair("- [x]", true),
+            Pair("- [X]", true),
+            Pair("* [ ]", true),
+            Pair("* [x]", true),
+            Pair("* [X]", true),
+            Pair("+ [ ]", true),
+            Pair("+ [x]", true),
+            Pair("+ [X]", true),
+            Pair("-[ ] ", false),
+            Pair("-[x] ", false),
+            Pair("-[X] ", false),
+            Pair("*[ ] ", false),
+            Pair("*[x] ", false),
+            Pair("*[X] ", false),
+            Pair("+[ ] ", false),
+            Pair("+[x] ", false),
+            Pair("+[X] ", false),
+            Pair("-[ ]", false),
+            Pair("-[x]", false),
+            Pair("-[X]", false),
+            Pair("*[ ]", false),
+            Pair("*[x]", false),
+            Pair("*[X]", false),
+            Pair("+[ ]", false),
+            Pair("+[x]", false),
+            Pair("+[X]", false),
+            Pair("- [] ", false),
+            Pair("* [] ", false),
+            Pair("+ [] ", false),
+            Pair("- []", false),
+            Pair("* []", false),
+            Pair("+ []", false),
+            Pair("-[] ", false),
+            Pair("*[] ", false),
+            Pair("+[] ", false),
+            Pair("-[]", false),
+            Pair("*[]", false),
+            Pair("+[]", false)
+        ).forEach { (key: String, value: Boolean) -> assertEquals(value, MarkdownUtil.lineStartsWithCheckbox(key)) }
     }
 
     @Test
-    fun testTogglePunctuation() {
+    fun togglePunctuation() {
         var builder: Editable
 
         // Add italic
@@ -392,7 +380,7 @@ class MarkdownUtilTest : TestCase() {
     }
 
     @Test
-    fun testInsertLink() {
+    fun insertLink() {
         var builder: Editable
 
         // Add link without clipboardUrl to normal text
@@ -527,7 +515,7 @@ class MarkdownUtilTest : TestCase() {
     }
 
     @Test
-    fun testSelectionIsInLink() {
+    fun selectionIsInLink() {
         try {
             val method = MarkdownUtil::class.java.getDeclaredMethod("selectionIsInLink", CharSequence::class.java, Int::class.javaPrimitiveType, Int::class.javaPrimitiveType)
             method.isAccessible = true
@@ -566,7 +554,7 @@ class MarkdownUtilTest : TestCase() {
     }
 
     @Test
-    fun testGetListItemIfIsEmpty() {
+    fun getListItemIfIsEmpty() {
         assertEquals("- ", MarkdownUtil.getListItemIfIsEmpty("- ").get())
         assertEquals("+ ", MarkdownUtil.getListItemIfIsEmpty("+ ").get())
         assertEquals("* ", MarkdownUtil.getListItemIfIsEmpty("* ").get())
@@ -597,7 +585,7 @@ class MarkdownUtilTest : TestCase() {
     }
 
     @Test
-    fun testLineStartsWithOrderedList() {
+    fun lineStartsWithOrderedList() {
         assertEquals(1, MarkdownUtil.getOrderedListNumber("1. Test").get())
         assertEquals(2, MarkdownUtil.getOrderedListNumber("2. Test").get())
         assertEquals(3, MarkdownUtil.getOrderedListNumber("3. Test").get())
@@ -615,7 +603,7 @@ class MarkdownUtilTest : TestCase() {
     }
 
     @Test
-    fun testSetCheckboxStatus() {
+    fun setCheckboxStatus() {
         for (listType in EListType.values()) {
             val origin_1 = listType.checkboxUnchecked + " Item"
             val expected_1 = listType.checkboxChecked + " Item"
@@ -630,84 +618,100 @@ class MarkdownUtilTest : TestCase() {
             val expected_4 = listType.checkboxChecked + " Item"
             assertEquals(expected_4, MarkdownUtil.setCheckboxStatus(origin_4, 3, true))
             val origin_5 = """${listType.checkboxChecked} Item
-${listType.checkboxChecked} Item"""
+                ${listType.checkboxChecked} Item""".trimIndent()
             val expected_5 = """${listType.checkboxChecked} Item
-${listType.checkboxUnchecked} Item"""
+                ${listType.checkboxUnchecked} Item""".trimIndent()
             assertEquals(expected_5, MarkdownUtil.setCheckboxStatus(origin_5, 1, false))
 
             // Checkboxes in fenced code block aren't rendered by Markwon and therefore don't count to the checkbox index
-            val origin_6 = """${listType.checkboxChecked} Item
-```
-${listType.checkboxUnchecked} Item
-```
-${listType.checkboxUnchecked} Item"""
-            val expected_6 = """${listType.checkboxChecked} Item
-```
-${listType.checkboxUnchecked} Item
-```
-${listType.checkboxChecked} Item"""
+            val origin_6 = """
+                ${listType.checkboxChecked} Item
+                ```
+                ${listType.checkboxUnchecked} Item
+                ```
+                ${listType.checkboxUnchecked} Item
+            """.trimIndent()
+            val expected_6 = """
+                ${listType.checkboxChecked} Item
+                ```
+                ${listType.checkboxUnchecked} Item
+                ```
+                ${listType.checkboxChecked} Item
+            """.trimIndent()
             assertEquals(expected_6, MarkdownUtil.setCheckboxStatus(origin_6, 1, true))
 
             // Checkbox in partial nested fenced code block does not count as rendered checkbox
-            val origin_7 = """${listType.checkboxChecked} Item
-````
-```
-${listType.checkboxUnchecked} Item
-````
-${listType.checkboxUnchecked} Item"""
-            val expected_7 = """${listType.checkboxChecked} Item
-````
-```
-${listType.checkboxUnchecked} Item
-````
-${listType.checkboxChecked} Item"""
+            val origin_7 = """
+                ${listType.checkboxChecked} Item
+                ````
+                ```
+                ${listType.checkboxUnchecked} Item
+                ````
+                ${listType.checkboxUnchecked} Item
+            """.trimIndent()
+            val expected_7 = """
+                ${listType.checkboxChecked} Item
+                ````
+                ```
+                ${listType.checkboxUnchecked} Item
+                ````
+                ${listType.checkboxChecked} Item
+            """.trimIndent()
             assertEquals(expected_7, MarkdownUtil.setCheckboxStatus(origin_7, 1, true))
 
             // Checkbox in complete nested fenced code block does not count as rendered checkbox
-            val origin_8 = """${listType.checkboxChecked} Item
-````
-```
-${listType.checkboxUnchecked} Item
-```
-````
-${listType.checkboxUnchecked} Item"""
-            val expected_8 = """${listType.checkboxChecked} Item
-````
-```
-${listType.checkboxUnchecked} Item
-```
-````
-${listType.checkboxChecked} Item"""
+            val origin_8 = """
+                ${listType.checkboxChecked} Item
+                ````
+                ```
+                ${listType.checkboxUnchecked} Item
+                ```
+                ````
+                ${listType.checkboxUnchecked} Item
+            """.trimIndent()
+            val expected_8 = """
+                ${listType.checkboxChecked} Item
+                ````
+                ```
+                ${listType.checkboxUnchecked} Item
+                ```
+                ````
+                ${listType.checkboxChecked} Item
+            """.trimIndent()
             assertEquals(expected_8, MarkdownUtil.setCheckboxStatus(origin_8, 1, true))
 
             // If checkbox has no content, it doesn't get rendered by Markwon and therefore can not be checked
-            val origin_9 = """${listType.checkboxChecked} Item
-````
-```
-${listType.checkboxUnchecked} Item
-```
-````
-${listType.checkboxUnchecked} 
-${listType.checkboxUnchecked} Item"""
-            val expected_9 = """${listType.checkboxChecked} Item
-````
-```
-${listType.checkboxUnchecked} Item
-```
-````
-${listType.checkboxUnchecked} 
-${listType.checkboxChecked} Item"""
+            val origin_9 = """
+                ${listType.checkboxChecked} Item
+                ````
+                ```
+                ${listType.checkboxUnchecked} Item
+                ```
+                ````
+                ${listType.checkboxUnchecked} 
+                ${listType.checkboxUnchecked} Item
+            """.trimIndent()
+            val expected_9 = """
+                ${listType.checkboxChecked} Item
+                ````
+                ```
+                ${listType.checkboxUnchecked} Item
+                ```
+                ````
+                ${listType.checkboxUnchecked} 
+                ${listType.checkboxChecked} Item
+            """.trimIndent()
             assertEquals(expected_9, MarkdownUtil.setCheckboxStatus(origin_9, 1, true))
             val origin_10 = """${listType.checkboxChecked} Item
-${listType.checkboxCheckedUpperCase} Item"""
+                ${listType.checkboxCheckedUpperCase} Item""".trimIndent()
             val expected_10 = """${listType.checkboxChecked} Item
-${listType.checkboxUnchecked} Item"""
+                ${listType.checkboxUnchecked} Item""".trimIndent()
             assertEquals(expected_10, MarkdownUtil.setCheckboxStatus(origin_10, 1, false))
         }
     }
 
     @Test
-    fun testRemoveSpans() {
+    fun removeSpans() {
         try {
             val removeSpans = MarkdownUtil::class.java.getDeclaredMethod("removeSpans", Spannable::class.java, Class::class.java)
             removeSpans.isAccessible = true
@@ -744,7 +748,7 @@ ${listType.checkboxUnchecked} Item"""
     }
 
     @Test
-    fun testRemoveMarkdown() {
+    fun removeMarkdown() {
         assertEquals("Test", MarkdownUtil.removeMarkdown("Test"))
         assertEquals("Foo\nBar", MarkdownUtil.removeMarkdown("Foo\nBar"))
         assertEquals("Foo\nBar", MarkdownUtil.removeMarkdown("Foo\n  Bar"))

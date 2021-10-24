@@ -22,15 +22,13 @@ import org.commonmark.node.Node
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
-import java.lang.reflect.InvocationTargetException
 import java.util.*
 import java.util.stream.Collectors
 
 @RunWith(RobolectricTestRunner::class)
 class ToggleableTaskListPluginTest : TestCase() {
     @Test
-    @Throws(IllegalAccessException::class, InvocationTargetException::class, InstantiationException::class, NoSuchMethodException::class)
-    fun testAfterRender() {
+    fun afterRender() {
         val node = mockk<Node>()
         val visitor = mockk<MarkwonVisitor>()
         val markerSpanConstructor = ToggleMarkerSpan::class.java.getDeclaredConstructor(TaskListSpan::class.java)
@@ -70,8 +68,7 @@ class ToggleableTaskListPluginTest : TestCase() {
     }
 
     @Test
-    @Throws(IllegalAccessException::class, InvocationTargetException::class, InstantiationException::class, NoSuchMethodException::class)
-    fun testAfterSetText() {
+    fun afterSetText() {
         val markerSpanConstructor = ToggleMarkerSpan::class.java.getDeclaredConstructor(TaskListSpan::class.java)
         markerSpanConstructor.isAccessible = true
         val editable = SpannableStringBuilder("Lorem Ipsum Dolor \nSit Amet")
@@ -89,8 +86,7 @@ class ToggleableTaskListPluginTest : TestCase() {
     }
 
     @Test
-    @Throws(NoSuchMethodException::class, InvocationTargetException::class, IllegalAccessException::class)
-    fun testGetSortedSpans() {
+    fun getSortedSpans() {
         val method = ToggleableTaskListPlugin::class.java.getDeclaredMethod("getSortedSpans", SpannableBuilder::class.java, Class::class.java, Int::class.javaPrimitiveType, Int::class.javaPrimitiveType)
         method.isAccessible = true
         val firstClickableSpan = URLSpan("")
@@ -124,8 +120,7 @@ class ToggleableTaskListPluginTest : TestCase() {
     }
 
     @Test
-    @Throws(NoSuchMethodException::class, InvocationTargetException::class, IllegalAccessException::class)
-    fun testFindFreeRanges() {
+    fun findFreeRanges() {
         val method = ToggleableTaskListPlugin::class.java.getDeclaredMethod("findFreeRanges", SpannableBuilder::class.java, Int::class.javaPrimitiveType, Int::class.javaPrimitiveType)
         method.isAccessible = true
         val firstClickableSpan = URLSpan("")
