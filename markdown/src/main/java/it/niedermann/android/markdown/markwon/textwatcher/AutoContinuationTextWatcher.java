@@ -73,7 +73,13 @@ public class AutoContinuationTextWatcher extends InterceptorTextWatcher {
     }
 
     private void deleteCustomText(Editable s, CharSequence customText) {
-        s.replace(sequenceStart, Math.min(sequenceStart + customText.length() + 1, s.length()), "\n");
+        int cutPosition = sequenceStart;
+        for (int i = 0; i < customText.length(); i++) {
+            if (oldText.charAt(cutPosition) == customText.charAt(i)) {
+                cutPosition++;
+            } else break;
+        }
+        s.replace(sequenceStart, cutPosition + 1, "\n");
         editText.setSelection(sequenceStart + 1);
     }
 
