@@ -25,6 +25,7 @@ import org.robolectric.RobolectricTestRunner
 import java.util.*
 import java.util.stream.Collectors
 
+@Suppress("JoinDeclarationAndAssignment")
 @RunWith(RobolectricTestRunner::class)
 class ToggleableTaskListPluginTest : TestCase() {
     @Test
@@ -80,7 +81,7 @@ class ToggleableTaskListPluginTest : TestCase() {
         val textView = TextView(ApplicationProvider.getApplicationContext())
         textView.text = editable
         assertEquals(3, (textView.text as Spanned).getSpans(0, textView.text.length, ToggleMarkerSpan::class.java).size)
-        val plugin = ToggleableTaskListPlugin { i: Int?, b: Boolean? -> }
+        val plugin = ToggleableTaskListPlugin { _: Int, _: Boolean -> }
         plugin.afterSetText(textView)
         assertEquals(0, (textView.text as Spanned).getSpans(0, textView.text.length, ToggleMarkerSpan::class.java).size)
     }
@@ -96,27 +97,27 @@ class ToggleableTaskListPluginTest : TestCase() {
         spannable.setSpan(firstClickableSpan, 6, 11, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
         spannable.setSpan(secondClickableSpan, 19, 22, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
         spannable.setSpan(unclickableSpan, 3, 20, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-        var clickableSpans: List<SpannableBuilder.Span>
-        clickableSpans = method.invoke(null, spannable, ClickableSpan::class.java, 0, 0) as List<SpannableBuilder.Span>
+        var clickableSpans: List<*>
+        clickableSpans = method.invoke(null, spannable, ClickableSpan::class.java, 0, 0) as List<*>
         assertEquals(0, clickableSpans.size)
-        clickableSpans = method.invoke(null, spannable, ClickableSpan::class.java, spannable.length - 1, spannable.length - 1) as List<SpannableBuilder.Span>
+        clickableSpans = method.invoke(null, spannable, ClickableSpan::class.java, spannable.length - 1, spannable.length - 1) as List<*>
         assertEquals(0, clickableSpans.size)
-        clickableSpans = method.invoke(null, spannable, ClickableSpan::class.java, 0, 5) as List<SpannableBuilder.Span>
+        clickableSpans = method.invoke(null, spannable, ClickableSpan::class.java, 0, 5) as List<*>
         assertEquals(0, clickableSpans.size)
-        clickableSpans = method.invoke(null, spannable, ClickableSpan::class.java, 0, spannable.length) as List<SpannableBuilder.Span>
+        clickableSpans = method.invoke(null, spannable, ClickableSpan::class.java, 0, spannable.length) as List<*>
         assertEquals(2, clickableSpans.size)
-        assertEquals(firstClickableSpan, clickableSpans[0].what)
-        assertEquals(secondClickableSpan, clickableSpans[1].what)
-        clickableSpans = method.invoke(null, spannable, ClickableSpan::class.java, 0, 17) as List<SpannableBuilder.Span>
+        assertEquals(firstClickableSpan, (clickableSpans[0] as SpannableBuilder.Span).what)
+        assertEquals(secondClickableSpan, (clickableSpans[1] as SpannableBuilder.Span).what)
+        clickableSpans = method.invoke(null, spannable, ClickableSpan::class.java, 0, 17) as List<*>
         assertEquals(1, clickableSpans.size)
-        assertEquals(firstClickableSpan, clickableSpans[0].what)
-        clickableSpans = method.invoke(null, spannable, ClickableSpan::class.java, 12, 22) as List<SpannableBuilder.Span>
+        assertEquals(firstClickableSpan, (clickableSpans[0] as SpannableBuilder.Span).what)
+        clickableSpans = method.invoke(null, spannable, ClickableSpan::class.java, 12, 22) as List<*>
         assertEquals(1, clickableSpans.size)
-        assertEquals(secondClickableSpan, clickableSpans[0].what)
-        clickableSpans = method.invoke(null, spannable, ClickableSpan::class.java, 9, 20) as List<SpannableBuilder.Span>
+        assertEquals(secondClickableSpan, (clickableSpans[0] as SpannableBuilder.Span).what)
+        clickableSpans = method.invoke(null, spannable, ClickableSpan::class.java, 9, 20) as List<*>
         assertEquals(2, clickableSpans.size)
-        assertEquals(firstClickableSpan, clickableSpans[0].what)
-        assertEquals(secondClickableSpan, clickableSpans[1].what)
+        assertEquals(firstClickableSpan, (clickableSpans[0] as SpannableBuilder.Span).what)
+        assertEquals(secondClickableSpan, (clickableSpans[1] as SpannableBuilder.Span).what)
     }
 
     @Test
@@ -128,39 +129,39 @@ class ToggleableTaskListPluginTest : TestCase() {
         var spannable = SpannableBuilder("Lorem Ipsum Dolor \nSit Amet")
         spannable.setSpan(firstClickableSpan, 6, 11, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
         spannable.setSpan(secondClickableSpan, 19, 22, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-        var freeRanges: List<Range<Int>>
-        freeRanges = method.invoke(null, spannable, 0, 0) as List<Range<Int>>
+        var freeRanges: List<*>
+        freeRanges = method.invoke(null, spannable, 0, 0) as List<*>
         assertEquals(0, freeRanges.size)
-        freeRanges = method.invoke(null, spannable, spannable.length - 1, spannable.length - 1) as List<Range<Int>>
+        freeRanges = method.invoke(null, spannable, spannable.length - 1, spannable.length - 1) as List<*>
         assertEquals(0, freeRanges.size)
-        freeRanges = method.invoke(null, spannable, 0, 6) as List<Range<Int>>
+        freeRanges = method.invoke(null, spannable, 0, 6) as List<*>
         assertEquals(1, freeRanges.size)
-        assertEquals(0, freeRanges[0].lower as Int)
-        assertEquals(6, freeRanges[0].upper as Int)
-        freeRanges = method.invoke(null, spannable, 0, 6) as List<Range<Int>>
+        assertEquals(0, (freeRanges[0] as Range<*>).lower as Int)
+        assertEquals(6, (freeRanges[0] as Range<*>).upper as Int)
+        freeRanges = method.invoke(null, spannable, 0, 6) as List<*>
         assertEquals(1, freeRanges.size)
-        assertEquals(0, freeRanges[0].lower as Int)
-        assertEquals(6, freeRanges[0].upper as Int)
-        freeRanges = method.invoke(null, spannable, 3, 15) as List<Range<Int>>
+        assertEquals(0, (freeRanges[0] as Range<*>).lower as Int)
+        assertEquals(6, (freeRanges[0] as Range<*>).upper as Int)
+        freeRanges = method.invoke(null, spannable, 3, 15) as List<*>
         assertEquals(2, freeRanges.size)
-        assertEquals(3, freeRanges[0].lower as Int)
-        assertEquals(6, freeRanges[0].upper as Int)
-        assertEquals(11, freeRanges[1].lower as Int)
-        assertEquals(15, freeRanges[1].upper as Int)
-        freeRanges = method.invoke(null, spannable, 0, spannable.length) as List<Range<Int>>
+        assertEquals(3, (freeRanges[0] as Range<*>).lower as Int)
+        assertEquals(6, (freeRanges[0] as Range<*>).upper as Int)
+        assertEquals(11, (freeRanges[1] as Range<*>).lower as Int)
+        assertEquals(15, (freeRanges[1] as Range<*>).upper as Int)
+        freeRanges = method.invoke(null, spannable, 0, spannable.length) as List<*>
         assertEquals(3, freeRanges.size)
-        assertEquals(0, freeRanges[0].lower as Int)
-        assertEquals(6, freeRanges[0].upper as Int)
-        assertEquals(11, freeRanges[1].lower as Int)
-        assertEquals(19, freeRanges[1].upper as Int)
-        assertEquals(22, freeRanges[2].lower as Int)
-        assertEquals(27, freeRanges[2].upper as Int)
+        assertEquals(0, (freeRanges[0] as Range<*>).lower as Int)
+        assertEquals(6, (freeRanges[0] as Range<*>).upper as Int)
+        assertEquals(11, (freeRanges[1] as Range<*>).lower as Int)
+        assertEquals(19, (freeRanges[1] as Range<*>).upper as Int)
+        assertEquals(22, (freeRanges[2] as Range<*>).lower as Int)
+        assertEquals(27, (freeRanges[2] as Range<*>).upper as Int)
 
         // https://github.com/stefan-niedermann/nextcloud-notes/issues/1326
         spannable = SpannableBuilder("Test Crash\n\nJust text with link https://github.com")
         spannable.setSpan(firstClickableSpan, 32, 50, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
         spannable.setSpan(secondClickableSpan, 32, 50, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-        freeRanges = method.invoke(null, spannable, 12, 50) as List<Range<Int>>
+        freeRanges = method.invoke(null, spannable, 12, 50) as List<*>
         assertEquals(1, freeRanges.size)
     }
 }
