@@ -28,7 +28,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Build debug AAR
-        run: bash ./gradlew assemble
+        run: bash ./gradlew assemble --stacktrace
       - name: Upload AAR
         uses: actions/upload-artifact@v2
         with:
