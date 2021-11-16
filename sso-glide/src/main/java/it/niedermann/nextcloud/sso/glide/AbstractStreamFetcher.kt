@@ -10,6 +10,7 @@ import com.bumptech.glide.load.data.DataFetcher
 import com.bumptech.glide.load.model.GlideUrl
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
+import com.nextcloud.android.sso.QueryParam
 import com.nextcloud.android.sso.aidl.NextcloudRequest
 import com.nextcloud.android.sso.api.NextcloudAPI
 import com.nextcloud.android.sso.api.NextcloudAPI.ApiConnectedListener
@@ -183,11 +184,11 @@ abstract class AbstractStreamFetcher<T>(
         return Optional.empty()
     }
 
-    private fun getQueryParams(url: URL): Map<String?, String?> {
+    private fun getQueryParams(url: URL): Collection<QueryParam> {
         if (TextUtils.isEmpty(url.query)) {
-            return emptyMap<String?, String>()
+            return emptyList()
         }
-        val queryParams: MutableMap<String?, String?> = HashMap()
+        val queryParams: MutableList<QueryParam> = LinkedList()
         for (param in url.query.split("&").toTypedArray()) {
             if (param == "c") {
                 Log.w(TAG, "Stripped query parameter \"c\". This is usually used as CSRF protection and must not be sent by the client because the SSO authenticates itself.")
@@ -197,7 +198,7 @@ abstract class AbstractStreamFetcher<T>(
                 val value =
                     if (idx > 0 && param.length > idx + 1) param.substring(idx + 1) else null
                 if (!TextUtils.isEmpty(key)) {
-                    queryParams[key] = value
+                    queryParams.add(QueryParam(key, value))
                 }
             }
         }

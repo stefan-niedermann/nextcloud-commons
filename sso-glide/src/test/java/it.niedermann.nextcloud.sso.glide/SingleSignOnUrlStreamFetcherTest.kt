@@ -88,13 +88,13 @@ class SingleSignOnUrlStreamFetcherTest {
             api.performNetworkRequestV2(withArg {
                 assertEquals("GET", it.method)
                 assertEquals(path, it.url)
-                assertTrue(it.parameter.size >= parameters.size)
+                assertTrue(it.parameterV2.size >= parameters.size)
                 for ((k, v) in parameters) {
-                    assertEquals(v, it.parameter[k])
+                    assertEquals(v, it.parameterV2.first { qp -> qp.key == k }.value)
                 }
-                assertTrue(it.parameter.size >= mandatoryParameters.size)
+                assertTrue(it.parameterV2.size >= mandatoryParameters.size)
                 for (p in mandatoryParameters) {
-                    assertTrue(it.parameter.containsKey(p))
+                    assertTrue(it.parameterV2.any { qp -> qp.key == p })
                 }
             })
         }
