@@ -114,6 +114,7 @@ abstract class AbstractStreamFetcher<T>(
                 throw IllegalArgumentException("Given ${SingleSignOnAccount::class.java.simpleName} does not match the URL (${ssoAccount.url} vs. ${model}). Pass correct ${SingleSignOnAccount::class.java.simpleName} or use default ${GlideUrl::class.java.simpleName} (or a plain ${String::class.java.simpleName}) to try fetching with the current ${SingleSignOnAccount::class.java.simpleName} stored in ${SingleAccountHelper::class.java.simpleName}.")
             }
         } catch (e: MalformedURLException) {
+            rewriteSpecialURLs(ssoAccount, URL(ssoAccount.url.substring(0, ssoAccount.url.length - URL(ssoAccount.url).path.length) + model))
             if (model.startsWith("/")) {
                 // This might be an absolute path instead of an URL, so prepend the URL of the ssoAccount, but be aware of accounts which are located in a sub directory!
                 val url = URL(ssoAccount.url.substring(0, ssoAccount.url.length - URL(ssoAccount.url).path.length) + model)
@@ -129,11 +130,16 @@ abstract class AbstractStreamFetcher<T>(
      */
     private fun rewriteSpecialURLs(ssoAccount: SingleSignOnAccount, url: URL): Optional<URL> {
         // Exclude potential sub directory from url path (if Nextcloud instance is hosted at https://example.com/nextcloud)
-        val pathStartingFromNextcloudRoot = if (url.query == null) {
-            url.toString().substring(ssoAccount.url.length)
+        val urlString = url.toString()
+        val pathStartingFromNextcloudRoot = if (urlString.startsWith(ssoAccount.url)) {
+            if (url.query == null) {
+                urlString.substring(ssoAccount.url.length)
+            } else {
+                val urlStringWithoutLeadingAccount = urlString.substring(ssoAccount.url.length)
+                urlStringWithoutLeadingAccount.substring(0, urlStringWithoutLeadingAccount.length - url.query.length - 1)
+            }
         } else {
-            val urlStringWithoutLeadingAccount = url.toString().substring(ssoAccount.url.length)
-            urlStringWithoutLeadingAccount.substring(0, urlStringWithoutLeadingAccount.length - url.query.length - 1)
+            url.path
         }
 
         val fileId = REGEX_FILE_ID.find(pathStartingFromNextcloudRoot)?.groupValues?.get(2)
@@ -169,19 +175,21 @@ abstract class AbstractStreamFetcher<T>(
             }
         }
 
-        if (!pathStartingFromNextcloudRoot.startsWith("/index.php") && !pathStartingFromNextcloudRoot.startsWith("/remote.php")) {
-            val webDAV = REGEX_WEBDAV.find(pathStartingFromNextcloudRoot)?.groupValues?.get(2)
-            if (webDAV != null) {
+        if (pathStartingFromNextcloudRoot.startsWith("/index.php") || pathStartingFromNextcloudRoot.startsWith("/remote.php")) {
+            return Optional.of(url);
+        } else {
+            val propfind = REGEX_WEBDAV.find(pathStartingFromNextcloudRoot)?.groupValues?.get(2)
+            if (propfind != null) {
                 return if (url.query == null) {
-                    Optional.of(URL("${ssoAccount.url}/remote.php/webdav/${webDAV}"))
+                    Optional.of(URL("${ssoAccount.url}/remote.php/webdav/${propfind}"))
                 } else {
-                    Optional.of(URL("${ssoAccount.url}/remote.php/webdav/${webDAV}?${url.query}"))
+                    Optional.of(URL("${ssoAccount.url}/remote.php/webdav/${propfind}?${url.query}"))
                 }
             }
         }
 
         // This leads to /index.php/apps/... or somewhere else. We should not manipulate this.
-        return Optional.empty()
+        return Optional.of(url)
     }
 
     private fun getQueryParams(url: URL): Collection<QueryParam> {
