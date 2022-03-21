@@ -41,9 +41,9 @@ import io.noties.prism4j.annotations.PrismBundle;
 import it.niedermann.android.markdown.MarkdownEditor;
 import it.niedermann.android.markdown.MarkdownUtil;
 import it.niedermann.android.markdown.markwon.plugins.CustomGlideStore;
-import it.niedermann.android.markdown.markwon.plugins.RelativeImageUrlPlugin;
 import it.niedermann.android.markdown.markwon.plugins.LinkClickInterceptorPlugin;
 import it.niedermann.android.markdown.markwon.plugins.NextcloudMentionsPlugin;
+import it.niedermann.android.markdown.markwon.plugins.RelativeImageUrlPlugin;
 import it.niedermann.android.markdown.markwon.plugins.SearchHighlightPlugin;
 import it.niedermann.android.markdown.markwon.plugins.ThemePlugin;
 import it.niedermann.android.markdown.markwon.plugins.ToggleableTaskListPlugin;
@@ -130,7 +130,7 @@ public class MarkwonMarkdownViewer extends AppCompatTextView implements Markdown
         }
     }
 
-    public void setMarkdownImageUrlPrefix(String prefix) {
+    public void setMarkdownImageUrlPrefix(@NonNull String prefix) {
         final var plugin = this.markwon.getPlugin(RelativeImageUrlPlugin.class);
         if (plugin == null) {
             Log.w(TAG, "Tried to change image url prefix for " + ToggleableTaskListPlugin.class.getSimpleName() + ", but " + ToggleableTaskListPlugin.class.getSimpleName() + " is not a registered " + MarkwonPlugin.class.getSimpleName() + ".");

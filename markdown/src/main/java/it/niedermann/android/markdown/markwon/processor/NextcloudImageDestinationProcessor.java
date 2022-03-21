@@ -9,23 +9,22 @@ import io.noties.markwon.image.destination.ImageDestinationProcessor;
 
 public class NextcloudImageDestinationProcessor extends ImageDestinationProcessor {
 
-
-    private String targetURL = "";
+    private String prefix = "";
 
     public NextcloudImageDestinationProcessor() {
     }
 
-    public void setPrefix(String targetURLprefix) {
-        targetURL = targetURLprefix;
+    public void setPrefix(@NonNull String prefix) {
+        this.prefix = prefix;
     }
 
     @NonNull
     @Override
     public String process(@NonNull String destination) {
-        final Uri uri = Uri.parse(destination);
+        final var uri = Uri.parse(destination);
         final String scheme = uri.getScheme();
         if (TextUtils.isEmpty(scheme)) {
-            return targetURL + destination;
+            return prefix + destination;
         }
         return destination;
     }

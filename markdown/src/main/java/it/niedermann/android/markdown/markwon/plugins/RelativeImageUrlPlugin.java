@@ -9,10 +9,11 @@ import it.niedermann.android.markdown.markwon.processor.NextcloudImageDestinatio
 
 public class RelativeImageUrlPlugin extends AbstractMarkwonPlugin {
 
-    private NextcloudImageDestinationProcessor processor = new NextcloudImageDestinationProcessor();
+    private final NextcloudImageDestinationProcessor processor = new NextcloudImageDestinationProcessor();
 
-
-    public static MarkwonPlugin create() { return new RelativeImageUrlPlugin(); }
+    public static MarkwonPlugin create() {
+        return new RelativeImageUrlPlugin();
+    }
 
     @Override
     public void configureConfiguration(@NonNull MarkwonConfiguration.Builder builder) {
