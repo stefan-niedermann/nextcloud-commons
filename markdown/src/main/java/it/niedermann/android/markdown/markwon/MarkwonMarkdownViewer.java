@@ -41,6 +41,7 @@ import io.noties.prism4j.annotations.PrismBundle;
 import it.niedermann.android.markdown.MarkdownEditor;
 import it.niedermann.android.markdown.MarkdownUtil;
 import it.niedermann.android.markdown.markwon.plugins.CustomGlideStore;
+import it.niedermann.android.markdown.markwon.plugins.RelativeImageUrlPlugin;
 import it.niedermann.android.markdown.markwon.plugins.LinkClickInterceptorPlugin;
 import it.niedermann.android.markdown.markwon.plugins.NextcloudMentionsPlugin;
 import it.niedermann.android.markdown.markwon.plugins.SearchHighlightPlugin;
@@ -93,6 +94,7 @@ public class MarkwonMarkdownViewer extends AppCompatTextView implements Markdown
                 .usePlugin(GlideImagesPlugin.create(new CustomGlideStore(context)))
                 .usePlugin(SoftBreakAddsNewLinePlugin.create())
                 .usePlugin(SyntaxHighlightPlugin.create(prism4j, prism4jTheme))
+                .usePlugin(RelativeImageUrlPlugin.create())
                 .usePlugin(new ToggleableTaskListPlugin((toggledCheckboxPosition, newCheckedState) -> {
                     final var oldUnrenderedText = unrenderedText$.getValue();
                     if (oldUnrenderedText == null) {
@@ -125,6 +127,15 @@ public class MarkwonMarkdownViewer extends AppCompatTextView implements Markdown
             Log.w(TAG, "Tried to set enabled state for " + ToggleableTaskListPlugin.class.getSimpleName() + ", but " + ToggleableTaskListPlugin.class.getSimpleName() + " is not a registered " + MarkwonPlugin.class.getSimpleName() + ".");
         } else {
             plugin.setEnabled(enabled);
+        }
+    }
+
+    public void setMarkdownImageUrlPrefix(String prefix) {
+        final var plugin = this.markwon.getPlugin(RelativeImageUrlPlugin.class);
+        if (plugin == null) {
+            Log.w(TAG, "Tried to change image url prefix for " + ToggleableTaskListPlugin.class.getSimpleName() + ", but " + ToggleableTaskListPlugin.class.getSimpleName() + " is not a registered " + MarkwonPlugin.class.getSimpleName() + ".");
+        } else {
+            plugin.setImagePrefix(prefix);
         }
     }
 
