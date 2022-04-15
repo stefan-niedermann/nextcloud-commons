@@ -12,6 +12,7 @@
   - [exception](#exception)
   - [sso-glide](#sso-glide)
   - [markdown](#markdown)
+- [Development](#development)
 - [License](#notebook-license)
 
 ## What is this
@@ -197,48 +198,42 @@ You can implement against the `MarkdownEditor` interface, which allows you to ad
 The `MarkdownUtil` provides some helper tools to work with markdown.
 
 
-#### Development
+## Development
 
 If you want to add this repository to your project to develop this library or use the latest version, you can add the following code to your gradle files:
 
-settings.gradle:
+### `settings.gradle`
 
 ```gradle
-
 // for markdown
 include ':markdown'
 project(':markdown').projectDir = new File(settingsDir, '../nextcloud-commons/markdown')
 
-
 // for sso-glide
 include ':sso-glide'
 project(':sso-glide').projectDir = new File(settingsDir, '../nextcloud-commons/sso-glide')
-
 
 // for exception
 include ':exception'
 project(':exception').projectDir = new File(settingsDir, '../nextcloud-commons/exception')
 
 // It is also possible to provide absolute path's instead of relative ones.
-
 ```
 
+### `build.gradle`
 
-
-build.gradle (the app one, not the project-one):
+(the app one, not the project-one)
 
 ```gradle
-
-
 dependencies {
-    ...
+    // …
 
     implementation project(':markdown')
     implementation project(':sso-glide')
     implementation project(':exception')
     
-    ...
-    }
+    // …
+}
 ```
 
 You do not need to add all libraries, just add the ones you want to use in your project.
