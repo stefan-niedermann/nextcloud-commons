@@ -4,12 +4,12 @@ apply plugin: 'kotlin-kapt'
 apply plugin: 'maven-publish' // needed for JitPack.io
 
 android {
-    compileSdkVersion 31
+    compileSdkVersion 32
     buildToolsVersion "31.0.0"
 
     defaultConfig {
         minSdkVersion 22
-        targetSdkVersion 31
+        targetSdkVersion 32
         versionCode 1006003
         versionName = '1.6.3'
 
