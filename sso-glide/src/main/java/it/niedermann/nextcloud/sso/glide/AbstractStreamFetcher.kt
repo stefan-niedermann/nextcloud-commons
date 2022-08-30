@@ -169,7 +169,16 @@ abstract class AbstractStreamFetcher<T>(
             }
         }
 
-        if (!pathStartingFromNextcloudRoot.startsWith("/index.php") && !pathStartingFromNextcloudRoot.startsWith("/remote.php")) {
+        val notesId = REGEX_NOTES_API.find(pathStartingFromNextcloudRoot)?.groupValues?.get(2)
+        if (notesId != null && url.query != null && getQueryParams(url).any { it.key == "path" }) {
+            return Optional.of(URL("${ssoAccount.url}/index.php/apps/notes/notes/${notesId}/attachment?${url.query}&x=${context.resources.displayMetrics.widthPixels}&y=${context.resources.displayMetrics.heightPixels}"))
+        }
+
+        if (
+            !pathStartingFromNextcloudRoot.startsWith("/index.php") &&
+            !pathStartingFromNextcloudRoot.startsWith("/apps/") &&
+            !pathStartingFromNextcloudRoot.startsWith("/remote.php")
+        ) {
             val webDAV = REGEX_WEBDAV.find(pathStartingFromNextcloudRoot)?.groupValues?.get(2)
             if (webDAV != null) {
                 return if (url.query == null) {
@@ -237,6 +246,11 @@ abstract class AbstractStreamFetcher<T>(
         private val REGEX_FILE_ID = Regex("^(/index\\.php)?/f/(\\d+)(/)?$")
         private val REGEX_SHARE_ID = Regex("^(/index\\.php)?/s/(\\w+)(/|/download|/download/)?$")
         private val REGEX_AVATAR = Regex("^(/index\\.php)?/avatar/([\\w-]+)/(\\d+)(/)?$")
+        /**
+         * FIXME Check how final public API will look like: https://github.com/stefan-niedermann/nextcloud-notes/pull/1489/files#r835803391
+         * @see <a href="https://github.com/nextcloud/notes/blob/master/docs/api/v1.md">Attachment API of the Notes app</a>
+         */
+        private val REGEX_NOTES_API = Regex("^(/index\\.php)?/apps/notes/notes/(\\d+)/attachment(/)?$")
         private val REGEX_WEBDAV = Regex("^(/webdav)?/(.*)$")
 
         @VisibleForTesting

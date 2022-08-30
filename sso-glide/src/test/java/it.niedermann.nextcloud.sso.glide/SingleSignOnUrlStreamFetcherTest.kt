@@ -457,6 +457,124 @@ class SingleSignOnUrlStreamFetcherTest {
     }
 
     // -----------------------------------------------------------
+    // Nextcloud on Root / Full URL / Notes API
+    // -----------------------------------------------------------
+
+    @Test
+    fun `Root - Full URL - Notes API - no index, no trailing slash, no query parameter`() {
+        load(SingleSignOnUrl(ssoAccountRoot, "https://nc.example.com/apps/notes/notes/123456/attachment"))
+        verifyCall("/apps/notes/notes/123456/attachment")
+    }
+
+    @Test
+    fun `Root - Full URL - Notes API - no index, trailing slash, no query parameter`() {
+        load(SingleSignOnUrl(ssoAccountRoot, "https://nc.example.com/apps/notes/notes/123456/attachment/"))
+        verifyCall("/apps/notes/notes/123456/attachment/")
+    }
+
+    @Test
+    fun `Root - Full URL - Notes API - index, no trailing slash, no query parameter`() {
+        load(SingleSignOnUrl(ssoAccountRoot, "https://nc.example.com/index.php/apps/notes/notes/123456/attachment"))
+        verifyCall("/index.php/apps/notes/notes/123456/attachment")
+    }
+
+    @Test
+    fun `Root - Full URL - Notes API - index, trailing slash, no query parameter`() {
+        load(SingleSignOnUrl(ssoAccountRoot, "https://nc.example.com/index.php/apps/notes/notes/123456/attachment/"))
+        verifyCall("/index.php/apps/notes/notes/123456/attachment/")
+    }
+
+    // Empty query parameter
+
+    @Test
+    fun `Root - Full URL - Notes API - no index, no trailing slash, empty query parameter`() {
+        load(SingleSignOnUrl(ssoAccountRoot, "https://nc.example.com/apps/notes/notes/123456/attachment?"))
+        verifyCall("/apps/notes/notes/123456/attachment")
+    }
+
+    @Test
+    fun `Root - Full URL - Notes API - no index, trailing slash, empty query parameter`() {
+        load(SingleSignOnUrl(ssoAccountRoot, "https://nc.example.com/apps/notes/notes/123456/attachment/?"))
+        verifyCall("/apps/notes/notes/123456/attachment/")
+    }
+
+    @Test
+    fun `Root - Full URL - Notes API - index, no trailing slash, empty query parameter`() {
+        load(SingleSignOnUrl(ssoAccountRoot, "https://nc.example.com/index.php/apps/notes/notes/123456/attachment?"))
+        verifyCall("/index.php/apps/notes/notes/123456/attachment")
+    }
+
+    @Test
+    fun `Root - Full URL - Notes API - index, trailing slash, empty query parameter`() {
+        load(SingleSignOnUrl(ssoAccountRoot, "https://nc.example.com/index.php/apps/notes/notes/123456/attachment/?"))
+        verifyCall("/index.php/apps/notes/notes/123456/attachment/")
+    }
+
+    // Invalid query parameter
+
+    @Test
+    fun `Root - Full URL - Notes API - no index, no trailing slash, invalid query parameter`() {
+        load(SingleSignOnUrl(ssoAccountRoot, "https://nc.example.com/apps/notes/notes/123456/attachment?invalid=foo"))
+        verifyCall("/apps/notes/notes/123456/attachment", mapOf("invalid" to "foo"))
+    }
+
+    @Test
+    fun `Root - Full URL - Notes API - no index, trailing slash, invalid query parameter`() {
+        load(SingleSignOnUrl(ssoAccountRoot, "https://nc.example.com/apps/notes/notes/123456/attachment/?invalid=foo"))
+        verifyCall("/apps/notes/notes/123456/attachment/", mapOf("invalid" to "foo"))
+    }
+
+    @Test
+    fun `Root - Full URL - Notes API - index, no trailing slash, invalid query parameter`() {
+        load(SingleSignOnUrl(ssoAccountRoot, "https://nc.example.com/index.php/apps/notes/notes/123456/attachment?invalid=foo"))
+        verifyCall("/index.php/apps/notes/notes/123456/attachment", mapOf("invalid" to "foo"))
+    }
+
+    @Test
+    fun `Root - Full URL - Notes API - index, trailing slash, invalid query parameter`() {
+        load(SingleSignOnUrl(ssoAccountRoot, "https://nc.example.com/index.php/apps/notes/notes/123456/attachment/?invalid=foo"))
+        verifyCall("/index.php/apps/notes/notes/123456/attachment/", mapOf("invalid" to "foo"))
+    }
+
+    // Path query parameter
+
+    @Test
+    fun `Root - Full URL - Notes API - no index, no trailing slash, path query parameter`() {
+        load(SingleSignOnUrl(ssoAccountRoot, "https://nc.example.com/apps/notes/notes/123456/attachment?path=foo"))
+        verifyCall(
+            "/index.php/apps/notes/notes/123456/attachment", mapOf("path" to "foo"),
+            listOf("x", "y")
+        )
+    }
+
+    @Test
+    fun `Root - Full URL - Notes API - no index, trailing slash, path query parameter`() {
+        load(SingleSignOnUrl(ssoAccountRoot, "https://nc.example.com/apps/notes/notes/123456/attachment/?path=foo"))
+        verifyCall(
+            "/index.php/apps/notes/notes/123456/attachment", mapOf("path" to "foo"),
+            listOf("x", "y")
+        )
+    }
+
+    @Test
+    fun `Root - Full URL - Notes API - index, no trailing slash, path query parameter`() {
+        load(SingleSignOnUrl(ssoAccountRoot, "https://nc.example.com/index.php/apps/notes/notes/123456/attachment?path=foo"))
+        verifyCall(
+            "/index.php/apps/notes/notes/123456/attachment", mapOf("path" to "foo"),
+            listOf("x", "y")
+        )
+    }
+
+    @Test
+    fun `Root - Full URL - Notes API - index, trailing slash, path query parameter`() {
+        load(SingleSignOnUrl(ssoAccountRoot, "https://nc.example.com/index.php/apps/notes/notes/123456/attachment/?path=foo"))
+        verifyCall(
+            "/index.php/apps/notes/notes/123456/attachment", mapOf("path" to "foo"),
+            listOf("x", "y")
+        )
+    }
+
+    // -----------------------------------------------------------
     // Nextcloud on Root / Full URL / WebDAV
     // -----------------------------------------------------------
 
@@ -936,6 +1054,124 @@ class SingleSignOnUrlStreamFetcherTest {
     fun `Root - Absolute path - Avatar - index, trailing slash, one query parameter`() {
         load(SingleSignOnUrl(ssoAccountRoot, "/index.php/avatar/my-user/32/?foo=bar"))
         verifyCall("/index.php/avatar/my-user/32", mapOf("foo" to "bar"))
+    }
+
+    // -----------------------------------------------------------
+    // Nextcloud on Root / Absolute path / Notes API
+    // -----------------------------------------------------------
+
+    @Test
+    fun `Root - Absolute path - Notes API - no index, no trailing slash, no query parameter`() {
+        load(SingleSignOnUrl(ssoAccountRoot, "/apps/notes/notes/123456/attachment"))
+        verifyCall("/apps/notes/notes/123456/attachment")
+    }
+
+    @Test
+    fun `Root - Absolute path - Notes API - no index, trailing slash, no query parameter`() {
+        load(SingleSignOnUrl(ssoAccountRoot, "/apps/notes/notes/123456/attachment/"))
+        verifyCall("/apps/notes/notes/123456/attachment/")
+    }
+
+    @Test
+    fun `Root - Absolute path - Notes API - index, no trailing slash, no query parameter`() {
+        load(SingleSignOnUrl(ssoAccountRoot, "/index.php/apps/notes/notes/123456/attachment"))
+        verifyCall("/index.php/apps/notes/notes/123456/attachment")
+    }
+
+    @Test
+    fun `Root - Absolute path - Notes API - index, trailing slash, no query parameter`() {
+        load(SingleSignOnUrl(ssoAccountRoot, "/index.php/apps/notes/notes/123456/attachment/"))
+        verifyCall("/index.php/apps/notes/notes/123456/attachment/")
+    }
+
+    // Empty query parameter
+
+    @Test
+    fun `Root - Absolute path - Notes API - no index, no trailing slash, empty query parameter`() {
+        load(SingleSignOnUrl(ssoAccountRoot, "/apps/notes/notes/123456/attachment?"))
+        verifyCall("/apps/notes/notes/123456/attachment")
+    }
+
+    @Test
+    fun `Root - Absolute path - Notes API - no index, trailing slash, empty query parameter`() {
+        load(SingleSignOnUrl(ssoAccountRoot, "/apps/notes/notes/123456/attachment/?"))
+        verifyCall("/apps/notes/notes/123456/attachment/")
+    }
+
+    @Test
+    fun `Root - Absolute path - Notes API - index, no trailing slash, empty query parameter`() {
+        load(SingleSignOnUrl(ssoAccountRoot, "/index.php/apps/notes/notes/123456/attachment?"))
+        verifyCall("/index.php/apps/notes/notes/123456/attachment")
+    }
+
+    @Test
+    fun `Root - Absolute path - Notes API - index, trailing slash, empty query parameter`() {
+        load(SingleSignOnUrl(ssoAccountRoot, "/index.php/apps/notes/notes/123456/attachment/?"))
+        verifyCall("/index.php/apps/notes/notes/123456/attachment/")
+    }
+
+    // Invalid query parameter
+
+    @Test
+    fun `Root - Absolute path - Notes API - no index, no trailing slash, invalid query parameter`() {
+        load(SingleSignOnUrl(ssoAccountRoot, "/apps/notes/notes/123456/attachment?invalid=foo"))
+        verifyCall("/apps/notes/notes/123456/attachment", mapOf("invalid" to "foo"))
+    }
+
+    @Test
+    fun `Root - Absolute path - Notes API - no index, trailing slash, invalid query parameter`() {
+        load(SingleSignOnUrl(ssoAccountRoot, "/apps/notes/notes/123456/attachment/?invalid=foo"))
+        verifyCall("/apps/notes/notes/123456/attachment/", mapOf("invalid" to "foo"))
+    }
+
+    @Test
+    fun `Root - Absolute path - Notes API - index, no trailing slash, invalid query parameter`() {
+        load(SingleSignOnUrl(ssoAccountRoot, "/index.php/apps/notes/notes/123456/attachment?invalid=foo"))
+        verifyCall("/index.php/apps/notes/notes/123456/attachment", mapOf("invalid" to "foo"))
+    }
+
+    @Test
+    fun `Root - Absolute path - Notes API - index, trailing slash, invalid query parameter`() {
+        load(SingleSignOnUrl(ssoAccountRoot, "/index.php/apps/notes/notes/123456/attachment/?invalid=foo"))
+        verifyCall("/index.php/apps/notes/notes/123456/attachment/", mapOf("invalid" to "foo"))
+    }
+
+    // Path query parameter
+
+    @Test
+    fun `Root - Absolute path - Notes API - no index, no trailing slash, path query parameter`() {
+        load(SingleSignOnUrl(ssoAccountRoot, "/apps/notes/notes/123456/attachment?path=foo"))
+        verifyCall(
+            "/index.php/apps/notes/notes/123456/attachment", mapOf("path" to "foo"),
+            listOf("x", "y")
+        )
+    }
+
+    @Test
+    fun `Root - Absolute path - Notes API - no index, trailing slash, path query parameter`() {
+        load(SingleSignOnUrl(ssoAccountRoot, "/apps/notes/notes/123456/attachment/?path=foo"))
+        verifyCall(
+            "/index.php/apps/notes/notes/123456/attachment", mapOf("path" to "foo"),
+            listOf("x", "y")
+        )
+    }
+
+    @Test
+    fun `Root - Absolute path - Notes API - index, no trailing slash, path query parameter`() {
+        load(SingleSignOnUrl(ssoAccountRoot, "/index.php/apps/notes/notes/123456/attachment?path=foo"))
+        verifyCall(
+            "/index.php/apps/notes/notes/123456/attachment", mapOf("path" to "foo"),
+            listOf("x", "y")
+        )
+    }
+
+    @Test
+    fun `Root - Absolute path - Notes API - index, trailing slash, path query parameter`() {
+        load(SingleSignOnUrl(ssoAccountRoot, "/index.php/apps/notes/notes/123456/attachment/?path=foo"))
+        verifyCall(
+            "/index.php/apps/notes/notes/123456/attachment", mapOf("path" to "foo"),
+            listOf("x", "y")
+        )
     }
 
     // -----------------------------------------------------------
@@ -1425,6 +1661,124 @@ class SingleSignOnUrlStreamFetcherTest {
     }
 
     // -----------------------------------------------------------
+    // Nextcloud on SubDir / Full URL / Notes API
+    // -----------------------------------------------------------
+
+    @Test
+    fun `SubDir - Full URL - Notes API - no index, no trailing slash, no query parameter`() {
+        load(SingleSignOnUrl(ssoAccountSubDir, "https://example.com/nc/apps/notes/notes/123456/attachment"))
+        verifyCall("/apps/notes/notes/123456/attachment")
+    }
+
+    @Test
+    fun `SubDir - Full URL - Notes API - no index, trailing slash, no query parameter`() {
+        load(SingleSignOnUrl(ssoAccountSubDir, "https://example.com/nc/apps/notes/notes/123456/attachment/"))
+        verifyCall("/apps/notes/notes/123456/attachment/")
+    }
+
+    @Test
+    fun `SubDir - Full URL - Notes API - index, no trailing slash, no query parameter`() {
+        load(SingleSignOnUrl(ssoAccountSubDir, "https://example.com/nc/index.php/apps/notes/notes/123456/attachment"))
+        verifyCall("/index.php/apps/notes/notes/123456/attachment")
+    }
+
+    @Test
+    fun `SubDir - Full URL - Notes API - index, trailing slash, no query parameter`() {
+        load(SingleSignOnUrl(ssoAccountSubDir, "https://example.com/nc/index.php/apps/notes/notes/123456/attachment/"))
+        verifyCall("/index.php/apps/notes/notes/123456/attachment/")
+    }
+
+    // Empty query parameter
+
+    @Test
+    fun `SubDir - Full URL - Notes API - no index, no trailing slash, empty query parameter`() {
+        load(SingleSignOnUrl(ssoAccountSubDir, "https://example.com/nc/apps/notes/notes/123456/attachment?"))
+        verifyCall("/apps/notes/notes/123456/attachment")
+    }
+
+    @Test
+    fun `SubDir - Full URL - Notes API - no index, trailing slash, empty query parameter`() {
+        load(SingleSignOnUrl(ssoAccountSubDir, "https://example.com/nc/apps/notes/notes/123456/attachment/?"))
+        verifyCall("/apps/notes/notes/123456/attachment/")
+    }
+
+    @Test
+    fun `SubDir - Full URL - Notes API - index, no trailing slash, empty query parameter`() {
+        load(SingleSignOnUrl(ssoAccountSubDir, "https://example.com/nc/index.php/apps/notes/notes/123456/attachment?"))
+        verifyCall("/index.php/apps/notes/notes/123456/attachment")
+    }
+
+    @Test
+    fun `SubDir - Full URL - Notes API - index, trailing slash, empty query parameter`() {
+        load(SingleSignOnUrl(ssoAccountSubDir, "https://example.com/nc/index.php/apps/notes/notes/123456/attachment/?"))
+        verifyCall("/index.php/apps/notes/notes/123456/attachment/")
+    }
+
+    // Invalid query parameter
+
+    @Test
+    fun `SubDir - Full URL - Notes API - no index, no trailing slash, invalid query parameter`() {
+        load(SingleSignOnUrl(ssoAccountSubDir, "https://example.com/nc/apps/notes/notes/123456/attachment?invalid=foo"))
+        verifyCall("/apps/notes/notes/123456/attachment", mapOf("invalid" to "foo"))
+    }
+
+    @Test
+    fun `SubDir - Full URL - Notes API - no index, trailing slash, invalid query parameter`() {
+        load(SingleSignOnUrl(ssoAccountSubDir, "https://example.com/nc/apps/notes/notes/123456/attachment/?invalid=foo"))
+        verifyCall("/apps/notes/notes/123456/attachment/", mapOf("invalid" to "foo"))
+    }
+
+    @Test
+    fun `SubDir - Full URL - Notes API - index, no trailing slash, invalid query parameter`() {
+        load(SingleSignOnUrl(ssoAccountSubDir, "https://example.com/nc/index.php/apps/notes/notes/123456/attachment?invalid=foo"))
+        verifyCall("/index.php/apps/notes/notes/123456/attachment", mapOf("invalid" to "foo"))
+    }
+
+    @Test
+    fun `SubDir - Full URL - Notes API - index, trailing slash, invalid query parameter`() {
+        load(SingleSignOnUrl(ssoAccountSubDir, "https://example.com/nc/index.php/apps/notes/notes/123456/attachment/?invalid=foo"))
+        verifyCall("/index.php/apps/notes/notes/123456/attachment/", mapOf("invalid" to "foo"))
+    }
+
+    // Path query parameter
+
+    @Test
+    fun `SubDir - Full URL - Notes API - no index, no trailing slash, path query parameter`() {
+        load(SingleSignOnUrl(ssoAccountSubDir, "https://example.com/nc/apps/notes/notes/123456/attachment?path=foo"))
+        verifyCall(
+            "/index.php/apps/notes/notes/123456/attachment", mapOf("path" to "foo"),
+            listOf("x", "y")
+        )
+    }
+
+    @Test
+    fun `SubDir - Full URL - Notes API - no index, trailing slash, path query parameter`() {
+        load(SingleSignOnUrl(ssoAccountSubDir, "https://example.com/nc/apps/notes/notes/123456/attachment/?path=foo"))
+        verifyCall(
+            "/index.php/apps/notes/notes/123456/attachment", mapOf("path" to "foo"),
+            listOf("x", "y")
+        )
+    }
+
+    @Test
+    fun `SubDir - Full URL - Notes API - index, no trailing slash, path query parameter`() {
+        load(SingleSignOnUrl(ssoAccountSubDir, "https://example.com/nc/index.php/apps/notes/notes/123456/attachment?path=foo"))
+        verifyCall(
+            "/index.php/apps/notes/notes/123456/attachment", mapOf("path" to "foo"),
+            listOf("x", "y")
+        )
+    }
+
+    @Test
+    fun `SubDir - Full URL - Notes API - index, trailing slash, path query parameter`() {
+        load(SingleSignOnUrl(ssoAccountSubDir, "https://example.com/nc/index.php/apps/notes/notes/123456/attachment/?path=foo"))
+        verifyCall(
+            "/index.php/apps/notes/notes/123456/attachment", mapOf("path" to "foo"),
+            listOf("x", "y")
+        )
+    }
+
+    // -----------------------------------------------------------
     // Nextcloud on SubDir / Full URL / WebDAV
     // -----------------------------------------------------------
 
@@ -1904,6 +2258,124 @@ class SingleSignOnUrlStreamFetcherTest {
     fun `SubDir - Absolute path - Avatar - index, trailing slash, one query parameter`() {
         load(SingleSignOnUrl(ssoAccountSubDir, "/nc/index.php/avatar/my-user/32/?foo=bar"))
         verifyCall("/index.php/avatar/my-user/32", mapOf("foo" to "bar"))
+    }
+
+    // -----------------------------------------------------------
+    // Nextcloud on SubDir / Absolute path / Notes API
+    // -----------------------------------------------------------
+
+    @Test
+    fun `SubDir - Absolute path - Notes API - no index, no trailing slash, no query parameter`() {
+        load(SingleSignOnUrl(ssoAccountSubDir, "/nc/apps/notes/notes/123456/attachment"))
+        verifyCall("/apps/notes/notes/123456/attachment")
+    }
+
+    @Test
+    fun `SubDir - Absolute path - Notes API - no index, trailing slash, no query parameter`() {
+        load(SingleSignOnUrl(ssoAccountSubDir, "/nc/apps/notes/notes/123456/attachment/"))
+        verifyCall("/apps/notes/notes/123456/attachment/")
+    }
+
+    @Test
+    fun `SubDir - Absolute path - Notes API - index, no trailing slash, no query parameter`() {
+        load(SingleSignOnUrl(ssoAccountSubDir, "/nc/index.php/apps/notes/notes/123456/attachment"))
+        verifyCall("/index.php/apps/notes/notes/123456/attachment")
+    }
+
+    @Test
+    fun `SubDir - Absolute path - Notes API - index, trailing slash, no query parameter`() {
+        load(SingleSignOnUrl(ssoAccountSubDir, "/nc/index.php/apps/notes/notes/123456/attachment/"))
+        verifyCall("/index.php/apps/notes/notes/123456/attachment/")
+    }
+
+    // Empty query parameter
+
+    @Test
+    fun `SubDir - Absolute path - Notes API - no index, no trailing slash, empty query parameter`() {
+        load(SingleSignOnUrl(ssoAccountSubDir, "/nc/apps/notes/notes/123456/attachment?"))
+        verifyCall("/apps/notes/notes/123456/attachment")
+    }
+
+    @Test
+    fun `SubDir - Absolute path - Notes API - no index, trailing slash, empty query parameter`() {
+        load(SingleSignOnUrl(ssoAccountSubDir, "/nc/apps/notes/notes/123456/attachment/?"))
+        verifyCall("/apps/notes/notes/123456/attachment/")
+    }
+
+    @Test
+    fun `SubDir - Absolute path - Notes API - index, no trailing slash, empty query parameter`() {
+        load(SingleSignOnUrl(ssoAccountSubDir, "/nc/index.php/apps/notes/notes/123456/attachment?"))
+        verifyCall("/index.php/apps/notes/notes/123456/attachment")
+    }
+
+    @Test
+    fun `SubDir - Absolute path - Notes API - index, trailing slash, empty query parameter`() {
+        load(SingleSignOnUrl(ssoAccountSubDir, "/nc/index.php/apps/notes/notes/123456/attachment/?"))
+        verifyCall("/index.php/apps/notes/notes/123456/attachment/")
+    }
+
+    // Invalid query parameter
+
+    @Test
+    fun `SubDir - Absolute path - Notes API - no index, no trailing slash, invalid query parameter`() {
+        load(SingleSignOnUrl(ssoAccountSubDir, "/nc/apps/notes/notes/123456/attachment?invalid=foo"))
+        verifyCall("/apps/notes/notes/123456/attachment", mapOf("invalid" to "foo"))
+    }
+
+    @Test
+    fun `SubDir - Absolute path - Notes API - no index, trailing slash, invalid query parameter`() {
+        load(SingleSignOnUrl(ssoAccountSubDir, "/nc/apps/notes/notes/123456/attachment/?invalid=foo"))
+        verifyCall("/apps/notes/notes/123456/attachment/", mapOf("invalid" to "foo"))
+    }
+
+    @Test
+    fun `SubDir - Absolute path - Notes API - index, no trailing slash, invalid query parameter`() {
+        load(SingleSignOnUrl(ssoAccountSubDir, "/nc/index.php/apps/notes/notes/123456/attachment?invalid=foo"))
+        verifyCall("/index.php/apps/notes/notes/123456/attachment", mapOf("invalid" to "foo"))
+    }
+
+    @Test
+    fun `SubDir - Absolute path - Notes API - index, trailing slash, invalid query parameter`() {
+        load(SingleSignOnUrl(ssoAccountSubDir, "/nc/index.php/apps/notes/notes/123456/attachment/?invalid=foo"))
+        verifyCall("/index.php/apps/notes/notes/123456/attachment/", mapOf("invalid" to "foo"))
+    }
+
+    // Path query parameter
+
+    @Test
+    fun `SubDir - Absolute path - Notes API - no index, no trailing slash, path query parameter`() {
+        load(SingleSignOnUrl(ssoAccountSubDir, "/nc/apps/notes/notes/123456/attachment?path=foo"))
+        verifyCall(
+            "/index.php/apps/notes/notes/123456/attachment", mapOf("path" to "foo"),
+            listOf("x", "y")
+        )
+    }
+
+    @Test
+    fun `SubDir - Absolute path - Notes API - no index, trailing slash, path query parameter`() {
+        load(SingleSignOnUrl(ssoAccountSubDir, "/nc/apps/notes/notes/123456/attachment/?path=foo"))
+        verifyCall(
+            "/index.php/apps/notes/notes/123456/attachment", mapOf("path" to "foo"),
+            listOf("x", "y")
+        )
+    }
+
+    @Test
+    fun `SubDir - Absolute path - Notes API - index, no trailing slash, path query parameter`() {
+        load(SingleSignOnUrl(ssoAccountSubDir, "/nc/index.php/apps/notes/notes/123456/attachment?path=foo"))
+        verifyCall(
+            "/index.php/apps/notes/notes/123456/attachment", mapOf("path" to "foo"),
+            listOf("x", "y")
+        )
+    }
+
+    @Test
+    fun `SubDir - Absolute path - Notes API - index, trailing slash, path query parameter`() {
+        load(SingleSignOnUrl(ssoAccountSubDir, "/nc/index.php/apps/notes/notes/123456/attachment/?path=foo"))
+        verifyCall(
+            "/index.php/apps/notes/notes/123456/attachment", mapOf("path" to "foo"),
+            listOf("x", "y")
+        )
     }
 
     // -----------------------------------------------------------
