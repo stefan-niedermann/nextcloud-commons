@@ -16,6 +16,17 @@ class PrefixImageDestinationProcessorTest : TestCase() {
     }
 
     @Test
+    fun `should not prepend prefix when destination has valid scheme`() {
+        processor.setPrefix("example.com?url=")
+
+        assertEquals("http://bar", processor.process("http://bar"))
+        assertEquals("https://bar", processor.process("https://bar"))
+        assertEquals("ftp://bar", processor.process("ftp://bar"))
+        assertEquals("ftps://bar", processor.process("ftps://bar"))
+        assertEquals("sftp://bar", processor.process("sftp://bar"))
+    }
+
+    @Test
     fun `should prepend prefix when destination is relative path`() {
         processor.setPrefix("example.com?url=")
         assertEquals("example.com?url=bar", processor.process("bar"))
@@ -28,13 +39,8 @@ class PrefixImageDestinationProcessorTest : TestCase() {
     }
 
     @Test
-    fun `should not prepend prefix when destination has valid scheme`() {
+    fun `should not touch the actual destination when prepending a prefix`() {
         processor.setPrefix("example.com?url=")
-
-        assertEquals("http://bar", processor.process("http://bar"))
-        assertEquals("https://bar", processor.process("https://bar"))
-        assertEquals("ftp://bar", processor.process("ftp://bar"))
-        assertEquals("ftps://bar", processor.process("ftps://bar"))
-        assertEquals("sftp://bar", processor.process("sftp://bar"))
+        assertEquals("example.com?url= /%20 & strange values", processor.process(" /%20 & strange values"))
     }
 }
