@@ -1,5 +1,6 @@
 package it.niedermann.android.markdown;
 
+import android.net.Uri;
 import android.text.style.URLSpan;
 import android.util.Log;
 
@@ -52,6 +53,14 @@ public interface MarkdownEditor {
     void setMarkdownStringChangedListener(@Nullable Consumer<CharSequence> listener);
 
     void setEnabled(boolean enabled);
+
+    /**
+     * Will append the given {@param #prefix} <strong>only for not fully qualified URLs</strong>.
+     * URLs which start with a valid {@link Uri#getScheme()} will stay untouched.
+     */
+    default void setMarkdownImageUrlPrefix(String prefix) {
+        Log.w(TAG, "This feature is not supported by the currently used implementation.");
+    }
 
     /**
      * @param color which will be used for highlighting. See {@link #setSearchText(CharSequence)}
