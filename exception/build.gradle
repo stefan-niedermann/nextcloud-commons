@@ -60,6 +60,6 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 
     testImplementation 'junit:junit:4.13.2'
-    testImplementation "io.mockk:mockk:1.13.3"
+    testImplementation "io.mockk:mockk:1.13.4"
     testImplementation 'org.robolectric:robolectric:4.9.2'
 }
