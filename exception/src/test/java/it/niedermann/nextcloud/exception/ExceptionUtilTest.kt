@@ -2,7 +2,6 @@ package it.niedermann.nextcloud.exception
 
 import androidx.test.platform.app.InstrumentationRegistry
 import com.nextcloud.android.sso.helper.VersionCheckHelper
-import com.nextcloud.android.sso.model.FilesAppType
 import io.mockk.every
 import io.mockk.mockkStatic
 import org.junit.Assert.assertFalse
@@ -17,7 +16,7 @@ class ExceptionUtilTest {
     @Before
     fun setup() {
         mockkStatic(VersionCheckHelper::class)
-        every { VersionCheckHelper.getNextcloudFilesVersionCode(any(), any<FilesAppType>()) } returns 4711
+        every { VersionCheckHelper.getNextcloudFilesVersionCode(any(), any()) } returns 4711
     }
 
     @Test

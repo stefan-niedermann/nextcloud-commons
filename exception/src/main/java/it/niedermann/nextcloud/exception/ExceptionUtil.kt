@@ -5,6 +5,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.text.TextUtils
 import com.nextcloud.android.sso.helper.VersionCheckHelper
+import com.nextcloud.android.sso.model.FilesAppType
 import java.io.PrintWriter
 import java.io.StringWriter
 
@@ -82,15 +83,12 @@ object ExceptionUtil {
                 "App Flavor: $flavor\n"
             }
         }
-        versions += "\n"
-        try {
-            versions += "Files App Version Code: " + VersionCheckHelper.getNextcloudFilesVersionCode(context, true)
-        } catch (e: PackageManager.NameNotFoundException) {
+        val types = FilesAppType.values()
+        types.forEach {
             try {
-                versions += "Files App Version Code: " + VersionCheckHelper.getNextcloudFilesVersionCode(context, false) + " (Beta)"
+                versions += "\nFiles App Version Code: ${VersionCheckHelper.getNextcloudFilesVersionCode(context, it)} (${it})"
             } catch (e: PackageManager.NameNotFoundException) {
-                versions += "Files App Version Code: " + e.message
-                e.printStackTrace()
+                // Ignored
             }
         }
         return versions
