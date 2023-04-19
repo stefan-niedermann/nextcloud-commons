@@ -47,7 +47,7 @@ dependencies {
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.3'
 
     implementation "com.github.nextcloud:Android-SingleSignOn:$sso_version"
-    implementation 'com.github.stefan-niedermann:android-commons:0.3.0'
+    implementation 'com.github.stefan-niedermann:android-commons:0.3.1'
 
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.6.1'
