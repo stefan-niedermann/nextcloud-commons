@@ -78,5 +78,5 @@ dependencies {
     testImplementation 'androidx.arch.core:core-testing:2.2.0'
     testImplementation 'junit:junit:4.13.2'
     testImplementation "io.mockk:mockk:1.13.5"
-    testImplementation 'org.robolectric:robolectric:4.10'
+    testImplementation 'org.robolectric:robolectric:4.10.1'
 }
