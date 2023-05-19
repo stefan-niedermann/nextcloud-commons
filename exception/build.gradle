@@ -54,7 +54,7 @@ dependencies {
 
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.3'
 
-    api "com.github.nextcloud:Android-SingleSignOn:$sso_version"
+    api "com.github.stefan-niedermann:communis-sso:$sso_version"
     implementation 'com.github.stefan-niedermann:android-commons:0.2.9'
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
