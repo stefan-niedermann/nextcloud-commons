@@ -9,8 +9,8 @@ android {
     defaultConfig {
         minSdkVersion 22
         targetSdkVersion 33
-        versionCode 1007000
-        versionName = '1.7.0'
+        versionCode 1007001
+        versionName = '1.7.1'
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles 'consumer-rules.pro'
@@ -34,6 +34,19 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+
+    defaultPublishConfig "upstreamRelease"
+
+    flavorDimensions "sso"
+
+    productFlavors {
+        upstream {
+            dimension "sso"
+        }
+        communis {
+            dimension "sso"
+        }
+    }
 }
 
 afterEvaluate {
@@ -54,7 +67,8 @@ dependencies {
 
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.3'
 
-    api "com.github.nextcloud:Android-SingleSignOn:$sso_version"
+    upstreamApi "com.github.nextcloud:Android-SingleSignOn:$sso_version"
+    communisApi "com.github.stefan-niedermann:communis-sso:$communis_sso_version"
     implementation 'com.github.stefan-niedermann:android-commons:0.2.9'
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
