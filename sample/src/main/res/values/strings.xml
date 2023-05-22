@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">Sample</string>
+    <string name="headline_exception">exception</string>
+    <string name="headline_markdown">markdown</string>
+    <string name="headline_markdown_editor">Editor</string>
+    <string name="headline_markdown_viewer">Viewer</string>
+    <string name="headline_sso_glide">sso-glide</string>
+    <string name="markdown_content">**strong**, *emphasised*, ~~strike~~</string>
+    <string name="tbd">To be done</string>
+    <string name="sign_on">Sign on</string>
+</resources>
