@@ -50,7 +50,7 @@ public class MentionUtil {
             Glide.with(context)
                     .asBitmap()
                     .placeholder(R.drawable.ic_person_grey600_24dp)
-                    .load(account.url + "/index.php/avatar/" + messageBuilder.subSequence(spanStart + 1, spanEnd).toString() + "/" + span.getDrawable().getIntrinsicHeight())
+                    .load(account.url + "/index.php/avatar/" + messageBuilder.subSequence(spanStart + 1, spanEnd) + "/" + span.getDrawable().getIntrinsicHeight())
                     .apply(RequestOptions.circleCropTransform())
                     .into(new CustomTarget<Bitmap>() {
                         @Override

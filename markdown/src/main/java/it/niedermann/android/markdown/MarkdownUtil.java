@@ -518,7 +518,6 @@ public class MarkdownUtil {
         if (TextUtils.isEmpty(s)) {
             return "";
         }
-        assert s != null;
         final String html = RENDERER.render(PARSER.parse(replaceCheckboxesWithEmojis(s)));
         final Spanned spanned = HtmlCompat.fromHtml(html, HtmlCompat.FROM_HTML_MODE_COMPACT);
         if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.M) {

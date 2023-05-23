@@ -9,6 +9,7 @@ import com.nextcloud.android.sso.model.FilesAppType
 import java.io.PrintWriter
 import java.io.StringWriter
 
+@Suppress("unused")
 object ExceptionUtil {
     fun getDebugInfos(context: Context, throwable: Throwable): String {
         return getDebugInfos(context, throwable, null, null)

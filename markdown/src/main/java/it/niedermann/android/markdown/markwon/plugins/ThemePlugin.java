@@ -13,7 +13,7 @@ import it.niedermann.android.markdown.R;
 public class ThemePlugin extends AbstractMarkwonPlugin {
 
     @NonNull
-    Context context;
+    private final Context context;
 
     private ThemePlugin(@NonNull Context context) {
         this.context = context;

@@ -20,7 +20,8 @@ import com.nextcloud.android.sso.model.SingleSignOnAccount
 import java.io.InputStream
 import java.net.MalformedURLException
 import java.net.URL
-import java.util.*
+import java.util.LinkedList
+import java.util.Optional
 import java.util.concurrent.ConcurrentHashMap
 
 /**
@@ -160,7 +161,7 @@ abstract class AbstractStreamFetcher<T>(
         } else {
             avatarGroupValues[2]
         }
-        val avatarSize = avatarGroupValues?.get(3);
+        val avatarSize = avatarGroupValues?.get(3)
         if (avatarSize != null) {
             return if (url.query == null) {
                 Optional.of(URL("${ssoAccount.url}/index.php/avatar/${avatarUserId}/${avatarSize}"))
