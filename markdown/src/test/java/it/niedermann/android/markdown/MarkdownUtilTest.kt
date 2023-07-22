@@ -600,6 +600,12 @@ class MarkdownUtilTest : TestCase() {
         assertFalse(MarkdownUtil.getOrderedListNumber("11. ").isPresent)
         assertFalse(MarkdownUtil.getOrderedListNumber("-1. Test").isPresent)
         assertFalse(MarkdownUtil.getOrderedListNumber(" 1. Test").isPresent)
+        assertFalse(MarkdownUtil.getOrderedListNumber("123 Test").isPresent)
+        assertFalse(MarkdownUtil.getOrderedListNumber("123a Test").isPresent)
+        assertFalse(MarkdownUtil.getOrderedListNumber("123").isPresent)
+        assertFalse(MarkdownUtil.getOrderedListNumber("123a").isPresent)
+        assertFalse(MarkdownUtil.getOrderedListNumber("123 ").isPresent)
+        assertFalse(MarkdownUtil.getOrderedListNumber("123a ").isPresent)
     }
 
     @Test
