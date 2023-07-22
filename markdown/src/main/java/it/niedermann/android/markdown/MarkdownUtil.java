@@ -45,8 +45,8 @@ public class MarkdownUtil {
     private static final HtmlRenderer RENDERER = HtmlRenderer.builder().softbreak("<br>").build();
 
     private static final Pattern PATTERN_CODE_FENCE = Pattern.compile("^(`{3,})");
-    private static final Pattern PATTERN_ORDERED_LIST_ITEM = Pattern.compile("^(\\d+).\\s.+$");
-    private static final Pattern PATTERN_ORDERED_LIST_ITEM_EMPTY = Pattern.compile("^(\\d+).\\s$");
+    private static final Pattern PATTERN_ORDERED_LIST_ITEM = Pattern.compile("^(\\d+)\\.\\s.+$");
+    private static final Pattern PATTERN_ORDERED_LIST_ITEM_EMPTY = Pattern.compile("^(\\d+)\\.\\s$");
     private static final Pattern PATTERN_MARKDOWN_LINK = Pattern.compile("\\[(.+)?]\\(([^ ]+?)?( \"(.+)\")?\\)");
 
     private static final String PATTERN_QUOTE_BOLD_PUNCTUATION = Pattern.quote("**");
