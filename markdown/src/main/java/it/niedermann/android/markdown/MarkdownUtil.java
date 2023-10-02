@@ -73,6 +73,7 @@ public class MarkdownUtil {
 
         ArrayList<RemoteViewElement> remoteViews = new ArrayList<>();
         StringBuilder currentLineBlock = new StringBuilder();
+        int startLine = 0;
 
         final String[] lines = content.split("\n");
         boolean isInFencedCodeBlock = false;
@@ -96,8 +97,14 @@ public class MarkdownUtil {
             }
             if (!isInFencedCodeBlock) {
                 if (isCheckboxLine(lines[i])) {
-                    remoteViews.add(new RemoteViewElement(RemoteViewElement.TYPE_TEXT, currentLineBlock.toString()));
+                    // if the first line is a checkbox, this will be an empty markdown block. It will also end in line -1.
+                    var endline = i-1;
+                    if(endline<0) {
+                        endline = 0;
+                    }
+                    remoteViews.add(new RemoteViewElement(RemoteViewElement.TYPE_TEXT, currentLineBlock.toString(), startLine, endline));
                     currentLineBlock = new StringBuilder();
+                    startLine = i+1;
 
                     boolean isChecked = false;
                     for (EListType listType : EListType.values()) {
@@ -106,9 +113,9 @@ public class MarkdownUtil {
                         }
                     }
                     if(isChecked) {
-                        remoteViews.add(new RemoteViewElement(RemoteViewElement.TYPE_CHECKBOX_CHECKED, lines[i]));
+                        remoteViews.add(new RemoteViewElement(RemoteViewElement.TYPE_CHECKBOX_CHECKED, lines[i], i, i));
                     } else {
-                        remoteViews.add(new RemoteViewElement(RemoteViewElement.TYPE_CHECKBOX_UNCHECKED, lines[i]));
+                        remoteViews.add(new RemoteViewElement(RemoteViewElement.TYPE_CHECKBOX_UNCHECKED, lines[i], i, i));
                     }
                     continue;
                 }

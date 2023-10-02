@@ -4,7 +4,9 @@ import java.util.ArrayList
 
 class RemoteViewElement(
     val type: Int,
-    val currentLineBlock: String
+    val currentLineBlock: String,
+    val blockStartsInLine: Int,
+    val blockEndsInLine: Int
 ) {
 
     companion object {
@@ -28,6 +30,7 @@ class RemoteViewElement(
 
         elements.append("Content:").append("\n")
         elements.append(currentLineBlock).append("\n")
+        elements.append("Started from $blockStartsInLine to $blockEndsInLine").append("\n")
         return elements.toString()
     }
 }
