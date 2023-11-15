@@ -72,7 +72,7 @@ dependencies {
         exclude group: 'org.jetbrains', module: 'annotations-java5'
     }
     annotationProcessor 'io.noties:prism4j-bundler:2.0.0'
-    implementation 'org.jetbrains:annotations:24.0.1'
+    implementation 'org.jetbrains:annotations:24.1.0'
 
     testImplementation 'androidx.test:core:1.5.0'
     testImplementation 'androidx.arch.core:core-testing:2.2.0'
