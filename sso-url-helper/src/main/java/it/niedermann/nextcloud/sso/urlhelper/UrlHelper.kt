@@ -89,7 +89,7 @@ private fun rewriteSpecialURLs(ssoAccount: SingleSignOnAccount, url: URL, fallba
         }
     }
 
-    if (!pathStartingFromNextcloudRoot.startsWith("/index.php") && !pathStartingFromNextcloudRoot.startsWith("/remote.php")) {
+    if (listOf("/ocs", "/index.php", "/remote.php").none { pathStartingFromNextcloudRoot.startsWith(it) }) {
         val webDAV = REGEX_WEBDAV.find(pathStartingFromNextcloudRoot)?.groupValues?.get(2)
         if (webDAV != null) {
             return if (url.query == null) {
