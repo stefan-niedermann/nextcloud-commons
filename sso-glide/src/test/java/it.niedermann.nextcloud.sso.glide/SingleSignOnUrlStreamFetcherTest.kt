@@ -2065,7 +2065,7 @@ class SingleSignOnUrlStreamFetcherTest {
                 context: Context,
                 model: String
             ): SingleSignOnAccount {
-                throw NextcloudFilesAppAccountNotFoundException()
+                throw NextcloudFilesAppAccountNotFoundException(ApplicationProvider.getApplicationContext())
             }
         }
         fetcher.loadData(Priority.NORMAL, callback)
@@ -2077,7 +2077,7 @@ class SingleSignOnUrlStreamFetcherTest {
 
     @Test
     fun `Given a TokenMismatchException is thrown while performing the request directly after API creation, it should reset this API instance and call the error handler of the callback`() {
-        every { api.performNetworkRequestV2(any()) } throws TokenMismatchException()
+        every { api.performNetworkRequestV2(any()) } throws TokenMismatchException(ApplicationProvider.getApplicationContext())
 
         val fetcher = object : AbstractStreamFetcher<String>(
             ApplicationProvider.getApplicationContext(),
