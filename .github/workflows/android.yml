@@ -28,7 +28,7 @@ jobs:
           check-latest: true
           cache: 'gradle'
       - name: Unit tests
-        run: bash ./gradlew test --stacktrace
+        run: bash ./gradlew test --stacktrace --no-configuration-cache
 
   aar:
     name: Generate AAR
@@ -43,7 +43,7 @@ jobs:
           check-latest: true
           cache: 'gradle'
       - name: Build debug AAR
-        run: bash ./gradlew assemble --stacktrace
+        run: bash ./gradlew assemble --stacktrace --no-configuration-cache
       - name: Upload AAR
         uses: actions/upload-artifact@v4
         with:
