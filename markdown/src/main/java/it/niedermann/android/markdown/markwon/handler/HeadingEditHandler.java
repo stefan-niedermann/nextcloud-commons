@@ -41,27 +41,15 @@ public class HeadingEditHandler implements EditHandler<HeadingSpan> {
         final HeadingSpan newSpan;
 
         switch (span.getLevel()) {
-            case 1:
-                newSpan = persistedSpans.get(Heading1Span.class);
-                break;
-            case 2:
-                newSpan = persistedSpans.get(Heading2Span.class);
-                break;
-            case 3:
-                newSpan = persistedSpans.get(Heading3Span.class);
-                break;
-            case 4:
-                newSpan = persistedSpans.get(Heading4Span.class);
-                break;
-            case 5:
-                newSpan = persistedSpans.get(Heading5Span.class);
-                break;
-            case 6:
-                newSpan = persistedSpans.get(Heading6Span.class);
-                break;
-            default:
+            case 1 -> newSpan = persistedSpans.get(Heading1Span.class);
+            case 2 -> newSpan = persistedSpans.get(Heading2Span.class);
+            case 3 -> newSpan = persistedSpans.get(Heading3Span.class);
+            case 4 -> newSpan = persistedSpans.get(Heading4Span.class);
+            case 5 -> newSpan = persistedSpans.get(Heading5Span.class);
+            case 6 -> newSpan = persistedSpans.get(Heading6Span.class);
+            default -> {
                 return;
-
+            }
         }
         final int newStart = getNewSpanStart(input, spanStart);
         final int newEnd = findEnd(input, newStart, newSpan.getLevel());

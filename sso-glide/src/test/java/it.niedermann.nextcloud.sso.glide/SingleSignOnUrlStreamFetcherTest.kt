@@ -2094,7 +2094,7 @@ class SingleSignOnUrlStreamFetcherTest {
         fetcher.loadData(Priority.NORMAL, callback)
 
         verify(exactly = 1) { api.performNetworkRequestV2(any()) }
-        verify(exactly = 1) { api.stop() }
+        verify(exactly = 1) { api.close() }
         verify(exactly = 0) { callback.onDataReady(any()) }
         verify(exactly = 1) { callback.onLoadFailed(withArg { it is TokenMismatchException }) }
     }
@@ -2105,8 +2105,8 @@ class SingleSignOnUrlStreamFetcherTest {
         every { api.performNetworkRequestV2(any()) } returns Response(
             mockk(),
             mockk()
-        ) andThenThrows TokenMismatchException()
-        every { recreatedApi.performNetworkRequestV2(any()) } throws TokenMismatchException()
+        ) andThenThrows TokenMismatchException(ApplicationProvider.getApplicationContext())
+        every { recreatedApi.performNetworkRequestV2(any()) } throws TokenMismatchException(ApplicationProvider.getApplicationContext())
         every { apiFactory.build(any(), any(), any(), any()) } returnsMany listOf(api, recreatedApi)
 
         val fetcher = object : AbstractStreamFetcher<String>(
@@ -2126,9 +2126,9 @@ class SingleSignOnUrlStreamFetcherTest {
 
         verify(exactly = 2) { api.performNetworkRequestV2(any()) } // First call is successful, second fails
         verify(exactly = 1) { callback.onDataReady(any()) } // The very first call was successful
-        verify(exactly = 1) { api.stop() } // after failing call, clear the API instance. It worked before, so we will try to create a new API before giving up
+        verify(exactly = 1) { api.close() } // after failing call, clear the API instance. It worked before, so we will try to create a new API before giving up
         verify(exactly = 1) { recreatedApi.performNetworkRequestV2(any()) } // First call to the new API also fails
-        verify(exactly = 1) { recreatedApi.stop() } // So we clear also this API instance. This instance did never work, so we don't even try to create a new API but
+        verify(exactly = 1) { recreatedApi.close() } // So we clear also this API instance. This instance did never work, so we don't even try to create a new API but
         verify(exactly = 1) { callback.onLoadFailed(withArg { it is TokenMismatchException }) } // fail now
     }
 }
