@@ -4,7 +4,7 @@ buildscript {
     ext.version_code = 1008002
     ext.version_name = '1.8.2'
     ext.kotlin_version = '1.9.22'
-    ext.sso_version = '0.8.1'
+    ext.sso_version = '0b07b6eebf'
 
     repositories {
         google()
