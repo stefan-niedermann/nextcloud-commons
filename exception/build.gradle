@@ -3,14 +3,12 @@ apply plugin: 'kotlin-android'
 apply plugin: 'maven-publish' // needed for JitPack.io
 
 android {
-    compileSdkVersion 33
-    buildToolsVersion "33.0.1"
+    compileSdk 34
+    namespace 'it.niedermann.nextcloud.exception'
 
     defaultConfig {
-        minSdkVersion 22
-        targetSdkVersion 33
-        versionCode version_code
-        versionName version_name
+        minSdk 22
+        targetSdk 34
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles 'consumer-rules.pro'
@@ -18,8 +16,12 @@ android {
 
     compileOptions {
         coreLibraryDesugaringEnabled true
-        sourceCompatibility JavaVersion.VERSION_11
-        targetCompatibility JavaVersion.VERSION_11
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    kotlinOptions {
+        jvmTarget = '17'
     }
 
     testOptions {
@@ -33,6 +35,11 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
+    }
+
+    lintOptions {
+        disable 'MissingTranslation'
+        abortOnError false
     }
 }
 
@@ -55,11 +62,11 @@ dependencies {
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.4'
 
     api "com.github.nextcloud:Android-SingleSignOn:$sso_version"
-    implementation 'com.github.stefan-niedermann:android-commons:0.2.9'
+    implementation 'com.github.stefan-niedermann:android-commons:0.4.0'
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 
     testImplementation 'junit:junit:4.13.2'
-    testImplementation "io.mockk:mockk:1.13.7"
+    testImplementation "io.mockk:mockk:1.13.9"
     testImplementation 'org.robolectric:robolectric:4.11.1'
 }

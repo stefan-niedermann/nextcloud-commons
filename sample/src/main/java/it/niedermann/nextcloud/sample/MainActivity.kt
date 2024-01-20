@@ -2,6 +2,7 @@ package it.niedermann.nextcloud.sample
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
@@ -16,6 +17,7 @@ import it.niedermann.nextcloud.exception.ExceptionUtil
 class MainActivity : AppCompatActivity() {
 
     private lateinit var signOn: Button
+    private lateinit var currentUser: TextView
     private lateinit var sampleException: TextView
     private lateinit var markdownEditor: MarkdownEditor
     private lateinit var markdownViewer: MarkdownEditor
@@ -26,6 +28,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         signOn = findViewById<MaterialButton>(R.id.signOn)
+        currentUser = findViewById(R.id.currentUser)
         sampleException = findViewById(R.id.sampleException)
         markdownEditor = findViewById<MarkdownEditorImpl>(R.id.markdown_editor)
         markdownViewer = findViewById<MarkdownViewerImpl>(R.id.markdown_viewer)
@@ -47,6 +50,8 @@ class MainActivity : AppCompatActivity() {
         AccountImporter.onActivityResult(requestCode, resultCode, data, this) {
             SingleAccountHelper.commitCurrentAccount(this, it.name)
             mentions[it.userId] = it.name
+            currentUser.text = it.name
+            currentUser.visibility = View.VISIBLE
         }
     }
 }

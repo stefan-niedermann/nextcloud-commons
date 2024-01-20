@@ -11,23 +11,33 @@
         android:orientation="vertical"
         tools:context=".MainActivity">
 
-        <TextView
-            style="@style/TextAppearance.Material3.HeadlineLarge"
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/signOn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/sign_on" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/currentUser"
+            style="?attr/textAppearanceBodyMedium"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAlignment="center"
+            android:visibility="gone"
+            tools:text="@tools:sample/full_names"
+            tools:visibility="visible" />
+
+        <com.google.android.material.textview.MaterialTextView
+            style="?attr/textAppearanceHeadlineLarge"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/headline_exception" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/signOn"
-            android:text="@string/sign_on"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
 
         <androidx.core.widget.NestedScrollView
             android:layout_width="match_parent"
             android:layout_height="150dp">
 
-            <TextView
+            <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/sampleException"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
@@ -37,14 +47,14 @@
                 android:textColor="?attr/colorOnTertiaryContainer" />
         </androidx.core.widget.NestedScrollView>
 
-        <TextView
-            style="@style/TextAppearance.Material3.HeadlineMedium"
+        <com.google.android.material.textview.MaterialTextView
+            style="?attr/textAppearanceHeadlineMedium"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/headline_markdown" />
 
-        <TextView
-            style="@style/TextAppearance.Material3.HeadlineSmall"
+        <com.google.android.material.textview.MaterialTextView
+            style="?attr/textAppearanceHeadlineSmall"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/headline_markdown_editor" />
@@ -54,8 +64,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 
-        <TextView
-            style="@style/TextAppearance.Material3.HeadlineSmall"
+        <com.google.android.material.textview.MaterialTextView
+            style="?attr/textAppearanceHeadlineSmall"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/headline_markdown_viewer" />
@@ -65,8 +75,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 
-        <TextView
-            style="@style/TextAppearance.Material3.HeadlineMedium"
+        <com.google.android.material.textview.MaterialTextView
+            style="?attr/textAppearanceHeadlineMedium"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/headline_sso_glide" />

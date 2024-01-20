@@ -9,7 +9,7 @@ import com.nextcloud.android.sso.model.FilesAppType
 import java.io.PrintWriter
 import java.io.StringWriter
 
-@Suppress("unused")
+@Suppress("unused", "MemberVisibilityCanBePrivate")
 object ExceptionUtil {
     fun getDebugInfos(context: Context, throwable: Throwable): String {
         return getDebugInfos(context, throwable, null, null)
@@ -84,7 +84,7 @@ object ExceptionUtil {
                 "App Flavor: $flavor\n"
             }
         }
-        val types = FilesAppType.values()
+        val types = FilesAppType.entries
         types.forEach {
             try {
                 versions += "\nFiles App Version Code: ${VersionCheckHelper.getNextcloudFilesVersionCode(context, it)} (${it})"

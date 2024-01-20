@@ -21,8 +21,14 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          check-latest: true
+          cache: 'gradle'
       - name: Unit tests
-        run: bash ./gradlew test --stacktrace
+        run: bash ./gradlew test --stacktrace --no-configuration-cache
 
   aar:
     name: Generate AAR
@@ -30,8 +36,14 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          check-latest: true
+          cache: 'gradle'
       - name: Build debug AAR
-        run: bash ./gradlew assemble --stacktrace
+        run: bash ./gradlew assemble --stacktrace --no-configuration-cache
       - name: Upload AAR
         uses: actions/upload-artifact@v4
         with:

@@ -15,6 +15,8 @@ import java.util.function.Function;
 /**
  * Can be used for editors and viewers as well.
  * Viewer can support basic edit features, like toggling checkboxes
+ *
+ * @noinspection unused
  */
 public interface MarkdownEditor {
 

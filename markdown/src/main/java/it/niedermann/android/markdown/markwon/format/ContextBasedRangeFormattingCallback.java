@@ -40,7 +40,7 @@ public class ContextBasedRangeFormattingCallback implements ActionMode.Callback 
             item = menu.findItem(styleFormatMap.keyAt(i));
             title = item.getTitle();
             spannableString = new SpannableString(title);
-            spannableString.setSpan(new StyleSpan(styleFormatMap.valueAt(i)), 0, title.length(), 0);
+            spannableString.setSpan(new StyleSpan(styleFormatMap.valueAt(i)), 0, title == null ? 0 : title.length(), 0);
             item.setTitle(spannableString);
         }
 

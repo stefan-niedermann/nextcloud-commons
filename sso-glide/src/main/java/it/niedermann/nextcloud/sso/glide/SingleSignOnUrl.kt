@@ -8,7 +8,7 @@ import com.nextcloud.android.sso.model.SingleSignOnAccount
 import java.net.URL
 
 /**
- * Use this as kind of [GlideUrl] if you want to do a [Glide] request from a [SingleSignOnAccount] which is not set by [SingleAccountHelper.setCurrentAccount].
+ * Use this as kind of [GlideUrl] if you want to do a [Glide] request from a [SingleSignOnAccount] which is not set by [SingleAccountHelper.commitCurrentAccount].
  */
 class SingleSignOnUrl : GlideUrl {
 

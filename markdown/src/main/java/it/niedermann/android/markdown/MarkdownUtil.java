@@ -63,6 +63,8 @@ public class MarkdownUtil {
      * <p>
      * Since {@link Markwon} makes heavy use of custom spans, this won't look nice e. g. at app widgets, because they simply won't be rendered.
      * Therefore we currently use {@link HtmlCompat} to filter supported spans from the output of {@link HtmlRenderer} as an intermediate step.
+     *
+     * @noinspection unused
      */
     public static CharSequence renderForRemoteView(@NonNull Context context, @NonNull String content) {
         // Create HTML string from Markup

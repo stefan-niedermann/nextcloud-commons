@@ -134,7 +134,7 @@ abstract class AbstractStreamFetcher<T>(
         }
 
         private fun resetInitializedApi(key: String) {
-            INITIALIZED_APIs[key]?.stop()
+            INITIALIZED_APIs[key]?.close()
             INITIALIZED_APIs.remove(key)
         }
     }
