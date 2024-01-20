@@ -24,6 +24,7 @@ import androidx.core.text.HtmlCompat;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.Locale;
@@ -35,6 +36,7 @@ import java.util.regex.Pattern;
 import io.noties.markwon.Markwon;
 import it.niedermann.android.markdown.model.EListType;
 import it.niedermann.android.markdown.model.SearchSpan;
+import it.niedermann.android.markdown.remoteviews.RemoteViewElement;
 
 @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class MarkdownUtil {
@@ -56,6 +58,72 @@ public class MarkdownUtil {
 
     private MarkdownUtil() {
         // Util class
+    }
+
+
+    /**
+     * {@link RemoteView}s have a limited subset of supported classes to maintain compatibility with many different launchers.
+     * <p>
+     * This function splits markdown into elements that can be displayed by a widget natively.
+     * Currently supported are: Markdown text, and Checkbox
+     *
+     * @return {@link ArrayList<RemoteViewElement>} of elements from the {@param content}.
+     * @noinspection unused
+     */
+    public static ArrayList<RemoteViewElement> getRenderedElementsForRemoteView(@NonNull Context context, @NonNull String content) {
+
+        ArrayList<RemoteViewElement> remoteViews = new ArrayList<>();
+        StringBuilder currentLineBlock = new StringBuilder();
+        int startLine = 0;
+
+        final String[] lines = content.split("\n");
+        boolean isInFencedCodeBlock = false;
+        int fencedCodeBlockSigns = 0;
+        for (int i = 0; i < lines.length; i++) {
+            final var matcher = PATTERN_CODE_FENCE.matcher(lines[i]);
+            if (matcher.find()) {
+                final String fence = matcher.group(1);
+                if (fence != null) {
+                    int currentFencedCodeBlockSigns = fence.length();
+                    if (isInFencedCodeBlock) {
+                        if (currentFencedCodeBlockSigns == fencedCodeBlockSigns) {
+                            isInFencedCodeBlock = false;
+                            fencedCodeBlockSigns = 0;
+                        }
+                    } else {
+                        isInFencedCodeBlock = true;
+                        fencedCodeBlockSigns = currentFencedCodeBlockSigns;
+                    }
+                }
+            }
+            if (!isInFencedCodeBlock) {
+                if (isCheckboxLine(lines[i])) {
+                    // if the first line is a checkbox, this will be an empty markdown block. It will also end in line -1.
+                    var endline = i - 1;
+                    if (endline < 0) {
+                        endline = 0;
+                    }
+                    remoteViews.add(new RemoteViewElement(RemoteViewElement.Type.TEXT, currentLineBlock.toString(), startLine, endline));
+                    currentLineBlock = new StringBuilder();
+                    startLine = i + 1;
+
+                    boolean isChecked = false;
+                    for (EListType listType : EListType.values()) {
+                        if (lineStartsWithCheckedCheckbox(lines[i], listType)) {
+                            isChecked = true;
+                        }
+                    }
+                    if (isChecked) {
+                        remoteViews.add(new RemoteViewElement(RemoteViewElement.Type.CHECKBOX_CHECKED, lines[i], i, i));
+                    } else {
+                        remoteViews.add(new RemoteViewElement(RemoteViewElement.Type.CHECKBOX_UNCHECKED, lines[i], i, i));
+                    }
+                    continue;
+                }
+            }
+            currentLineBlock.append(lines[i]).append("\n");
+        }
+        return remoteViews;
     }
 
     /**
@@ -161,12 +229,19 @@ public class MarkdownUtil {
                 }
             }
             if (!isInFencedCodeBlock) {
-                if (lineStartsWithCheckbox(lines[i]) && lines[i].trim().length() > EListType.DASH.checkboxChecked.length()) {
+                if (isCheckboxLine(lines[i])) {
                     lines[i] = map.apply(lines[i]);
                 }
             }
         }
         return TextUtils.join("\n", lines);
+    }
+
+    public static boolean isCheckboxLine(String line) {
+        if (lineStartsWithCheckbox(line) && line.trim().length() > EListType.DASH.checkboxChecked.length()) {
+            return true;
+        }
+        return false;
     }
 
     public static int getStartOfLine(@NonNull CharSequence s, int cursorPosition) {
@@ -256,9 +331,19 @@ public class MarkdownUtil {
     }
 
     public static boolean lineStartsWithCheckbox(@NonNull String line, @NonNull EListType listType) {
-        final String trimmedLine = line.trim();
-        return (trimmedLine.startsWith(listType.checkboxUnchecked) || trimmedLine.startsWith(listType.checkboxChecked) || trimmedLine.startsWith(listType.checkboxCheckedUpperCase));
+        return lineStartsWithCheckedCheckbox(line, listType) | lineStartsWithUncheckedCheckbox(line, listType);
     }
+
+    public static boolean lineStartsWithCheckedCheckbox(@NonNull String line, @NonNull EListType listType) {
+        final String trimmedLine = line.trim();
+        return (trimmedLine.startsWith(listType.checkboxChecked) || trimmedLine.startsWith(listType.checkboxCheckedUpperCase));
+    }
+
+    public static boolean lineStartsWithUncheckedCheckbox(@NonNull String line, @NonNull EListType listType) {
+        final String trimmedLine = line.trim();
+        return (trimmedLine.startsWith(listType.checkboxUnchecked));
+    }
+
 
     /**
      * @return the number of the ordered list item if the line is an ordered list, otherwise -1.
