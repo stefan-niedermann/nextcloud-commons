@@ -64,10 +64,11 @@ public class MarkdownUtil {
     /**
      * {@link RemoteView}s have a limited subset of supported classes to maintain compatibility with many different launchers.
      * <p>
-     * This function seperates render-able markdown into elements that can be displayed by a widget natively.
-     * Currently supported are: Markdowntext, Checkbox
+     * This function splits markdown into elements that can be displayed by a widget natively.
+     * Currently supported are: Markdown text, and Checkbox
      *
-     * @return ArrayList<RemoteViewElement> List of Elements from the note.
+     * @return {@link ArrayList<RemoteViewElement>} of elements from the {@param content}.
+     * @noinspection unused
      */
     public static ArrayList<RemoteViewElement> getRenderedElementsForRemoteView(@NonNull Context context, @NonNull String content) {
 
@@ -98,24 +99,24 @@ public class MarkdownUtil {
             if (!isInFencedCodeBlock) {
                 if (isCheckboxLine(lines[i])) {
                     // if the first line is a checkbox, this will be an empty markdown block. It will also end in line -1.
-                    var endline = i-1;
-                    if(endline<0) {
+                    var endline = i - 1;
+                    if (endline < 0) {
                         endline = 0;
                     }
-                    remoteViews.add(new RemoteViewElement(RemoteViewElement.TYPE_TEXT, currentLineBlock.toString(), startLine, endline));
+                    remoteViews.add(new RemoteViewElement(RemoteViewElement.Type.TEXT, currentLineBlock.toString(), startLine, endline));
                     currentLineBlock = new StringBuilder();
-                    startLine = i+1;
+                    startLine = i + 1;
 
                     boolean isChecked = false;
                     for (EListType listType : EListType.values()) {
-                        if(lineStartsWithCheckedCheckbox(lines[i], listType)) {
+                        if (lineStartsWithCheckedCheckbox(lines[i], listType)) {
                             isChecked = true;
                         }
                     }
-                    if(isChecked) {
-                        remoteViews.add(new RemoteViewElement(RemoteViewElement.TYPE_CHECKBOX_CHECKED, lines[i], i, i));
+                    if (isChecked) {
+                        remoteViews.add(new RemoteViewElement(RemoteViewElement.Type.CHECKBOX_CHECKED, lines[i], i, i));
                     } else {
-                        remoteViews.add(new RemoteViewElement(RemoteViewElement.TYPE_CHECKBOX_UNCHECKED, lines[i], i, i));
+                        remoteViews.add(new RemoteViewElement(RemoteViewElement.Type.CHECKBOX_UNCHECKED, lines[i], i, i));
                     }
                     continue;
                 }
@@ -342,7 +343,6 @@ public class MarkdownUtil {
         final String trimmedLine = line.trim();
         return (trimmedLine.startsWith(listType.checkboxUnchecked));
     }
-
 
 
     /**
