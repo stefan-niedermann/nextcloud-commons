@@ -23,6 +23,13 @@ public interface MarkdownEditor {
     String TAG = MarkdownEditor.class.getSimpleName();
 
     /**
+     * @param prefix used to render relative image URLs
+     */
+    default void setMarkdownImageUrlPrefix(@NonNull String prefix) {
+        Log.w(TAG, "This feature is not supported by the currently used implementation.");
+    }
+
+    /**
      * The given {@link String} will be parsed and rendered
      */
     void setMarkdownString(CharSequence text);
