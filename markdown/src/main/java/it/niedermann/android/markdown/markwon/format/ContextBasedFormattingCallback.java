@@ -64,7 +64,7 @@ public class ContextBasedFormattingCallback implements ActionMode.Callback {
                 editText.setSelection(cursorPosition + EListType.DASH.checkboxUncheckedWithTrailingSpace.length());
                 return true;
             } else if (itemId == R.id.link) {
-                final int newSelection = MarkdownUtil.insertLink(editable, cursorPosition, cursorPosition, ClipboardUtil.INSTANCE.getClipboardURLorNull(editText.getContext()));
+                final int newSelection = MarkdownUtil.insertLink(editable, cursorPosition, cursorPosition, ClipboardUtil.getClipboardURLorNull(editText.getContext()));
                 editText.setMarkdownStringModel(editable);
                 editText.setSelection(newSelection);
                 return true;

@@ -22,7 +22,7 @@ class ExceptionUtilTest {
     @Test
     fun `Should contain platform information`() {
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        val debug = ExceptionUtil.getDebugInfos(appContext, IllegalStateException())
+        val debug = getDebugInfos(appContext, IllegalStateException())
         assertTrue(debug.contains("App Version:"))
         assertTrue(debug.contains("App Version Code:"))
         assertTrue(debug.contains("Files App Version Code: 4711"))
@@ -39,7 +39,7 @@ class ExceptionUtilTest {
     fun `Should contain exception type message`() {
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
         val exceptionMessage = "My fancy message"
-        val debug = ExceptionUtil.getDebugInfos(appContext, IllegalStateException(exceptionMessage))
+        val debug = getDebugInfos(appContext, IllegalStateException(exceptionMessage))
         assertTrue(debug.contains(exceptionMessage))
         assertTrue(debug.contains(IllegalStateException::class.java.canonicalName!!))
     }
@@ -48,9 +48,9 @@ class ExceptionUtilTest {
     fun `Given a flavor is provided, the output should contain it`() {
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
         val debugValidVersion =
-            ExceptionUtil.getDebugInfos(appContext, IllegalStateException(), "dev")
+            getDebugInfos(appContext, IllegalStateException(), "dev")
         assertTrue(debugValidVersion.contains("App Flavor: dev"))
-        val debugEmptyVersion = ExceptionUtil.getDebugInfos(appContext, IllegalStateException(), "")
+        val debugEmptyVersion = getDebugInfos(appContext, IllegalStateException(), "")
         assertTrue(debugEmptyVersion.contains("App Flavor: unknown"))
     }
 
@@ -58,10 +58,10 @@ class ExceptionUtilTest {
     fun `Given the server app version is provided, the output should contain it`() {
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
         val debugValidVersion =
-            ExceptionUtil.getDebugInfos(appContext, IllegalStateException(), null, "4.7.11")
+            getDebugInfos(appContext, IllegalStateException(), null, "4.7.11")
         assertTrue(debugValidVersion.contains("Server App Version: 4.7.11"))
         val debugEmptyVersion =
-            ExceptionUtil.getDebugInfos(appContext, IllegalStateException(), null, "")
+            getDebugInfos(appContext, IllegalStateException(), null, "")
         assertTrue(debugEmptyVersion.contains("Server App Version: unknown"))
     }
 }

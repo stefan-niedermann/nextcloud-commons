@@ -29,7 +29,7 @@ public class SearchSpan extends MetricAffectingSpan {
     public void updateDrawState(TextPaint tp) {
         if (current) {
             if (darkTheme) {
-                if (ColorUtil.INSTANCE.isColorDark(mainColor)) {
+                if (ColorUtil.isColorDark(mainColor)) {
                     tp.bgColor = Color.WHITE;
                     tp.setColor(mainColor);
                 } else {
@@ -37,11 +37,11 @@ public class SearchSpan extends MetricAffectingSpan {
                     tp.setColor(Color.BLACK);
                 }
             } else {
-                if (ColorUtil.INSTANCE.isColorDark(mainColor)) {
+                if (ColorUtil.isColorDark(mainColor)) {
                     tp.bgColor = mainColor;
                     tp.setColor(Color.WHITE);
                 } else {
-                    if (ColorUtil.INSTANCE.getContrastRatio(mainColor, highlightColor) > 3d) {
+                    if (ColorUtil.getContrastRatio(mainColor, highlightColor) > 3d) {
                         tp.bgColor = highlightColor;
                     } else {
                         tp.bgColor = Color.BLACK;
@@ -51,7 +51,7 @@ public class SearchSpan extends MetricAffectingSpan {
             }
         } else {
             tp.bgColor = highlightColor;
-            if (ColorUtil.INSTANCE.getContrastRatio(mainColor, highlightColor) > 3d) {
+            if (ColorUtil.getContrastRatio(mainColor, highlightColor) > 3d) {
                 tp.setColor(mainColor);
             } else {
                 if (darkTheme) {

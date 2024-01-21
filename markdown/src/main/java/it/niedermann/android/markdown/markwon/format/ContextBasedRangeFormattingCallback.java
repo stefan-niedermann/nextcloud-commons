@@ -84,7 +84,7 @@ public class ContextBasedRangeFormattingCallback implements ActionMode.Callback 
                 editText.setSelection(newSelection);
                 return true;
             } else if (itemId == R.id.link) {
-                final int newSelection = MarkdownUtil.insertLink(editable, start, end, ClipboardUtil.INSTANCE.getClipboardURLorNull(editText.getContext()));
+                final int newSelection = MarkdownUtil.insertLink(editable, start, end, ClipboardUtil.getClipboardURLorNull(editText.getContext()));
                 editText.setMarkdownStringModel(editable);
                 editText.setSelection(newSelection);
                 return true;
