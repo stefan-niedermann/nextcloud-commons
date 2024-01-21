@@ -12,7 +12,7 @@ import com.nextcloud.android.sso.helper.SingleAccountHelper
 import it.niedermann.android.markdown.MarkdownEditor
 import it.niedermann.android.markdown.MarkdownEditorImpl
 import it.niedermann.android.markdown.MarkdownViewerImpl
-import it.niedermann.nextcloud.exception.ExceptionUtil
+import it.niedermann.nextcloud.exception.getDebugInfos
 
 class MainActivity : AppCompatActivity() {
 
@@ -37,7 +37,7 @@ class MainActivity : AppCompatActivity() {
             AccountImporter.pickNewAccount(this)
         }
 
-        sampleException.text = ExceptionUtil.getDebugInfos(this, RuntimeException())
+        sampleException.text = getDebugInfos(this, RuntimeException())
 
         markdownEditor.setMarkdownStringChangedListener { str ->
             markdownViewer.setMarkdownStringAndHighlightMentions(str, mentions)
