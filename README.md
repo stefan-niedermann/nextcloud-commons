@@ -24,7 +24,7 @@ Many Android clients for Nextcloud apps need similar mechanisms. To reduce maint
 Add this dependency to your `build.gradle`-file to include *all* modules at once:
 
 ```groovy
-implementation 'com.github.stefan-niedermann:nextcloud-commons:2.0.0'
+implementation 'com.github.stefan-niedermann:nextcloud-commons:2.0.1'
 ```
 
 ## Modules
@@ -32,7 +32,7 @@ implementation 'com.github.stefan-niedermann:nextcloud-commons:2.0.0'
 ### exception
 
 ```groovy
-implementation 'com.github.stefan-niedermann.nextcloud-commons:exception:2.0.0'
+implementation 'com.github.stefan-niedermann.nextcloud-commons:exception:2.0.1'
 ```
 
 This is a util class which provides methods for generating a rich stacktrace from a throwable containing additional information like the used files app and OS versions.
@@ -95,7 +95,7 @@ Caused by: java.lang.NumberFormatException: For input string: "ASDF"
 ### sso-glide
 
 ```groovy
-implementation 'com.github.stefan-niedermann.nextcloud-commons:sso-glide:2.0.0'
+implementation 'com.github.stefan-niedermann.nextcloud-commons:sso-glide:2.0.1'
 ```
 
 This is a Glide-integration module. If you are using [Single Sign On](https://github.com/nextcloud/Android-SingleSignOn) you may want to also fetch avatars or other images via Glide but with the SSO network stack to avoid problems with self-signed certificates, 2fa and so on.
@@ -168,7 +168,7 @@ Glide.with(context)
 ### markdown
 
 ```groovy
-implementation('com.github.stefan-niedermann.nextcloud-commons:markdown:2.0.0') {
+implementation('com.github.stefan-niedermann.nextcloud-commons:markdown:2.0.1') {
   exclude group: 'org.jetbrains', module: 'annotations-java5'
 }
 ```
