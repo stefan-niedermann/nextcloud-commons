@@ -1,5 +1,6 @@
 package it.niedermann.nextcloud.sso.glide
 
+import android.net.Uri
 import androidx.test.core.app.ApplicationProvider
 import com.bumptech.glide.load.model.Headers
 import com.nextcloud.android.sso.helper.SingleAccountHelper
@@ -30,6 +31,14 @@ class SingleSignOnUrlLoaderTest {
             loader.handles(
                 SingleSignOnUrl(
                     ssoAccount,
+                    Uri.parse("https://nc.example.com/avatar")
+                )
+            )
+        )
+        assertTrue(
+            loader.handles(
+                SingleSignOnUrl(
+                    ssoAccount,
                     URL("https://nc.example.com/avatar")
                 )
             )
@@ -49,6 +58,15 @@ class SingleSignOnUrlLoaderTest {
             loader.handles(
                 SingleSignOnUrl(
                     ssoAccount,
+                    Uri.parse("https://nc.example.com/avatar"),
+                    Headers.DEFAULT
+                )
+            )
+        )
+        assertTrue(
+            loader.handles(
+                SingleSignOnUrl(
+                    ssoAccount,
                     URL("https://nc.example.com/avatar"),
                     Headers.DEFAULT
                 )
@@ -57,6 +75,14 @@ class SingleSignOnUrlLoaderTest {
 
         assertTrue(loader.handles(SingleSignOnUrl("foo", "/avatar")))
         assertTrue(loader.handles(SingleSignOnUrl("bar", "https://nc.example.com/avatar")))
+        assertTrue(
+            loader.handles(
+                SingleSignOnUrl(
+                    "baz",
+                    Uri.parse("https://nc.example.com/avatar")
+                )
+            )
+        )
         assertTrue(loader.handles(SingleSignOnUrl("baz", URL("https://nc.example.com/avatar"))))
 
         assertTrue(loader.handles(SingleSignOnUrl("foo", "/avatar", Headers.DEFAULT)))
@@ -65,6 +91,15 @@ class SingleSignOnUrlLoaderTest {
                 SingleSignOnUrl(
                     "bar",
                     "https://nc.example.com/avatar",
+                    Headers.DEFAULT
+                )
+            )
+        )
+        assertTrue(
+            loader.handles(
+                SingleSignOnUrl(
+                    "baz",
+                    Uri.parse("https://nc.example.com/avatar"),
                     Headers.DEFAULT
                 )
             )

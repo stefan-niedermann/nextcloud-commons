@@ -1,5 +1,6 @@
 package it.niedermann.nextcloud.sso.glide
 
+import android.net.Uri
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.load.model.Headers
@@ -16,8 +17,10 @@ class SingleSignOnUrl : GlideUrl {
 
     constructor(ssoAccount: SingleSignOnAccount, url: String) : this(ssoAccount.name, url)
     constructor(ssoAccount: SingleSignOnAccount, url: URL) : this(ssoAccount.name, url)
+    constructor(ssoAccount: SingleSignOnAccount, uri: Uri) : this(ssoAccount.name, uri.toString())
     constructor(ssoAccount: SingleSignOnAccount, url: String, headers: Headers) : this(ssoAccount.name, url, headers)
     constructor(ssoAccount: SingleSignOnAccount, url: URL, headers: Headers) : this(ssoAccount.name, url, headers)
+    constructor(ssoAccount: SingleSignOnAccount, uri: Uri, headers: Headers) : this(ssoAccount.name, uri.toString(), headers)
 
     constructor(ssoAccountName: String, url: String) : super(url) {
         this.ssoAccountName = ssoAccountName
@@ -27,11 +30,19 @@ class SingleSignOnUrl : GlideUrl {
         this.ssoAccountName = ssoAccountName
     }
 
+    constructor(ssoAccountName: String, uri: Uri) : super(uri.toString()) {
+        this.ssoAccountName = ssoAccountName
+    }
+
     constructor(ssoAccountName: String, url: String, headers: Headers) : super(url, headers) {
         this.ssoAccountName = ssoAccountName
     }
 
     constructor(ssoAccountName: String, url: URL, headers: Headers) : super(url, headers) {
+        this.ssoAccountName = ssoAccountName
+    }
+
+    constructor(ssoAccountName: String, uri: Uri, headers: Headers) : super(uri.toString(), headers) {
         this.ssoAccountName = ssoAccountName
     }
 }
