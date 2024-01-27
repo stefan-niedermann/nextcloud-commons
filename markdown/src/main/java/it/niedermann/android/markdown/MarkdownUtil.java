@@ -590,8 +590,12 @@ public class MarkdownUtil {
         }
     }
 
-    public static String getMarkdownLink(@NonNull String text, @NonNull String url) {
-        return "[" + text + "](" + url + ")";
+    public static String getMarkdownLink(@NonNull String content, @NonNull String url) {
+        return "[" + content + "](" + url + ")";
+    }
+
+    public static String getMarkdownEmbedded(@NonNull String content, @NonNull String url) {
+        return "!" + getMarkdownLink(content, url);
     }
 
     /**

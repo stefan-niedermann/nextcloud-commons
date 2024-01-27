@@ -80,6 +80,11 @@ class MarkdownUtilTest : TestCase() {
     }
 
     @Test
+    fun getMarkdownEmbedded() {
+        assertEquals("![Foo](https://bar)", MarkdownUtil.getMarkdownEmbedded("Foo", "https://bar"))
+    }
+
+    @Test
     fun lineStartsWithCheckbox() {
         linkedMapOf(
             Pair("  - [ ] a", true),
