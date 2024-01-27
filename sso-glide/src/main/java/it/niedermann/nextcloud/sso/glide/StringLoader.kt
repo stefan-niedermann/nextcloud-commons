@@ -1,6 +1,7 @@
 package it.niedermann.nextcloud.sso.glide
 
 import android.content.Context
+import android.util.Log
 import com.bumptech.glide.load.Options
 import com.bumptech.glide.load.model.ModelLoader
 import com.bumptech.glide.load.model.ModelLoader.LoadData
@@ -17,6 +18,7 @@ import java.io.InputStream
  * Responsible for trying to fetch resources without an explicit [SingleSignOnAccount].
  * It will use the currently set [SingleSignOnAccount] of [SingleAccountHelper] if possible and also handle relative URLs.
  */
+@Deprecated("nextcloud-commons will stop trying to interpret plain String URLs as SSO requests in the next version. Pass a SingleSignOnUrl object to the Glide load function.")
 class StringLoader(private val context: Context) : ModelLoader<String, InputStream> {
 
     override fun handles(url: String): Boolean {
@@ -35,7 +37,9 @@ class StringLoader(private val context: Context) : ModelLoader<String, InputStre
     override fun buildLoadData(url: String, width: Int, height: Int, options: Options): LoadData<InputStream> {
         return LoadData(ObjectKey(url), object : AbstractStreamFetcher<String>(context, url) {
             override fun getSingleSignOnAccount(context: Context, model: String): SingleSignOnAccount {
-                return SingleAccountHelper.getCurrentSingleSignOnAccount(context)
+                val ssoAccount = SingleAccountHelper.getCurrentSingleSignOnAccount(context)
+                Log.w(TAG, "nextcloud-commons will stop trying to interpret plain String URLs as SSO requests in the next version. Pass a SingleSignOnUrl object to the Glide load function.")
+                return ssoAccount
             }
         })
     }
@@ -50,5 +54,9 @@ class StringLoader(private val context: Context) : ModelLoader<String, InputStre
         override fun teardown() {
             // Do nothing, this instance doesn't own the client.
         }
+    }
+
+    companion object {
+        private val TAG = StringLoader::class.java.simpleName
     }
 }
