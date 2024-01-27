@@ -6,8 +6,10 @@ import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.text.Spanned
 import android.text.style.ForegroundColorSpan
+import androidx.test.core.app.ApplicationProvider
 import it.niedermann.android.markdown.model.EListType
 import it.niedermann.android.markdown.model.SearchSpan
+import it.niedermann.android.markdown.remoteviews.RemoteViewElement
 import junit.framework.TestCase
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -17,6 +19,31 @@ import java.lang.reflect.InvocationTargetException
 @Suppress("LocalVariableName")
 @RunWith(RobolectricTestRunner::class)
 class MarkdownUtilTest : TestCase() {
+
+    @Test
+    fun getRenderedElementsForRemoteView() {
+        //language=md
+        val test = StringBuilder(
+            """
+              # Test-Note
+              
+              - [ ] this is a test note
+              - [x] test
+              [test](https://example.com)
+              
+              
+              
+              """.trimIndent() // line start 78
+        )
+        val result = MarkdownUtil.getRenderedElementsForRemoteView(ApplicationProvider.getApplicationContext(), test.toString())
+
+        assertEquals(4, result.size)
+        assertEquals(RemoteViewElement.Type.TEXT, result[0].type)
+        assertEquals(RemoteViewElement.Type.CHECKBOX_UNCHECKED, result[1].type)
+        assertEquals(RemoteViewElement.Type.CHECKBOX_CHECKED, result[2].type)
+        assertEquals(RemoteViewElement.Type.TEXT, result[3].type)
+    }
+
     @Test
     fun getStartOfLine() {
         //language=md
