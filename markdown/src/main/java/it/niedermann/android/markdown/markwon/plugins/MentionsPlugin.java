@@ -271,7 +271,7 @@ public class MentionsPlugin extends AbstractMarkwonPlugin {
         });
     }
 
-    private Set<String> findUserNames(@NonNull Spannable spannable) {
+    public Set<String> findUserNames(@NonNull Spannable spannable) {
         return Arrays.stream(spannable.getSpans(0, spannable.length(), DisplayNameSpan.class))
                 .map(span -> span.userId)
                 .collect(Collectors.toUnmodifiableSet());

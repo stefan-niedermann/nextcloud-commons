@@ -615,7 +615,7 @@ class MarkdownUtilTest : TestCase() {
 
     @Test
     fun setCheckboxStatus() {
-        for (listType in EListType.values()) {
+        for (listType in EListType.entries) {
             val origin_1 = listType.checkboxUnchecked + " Item"
             val expected_1 = listType.checkboxChecked + " Item"
             assertEquals(expected_1, MarkdownUtil.setCheckboxStatus(origin_1, 0, true))
@@ -727,16 +727,16 @@ class MarkdownUtilTest : TestCase() {
             val removeSpans = MarkdownUtil::class.java.getDeclaredMethod("removeSpans", Spannable::class.java, Class::class.java)
             removeSpans.isAccessible = true
             val editable_1 = SpannableStringBuilder("Lorem Ipsum dolor sit amet")
-            editable_1.setSpan(SearchSpan(Color.RED, Color.GRAY, false, false), 0, 5, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+            editable_1.setSpan(SearchSpan(Color.RED, Color.GRAY), 0, 5, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
             editable_1.setSpan(ForegroundColorSpan(Color.BLUE), 6, 11, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-            editable_1.setSpan(SearchSpan(Color.BLUE, Color.GREEN, true, false), 12, 17, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+            editable_1.setSpan(SearchSpan(Color.BLUE, Color.GREEN), 12, 17, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
             removeSpans.invoke(null, editable_1, SearchSpan::class.java)
             assertEquals(0, editable_1.getSpans(0, editable_1.length, SearchSpan::class.java).size)
             assertEquals(1, editable_1.getSpans(0, editable_1.length, ForegroundColorSpan::class.java).size)
             val editable_2 = SpannableStringBuilder("Lorem Ipsum dolor sit amet")
-            editable_2.setSpan(SearchSpan(Color.GRAY, Color.RED, false, true), 0, 5, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+            editable_2.setSpan(SearchSpan(Color.GRAY, Color.RED), 0, 5, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
             editable_2.setSpan(ForegroundColorSpan(Color.BLUE), 2, 7, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-            editable_2.setSpan(SearchSpan(Color.BLUE, Color.GREEN, true, false), 3, 9, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+            editable_2.setSpan(SearchSpan(Color.BLUE, Color.GREEN), 3, 9, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
             removeSpans.invoke(null, editable_2, SearchSpan::class.java)
             assertEquals(0, editable_2.getSpans(0, editable_2.length, SearchSpan::class.java).size)
             assertEquals(1, editable_2.getSpans(0, editable_2.length, ForegroundColorSpan::class.java).size)

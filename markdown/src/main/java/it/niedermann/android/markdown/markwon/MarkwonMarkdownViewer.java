@@ -189,7 +189,7 @@ public class MarkwonMarkdownViewer extends AppCompatTextView implements Markdown
         if (searchHighlightPlugin == null) {
             Log.w(TAG, SearchHighlightPlugin.class.getSimpleName() + " is not a registered " + MarkwonPlugin.class.getSimpleName());
         } else {
-            searchHighlightPlugin.setSearchColor(color, this);
+            searchHighlightPlugin.setSearchColor(color);
         }
 
         final var mentionsPlugin = this.markwon.getPlugin(MentionsPlugin.class);

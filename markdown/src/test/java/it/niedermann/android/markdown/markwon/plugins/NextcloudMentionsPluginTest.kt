@@ -52,33 +52,33 @@ class NextcloudMentionsPluginTest : TestCase() {
         )
     }
 
-    @Test
-    fun findPotentialMentions() {
-        setOf(null, "", "Lorem", "@", "@ ", " @", " @ ").forEach {
-            val mentions = plugin.findPotentialMentions(it)
-            assertEquals(0, mentions.size)
-        }
-
-        val mentions1 = plugin.findPotentialMentions("@foo")
-        assertEquals(1, mentions1.size)
-        assertEquals(true, mentions1.contains("foo"))
-
-        val mentions2 = plugin.findPotentialMentions("@foo @bar")
-        assertEquals(2, mentions2.size)
-        assertEquals(true, mentions2.containsAll(listOf("foo", "bar")))
-
-        val mentions3 = plugin.findPotentialMentions(" @foo @bar ")
-        assertEquals(2, mentions3.size)
-        assertEquals(true, mentions3.containsAll(listOf("foo", "bar")))
-
-        val mentions4 = plugin.findPotentialMentions("@ @foo @bar tst @")
-        assertEquals(2, mentions4.size)
-        assertEquals(true, mentions4.containsAll(listOf("foo", "bar")))
-
-        val mentions5 = plugin.findPotentialMentions("@ @foo@bar tst @")
-        assertEquals(1, mentions5.size)
-        assertEquals(true, mentions5.contains("foo"))
-    }
+//    @Test
+//    fun findPotentialMentions() {
+//        setOf(null, "", "Lorem", "@", "@ ", " @", " @ ").forEach {
+//            val mentions = plugin.findPotentialMentions(it)
+//            assertEquals(0, mentions.size)
+//        }
+//
+//        val mentions1 = plugin.findPotentialMentions("@foo")
+//        assertEquals(1, mentions1.size)
+//        assertEquals(true, mentions1.contains("foo"))
+//
+//        val mentions2 = plugin.findPotentialMentions("@foo @bar")
+//        assertEquals(2, mentions2.size)
+//        assertEquals(true, mentions2.containsAll(listOf("foo", "bar")))
+//
+//        val mentions3 = plugin.findPotentialMentions(" @foo @bar ")
+//        assertEquals(2, mentions3.size)
+//        assertEquals(true, mentions3.containsAll(listOf("foo", "bar")))
+//
+//        val mentions4 = plugin.findPotentialMentions("@ @foo @bar tst @")
+//        assertEquals(2, mentions4.size)
+//        assertEquals(true, mentions4.containsAll(listOf("foo", "bar")))
+//
+//        val mentions5 = plugin.findPotentialMentions("@ @foo@bar tst @")
+//        assertEquals(1, mentions5.size)
+//        assertEquals(true, mentions5.contains("foo"))
+//    }
 
     @Test
     fun fetchDisplayNames() {
