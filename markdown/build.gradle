@@ -7,7 +7,7 @@ android {
     namespace 'it.niedermann.android.markdown'
 
     defaultConfig {
-        minSdk 22
+        minSdk 24
         targetSdk 34
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -47,7 +47,10 @@ afterEvaluate {
 dependencies {
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.4'
 
+    implementation project(':ocs')
+
     api "com.github.nextcloud:Android-SingleSignOn:$sso_version"
+    implementation 'com.github.nextcloud:android-common:0.14.0'
     implementation 'com.github.stefan-niedermann:android-commons:1.0.0'
 
     implementation 'androidx.appcompat:appcompat:1.6.1'
@@ -75,6 +78,8 @@ dependencies {
     }
     annotationProcessor 'io.noties:prism4j-bundler:2.0.0'
     implementation 'org.jetbrains:annotations:24.1.0'
+
+    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
 
     testImplementation 'androidx.test:core:1.5.0'
     testImplementation 'androidx.arch.core:core-testing:2.2.0'

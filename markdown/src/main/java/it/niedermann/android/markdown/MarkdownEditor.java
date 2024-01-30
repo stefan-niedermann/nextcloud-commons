@@ -8,6 +8,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.lifecycle.LiveData;
 
+import com.nextcloud.android.sso.model.SingleSignOnAccount;
+
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -64,10 +66,17 @@ public interface MarkdownEditor {
 
     /**
      * @param color which will be used for highlighting. See {@link #setSearchText(CharSequence)}
+     * @deprecated Use {@link #setCurrentSingleSignOnAccount(SingleSignOnAccount, int)}
      */
-    default void setSearchColor(@ColorInt int color) {
-        Log.w(TAG, "This feature is not supported by the currently used implementation.");
-    }
+    @Deprecated(forRemoval = true)
+    void setSearchColor(@ColorInt int color);
+
+    /**
+     * @param ssoAccount the account who wants to make the requests, e. g. to fetch avatars.
+     *                   If <code>null</code> is passed, some features like avatar loading might not work as expected.
+     * @param color      the color that is the base of the current theming, e. g. the instance color
+     */
+    void setCurrentSingleSignOnAccount(@Nullable SingleSignOnAccount ssoAccount, @ColorInt int color);
 
     /**
      * See {@link #setSearchText(CharSequence, Integer)}

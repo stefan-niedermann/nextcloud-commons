@@ -21,6 +21,8 @@ import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.core.text.HtmlCompat;
 
+import com.nextcloud.android.common.ui.theme.utils.AndroidViewThemeUtils;
+
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
 
@@ -35,6 +37,7 @@ import java.util.regex.Pattern;
 
 import io.noties.markwon.Markwon;
 import it.niedermann.android.markdown.model.EListType;
+import it.niedermann.android.markdown.model.NewSearchSpan;
 import it.niedermann.android.markdown.model.SearchSpan;
 import it.niedermann.android.markdown.remoteviews.RemoteViewElement;
 
@@ -549,6 +552,10 @@ public class MarkdownUtil {
         return false;
     }
 
+    /**
+     * @deprecated use {@link AndroidViewThemeUtils#highlightText(TextView, String, String)} if no {@param current} highlight is needed, otherwise {@link #searchAndColor(Context, Spannable, CharSequence, int, Integer)}
+     */
+    @Deprecated(forRemoval = true)
     public static void searchAndColor(@NonNull Spannable editable, @Nullable CharSequence searchText, @Nullable Integer current, @ColorInt int mainColor, @ColorInt int highlightColor, boolean darkTheme) {
         if (searchText != null) {
             final var m = Pattern
@@ -560,6 +567,26 @@ public class MarkdownUtil {
                 int start = m.start();
                 int end = m.end();
                 editable.setSpan(new SearchSpan(mainColor, highlightColor, (current != null && i == current), darkTheme), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                i++;
+            }
+        }
+    }
+
+    public static void searchAndColor(@NonNull Context context, @NonNull Spannable editable, @Nullable CharSequence searchText, @ColorInt int color, @Nullable Integer current) {
+        final var util = SearchThemeUtils.Companion.of(color);
+        if (searchText != null) {
+            final var m = Pattern
+                    .compile(searchText.toString(), Pattern.CASE_INSENSITIVE | Pattern.LITERAL)
+                    .matcher(editable);
+
+            int i = 1;
+            while (m.find()) {
+                int start = m.start();
+                int end = m.end();
+                final var span = current == null || i == current
+                        ? new NewSearchSpan(util.getPrimary(context), util.getOnPrimary(context))
+                        : new NewSearchSpan(util.getSecondary(context), util.getOnSecondary(context));
+                editable.setSpan(span, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
                 i++;
             }
         }

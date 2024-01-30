@@ -11,11 +11,14 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 
+import com.nextcloud.android.common.ui.theme.MaterialSchemes;
+import com.nextcloud.android.common.ui.util.PlatformThemeUtil;
+
 import io.noties.markwon.AbstractMarkwonPlugin;
 import io.noties.markwon.MarkwonPlugin;
 import it.niedermann.android.markdown.MarkdownUtil;
 import it.niedermann.android.markdown.R;
-import it.niedermann.android.markdown.markwon.MarkwonMarkdownUtil;
+import it.niedermann.android.markdown.SearchThemeUtils;
 import it.niedermann.android.markdown.model.SearchSpan;
 
 public class SearchHighlightPlugin extends AbstractMarkwonPlugin {
@@ -28,11 +31,13 @@ public class SearchHighlightPlugin extends AbstractMarkwonPlugin {
     @ColorInt
     private final int highlightColor;
     private final boolean darkTheme;
+    @Nullable
+    private SearchThemeUtils util;
 
     public SearchHighlightPlugin(@NonNull Context context) {
         this.color = ContextCompat.getColor(context, R.color.search_color);
         this.highlightColor = ContextCompat.getColor(context, R.color.bg_highlighted);
-        this.darkTheme = MarkwonMarkdownUtil.isDarkThemeActive(context);
+        this.darkTheme = PlatformThemeUtil.isDarkMode(context);
     }
 
     public static MarkwonPlugin create(@NonNull Context context) {
@@ -52,7 +57,7 @@ public class SearchHighlightPlugin extends AbstractMarkwonPlugin {
 
     public void setSearchColor(@ColorInt int color, @NonNull TextView textView) {
         this.color = color;
-        afterSetText(textView);
+        this.util = new SearchThemeUtils(MaterialSchemes.Companion.fromColor(color));
     }
 
     @Override
@@ -60,7 +65,10 @@ public class SearchHighlightPlugin extends AbstractMarkwonPlugin {
         super.afterSetText(textView);
         if (this.searchText != null) {
             final var spannable = getContentAsSpannable(textView);
-            MarkdownUtil.searchAndColor(spannable, searchText, current, color, highlightColor, darkTheme);
+            MarkdownUtil.searchAndColor(textView.getContext(), spannable, searchText, current, color);
+            if (util != null) {
+//                util.highlightText(textView, textView.getText().toString(), searchText.toString());
+            }
         }
     }
 }

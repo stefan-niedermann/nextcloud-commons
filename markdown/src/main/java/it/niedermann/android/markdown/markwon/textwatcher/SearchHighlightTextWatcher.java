@@ -9,10 +9,13 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 
+import com.nextcloud.android.common.ui.theme.MaterialSchemes;
+import com.nextcloud.android.common.ui.util.PlatformThemeUtil;
+
 import it.niedermann.android.markdown.MarkdownUtil;
 import it.niedermann.android.markdown.R;
+import it.niedermann.android.markdown.SearchThemeUtils;
 import it.niedermann.android.markdown.markwon.MarkwonMarkdownEditor;
-import it.niedermann.android.markdown.markwon.MarkwonMarkdownUtil;
 import it.niedermann.android.markdown.model.SearchSpan;
 
 public class SearchHighlightTextWatcher extends InterceptorTextWatcher {
@@ -20,12 +23,15 @@ public class SearchHighlightTextWatcher extends InterceptorTextWatcher {
     private final MarkwonMarkdownEditor editText;
     @Nullable
     private CharSequence searchText;
+    @Nullable
     private Integer current;
     @ColorInt
     private int color;
     @ColorInt
     private final int highlightColor;
     private final boolean darkTheme;
+    @Nullable
+    private SearchThemeUtils util;
 
     public SearchHighlightTextWatcher(@NonNull TextWatcher originalWatcher, @NonNull MarkwonMarkdownEditor editText) {
         super(originalWatcher);
@@ -33,7 +39,7 @@ public class SearchHighlightTextWatcher extends InterceptorTextWatcher {
         final var context = editText.getContext();
         this.color = ContextCompat.getColor(context, R.color.search_color);
         this.highlightColor = ContextCompat.getColor(context, R.color.bg_highlighted);
-        this.darkTheme = MarkwonMarkdownUtil.isDarkThemeActive(context);
+        this.darkTheme = PlatformThemeUtil.isDarkMode(context);
     }
 
     public void setSearchText(@Nullable CharSequence searchText, @Nullable Integer current) {
@@ -52,6 +58,7 @@ public class SearchHighlightTextWatcher extends InterceptorTextWatcher {
 
     public void setSearchColor(@ColorInt int color) {
         this.color = color;
+        this.util = new SearchThemeUtils(MaterialSchemes.Companion.fromColor(color));
         afterTextChanged(editText.getText());
     }
 
@@ -60,7 +67,10 @@ public class SearchHighlightTextWatcher extends InterceptorTextWatcher {
         originalWatcher.afterTextChanged(s);
         if (searchText != null) {
             MarkdownUtil.removeSpans(s, SearchSpan.class);
-            MarkdownUtil.searchAndColor(s, searchText, current, color, highlightColor, darkTheme);
+//            MarkdownUtil.searchAndColor(s, searchText, current, color, highlightColor, darkTheme);
+            if (util != null) {
+//                util.highlightText(editText, editText.getText().toString(), searchText.toString());
+            }
         }
     }
 }

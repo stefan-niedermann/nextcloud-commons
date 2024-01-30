@@ -1,7 +1,6 @@
 package it.niedermann.android.markdown.markwon;
 
 import android.content.Context;
-import android.os.Build;
 import android.text.TextWatcher;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -13,6 +12,11 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatEditText;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
+
+import com.nextcloud.android.sso.exceptions.NextcloudFilesAppAccountNotFoundException;
+import com.nextcloud.android.sso.exceptions.NoCurrentAccountSelectedException;
+import com.nextcloud.android.sso.helper.SingleAccountHelper;
+import com.nextcloud.android.sso.model.SingleSignOnAccount;
 
 import java.util.function.Consumer;
 
@@ -63,9 +67,7 @@ public class MarkwonMarkdownEditor extends AppCompatEditText implements Markdown
         combinedWatcher = new CombinedTextWatcher(editor, this);
         addTextChangedListener(combinedWatcher);
         setCustomSelectionActionModeCallback(new ContextBasedRangeFormattingCallback(this));
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            setCustomInsertionActionModeCallback(new ContextBasedFormattingCallback(this));
-        }
+        setCustomInsertionActionModeCallback(new ContextBasedFormattingCallback(this));
     }
 
     private static Markwon.Builder createMarkwonBuilder(@NonNull Context context) {
@@ -89,8 +91,23 @@ public class MarkwonMarkdownEditor extends AppCompatEditText implements Markdown
                 .useEditHandler(new HeadingEditHandler());
     }
 
+    /**
+     * @deprecated Use {@link MarkdownEditor#setCurrentSingleSignOnAccount(SingleSignOnAccount, int)}
+     * @param color which will be used for highlighting. See {@link #setSearchText(CharSequence)}
+     */
     @Override
-    public void setSearchColor(@ColorInt int color) {
+    @Deprecated(forRemoval = true)
+    public void setSearchColor(int color) {
+        try {
+            final var ssoAccount = SingleAccountHelper.getCurrentSingleSignOnAccount(getContext());
+            setCurrentSingleSignOnAccount(ssoAccount, color);
+        } catch (NoCurrentAccountSelectedException | NextcloudFilesAppAccountNotFoundException e) {
+            setCurrentSingleSignOnAccount(null, color);
+        }
+    }
+
+    @Override
+    public void setCurrentSingleSignOnAccount(@Nullable SingleSignOnAccount account, @ColorInt int color) {
         final var searchHighlightTextWatcher = combinedWatcher.get(SearchHighlightTextWatcher.class);
         if (searchHighlightTextWatcher == null) {
             Log.w(TAG, SearchHighlightTextWatcher.class.getSimpleName() + " is not a registered " + TextWatcher.class.getSimpleName());
