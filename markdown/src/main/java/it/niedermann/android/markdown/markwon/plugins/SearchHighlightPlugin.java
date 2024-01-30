@@ -51,6 +51,14 @@ public class SearchHighlightPlugin extends AbstractMarkwonPlugin {
         this.color = color;
     }
 
+    /**
+     * @deprecated use {@link #setSearchColor(int)}
+     */
+    @Deprecated(forRemoval = true)
+    public void setSearchColor(@ColorInt int color, @NonNull TextView ignored) {
+        setSearchColor(color);
+    }
+
     @Override
     public void afterSetText(@NonNull TextView textView) {
         super.afterSetText(textView);

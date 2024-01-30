@@ -45,6 +45,7 @@ import it.niedermann.android.markdown.R;
 import it.niedermann.nextcloud.ocs.ApiProvider;
 import it.niedermann.nextcloud.ocs.OcsAPI;
 
+@Deprecated(forRemoval = true)
 public class NextcloudMentionsPlugin extends AbstractMarkwonPlugin {
 
     private static final String TAG = NextcloudMentionsPlugin.class.getSimpleName();

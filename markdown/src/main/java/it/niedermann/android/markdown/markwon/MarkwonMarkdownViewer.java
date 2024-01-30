@@ -113,6 +113,14 @@ public class MarkwonMarkdownViewer extends AppCompatTextView implements Markdown
                 }));
     }
 
+    /**
+     * @deprecated use {@link #createMarkwonBuilder(Context)} and {@link #setCurrentSingleSignOnAccount(SingleSignOnAccount, int)} to fetch and render mentions automatically.
+     */
+    @Deprecated(forRemoval = true)
+    public Markwon.Builder createMarkwonBuilder(@NonNull Context context, @NonNull Map<String, String> ignored) {
+        return createMarkwonBuilder(context);
+    }
+
     @Override
     public void registerOnLinkClickCallback(@NonNull Function<String, Boolean> callback) {
         final var plugin = this.markwon.getPlugin(LinkClickInterceptorPlugin.class);

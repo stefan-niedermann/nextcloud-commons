@@ -241,10 +241,7 @@ public class MarkdownUtil {
     }
 
     public static boolean isCheckboxLine(String line) {
-        if (lineStartsWithCheckbox(line) && line.trim().length() > EListType.DASH.checkboxChecked.length()) {
-            return true;
-        }
-        return false;
+        return lineStartsWithCheckbox(line) && line.trim().length() > EListType.DASH.checkboxChecked.length();
     }
 
     public static int getStartOfLine(@NonNull CharSequence s, int cursorPosition) {
@@ -265,12 +262,8 @@ public class MarkdownUtil {
 
     public static Optional<String> getListItemIfIsEmpty(@NonNull String line) {
         final String trimmedLine = line.trim();
-        // TODO use Java 11 String::repeat
-        final var builder = new StringBuilder();
         final int indention = line.indexOf(trimmedLine);
-        for (int i = 0; i < indention; i++) {
-            builder.append(" ");
-        }
+        final var builder = new StringBuilder(" ".repeat(indention));
         for (final var listType : EListType.values()) {
             if (trimmedLine.equals(listType.checkboxUnchecked)) {
                 return Optional.of(builder.append(listType.checkboxUncheckedWithTrailingSpace).toString());
@@ -634,10 +627,6 @@ public class MarkdownUtil {
             return "";
         }
         final String html = RENDERER.render(PARSER.parse(replaceCheckboxesWithEmojis(s)));
-        final Spanned spanned = HtmlCompat.fromHtml(html, HtmlCompat.FROM_HTML_MODE_COMPACT);
-        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.M) {
-            return spanned.toString().trim().replaceAll("\n\n", "\n");
-        }
-        return spanned.toString().trim();
+        return HtmlCompat.fromHtml(html, HtmlCompat.FROM_HTML_MODE_COMPACT).toString().trim();
     }
 }
