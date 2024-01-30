@@ -249,20 +249,16 @@ public class MentionsPlugin extends AbstractMarkwonPlugin {
         fetchDisplayNames(textView.getContext(), ssoAccount, userNames).whenComplete((displayNames, exception) -> {
             if (exception == null) {
                 final var spannableStringBuilder = new SpannableStringBuilder(spannable);
-                final var displayNameSpans = spannable.getSpans(0, spannable.length(), DisplayNameSpan.class);
+                final var displayNameSpans = Arrays.stream(spannable.getSpans(0, spannable.length(), DisplayNameSpan.class))
+                        .filter(displayNameSpan -> displayNames.containsKey(displayNameSpan.userId))
+                        .toArray(DisplayNameSpan[]::new);
 
-                int positionOffset = 0;
+                for (final var span : displayNameSpans) {
+                    final var displayName = Objects.requireNonNull(displayNames.get(span.userId));
+                    final int start = spannable.getSpanStart(span);
+                    final int end = spannable.getSpanEnd(span);
 
-                for (int i = 0; i < displayNameSpans.length; i++) {
-                    final var currentSpan = displayNameSpans[0];
-                    if (displayNames.containsKey(currentSpan.userId)) {
-                        final var displayName = Objects.requireNonNull(displayNames.get(currentSpan.userId));
-                        final int originalStart = spannable.getSpanStart(currentSpan);
-                        final int originalEnd = spannable.getSpanEnd(currentSpan);
-
-                        spannableStringBuilder.replace(originalStart + positionOffset, originalEnd + positionOffset, displayName);
-                        positionOffset += displayName.length() - currentSpan.userId.length();
-                    }
+                    spannableStringBuilder.replace(start, end, displayName);
                 }
                 textView.setText(spannableStringBuilder);
             } else {

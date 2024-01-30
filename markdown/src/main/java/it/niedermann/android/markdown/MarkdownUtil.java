@@ -185,24 +185,22 @@ public class MarkdownUtil {
 
     @NonNull
     private static Optional<String> getCheckboxEmoji(boolean checked) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            final String[] emojis;
-            // Seriously what the fuck, Samsung?
-            // https://emojipedia.org/ballot-box-with-x/
-            if (Build.MANUFACTURER != null && Build.MANUFACTURER.toLowerCase(Locale.getDefault()).contains("samsung")) {
-                emojis = checked
-                        ? new String[]{"✅", "☑️", "✔️"}
-                        : new String[]{"❌", "\uD83D\uDD32️", "☐️"};
-            } else {
-                emojis = checked
-                        ? new String[]{"☒", "✅", "☑️", "✔️"}
-                        : new String[]{"☐", "❌", "\uD83D\uDD32️", "☐️"};
-            }
-            final var paint = new Paint();
-            for (String emoji : emojis) {
-                if (paint.hasGlyph(emoji)) {
-                    return Optional.of(emoji);
-                }
+        final String[] emojis;
+        // Seriously what the fuck, Samsung?
+        // https://emojipedia.org/ballot-box-with-x#designs
+        if (Build.MANUFACTURER != null && Build.MANUFACTURER.toLowerCase(Locale.getDefault()).contains("samsung")) {
+            emojis = checked
+                    ? new String[]{"✅", "☑️", "✔️"}
+                    : new String[]{"❌", "\uD83D\uDD32️", "☐️"};
+        } else {
+            emojis = checked
+                    ? new String[]{"☒", "✅", "☑️", "✔️"}
+                    : new String[]{"☐", "❌", "\uD83D\uDD32️", "☐️"};
+        }
+        final var paint = new Paint();
+        for (String emoji : emojis) {
+            if (paint.hasGlyph(emoji)) {
+                return Optional.of(emoji);
             }
         }
         return Optional.empty();

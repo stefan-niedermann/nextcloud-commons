@@ -62,7 +62,7 @@ public class MarkwonMarkdownViewer extends AppCompatTextView implements Markdown
 
     private static final Prism4j prism4j = new Prism4j(new MarkwonGrammarLocator());
 
-    private Markwon markwon;
+    private final Markwon markwon;
     @Nullable
     private Consumer<CharSequence> listener = null;
     private final MutableLiveData<CharSequence> unrenderedText$ = new MutableLiveData<>();
