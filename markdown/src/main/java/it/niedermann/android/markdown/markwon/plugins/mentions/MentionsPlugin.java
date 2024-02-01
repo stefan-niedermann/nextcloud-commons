@@ -122,6 +122,7 @@ public class MentionsPlugin extends AbstractMarkwonPlugin {
                         executor.submit(() -> {
                             try {
                                 final var spannableWithDisplayNamesAndActualAvatars = avatarUtil.insertActualAvatars(textView.getContext(), MarkdownUtil.getContentAsSpannable(textView));
+                                Thread.sleep(5_000);
                                 textView.post(() -> textView.setText(spannableWithDisplayNamesAndActualAvatars));
                             } catch (InterruptedException e) {
                                 e.printStackTrace();
@@ -150,9 +151,10 @@ public class MentionsPlugin extends AbstractMarkwonPlugin {
     }
 
     private Drawable getTintedDrawable(@NonNull ThemeUtils utils, @NonNull Context context, @DrawableRes int drawableRes, @Px int size) {
-        final var avatarBrokenDrawable = Objects.requireNonNull(ContextCompat.getDrawable(context, drawableRes));
-        avatarBrokenDrawable.setBounds(0, 0, size, size);
-        return utils.tintDrawable(context, avatarBrokenDrawable);
+        final var drawable = ContextCompat.getDrawable(context, drawableRes);
+        final var tintedDrawable = Objects.requireNonNull(drawable);
+        tintedDrawable.setBounds(0, 0, drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight());
+        return utils.tintDrawable(context, tintedDrawable);
     }
 
     public void setTextSize(@Px int textSize) {
