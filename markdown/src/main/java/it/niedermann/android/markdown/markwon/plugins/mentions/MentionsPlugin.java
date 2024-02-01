@@ -1,10 +1,12 @@
 package it.niedermann.android.markdown.markwon.plugins.mentions;
 
 import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.text.Spanned;
 import android.widget.TextView;
 
 import androidx.annotation.ColorInt;
+import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.Px;
@@ -31,7 +33,7 @@ import io.noties.markwon.MarkwonVisitor;
 import io.noties.markwon.inlineparser.MarkwonInlineParser;
 import it.niedermann.android.markdown.MarkdownUtil;
 import it.niedermann.android.markdown.R;
-import it.niedermann.android.markdown.SearchThemeUtils;
+import it.niedermann.android.markdown.ThemeUtils;
 
 public class MentionsPlugin extends AbstractMarkwonPlugin {
 
@@ -140,17 +142,17 @@ public class MentionsPlugin extends AbstractMarkwonPlugin {
     }
 
     public void setColor(@ColorInt int color) {
-        final var utils = SearchThemeUtils.Companion.of(color);
+        final var utils = ThemeUtils.Companion.of(color);
+        final var size = avatarSizeRef.get();
 
-        final var avatarSize = avatarSizeRef.get();
+        avatarUtil.setAvatarPlaceholder(getTintedDrawable(utils, context, R.drawable.ic_baseline_account_circle_24dp, size));
+        avatarUtil.setAvatarBroken(getTintedDrawable(utils, context, R.drawable.ic_baseline_broken_image_24, size));
+    }
 
-        final var avatarPlaceholderDrawable = Objects.requireNonNull(ContextCompat.getDrawable(context, R.drawable.ic_baseline_account_circle_24dp));
-        avatarPlaceholderDrawable.setBounds(0, 0, avatarSize, avatarSize);
-        avatarUtil.setAvatarPlaceholder(utils.tintDrawable(context, avatarPlaceholderDrawable));
-
-        final var avatarBrokenDrawable = Objects.requireNonNull(ContextCompat.getDrawable(context, R.drawable.ic_baseline_broken_image_24));
-        avatarBrokenDrawable.setBounds(0, 0, avatarSize, avatarSize);
-        avatarUtil.setAvatarBroken(utils.tintDrawable(context, avatarBrokenDrawable));
+    private Drawable getTintedDrawable(@NonNull ThemeUtils utils, @NonNull Context context, @DrawableRes int drawableRes, @Px int size) {
+        final var avatarBrokenDrawable = Objects.requireNonNull(ContextCompat.getDrawable(context, drawableRes));
+        avatarBrokenDrawable.setBounds(0, 0, size, size);
+        return utils.tintDrawable(context, avatarBrokenDrawable);
     }
 
     public void setTextSize(@Px int textSize) {

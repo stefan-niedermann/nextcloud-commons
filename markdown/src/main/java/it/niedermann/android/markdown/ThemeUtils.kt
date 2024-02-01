@@ -7,7 +7,7 @@ import com.nextcloud.android.common.ui.theme.MaterialSchemes
 import com.nextcloud.android.common.ui.theme.MaterialSchemes.Companion.fromColor
 import com.nextcloud.android.common.ui.theme.ViewThemeUtilsBase
 
-class SearchThemeUtils(schemes: MaterialSchemes) : ViewThemeUtilsBase(schemes) {
+class ThemeUtils(schemes: MaterialSchemes) : ViewThemeUtilsBase(schemes) {
 
     fun getPrimary(context: Context): Int {
         return withScheme(context) { scheme -> scheme.primary }
@@ -36,10 +36,10 @@ class SearchThemeUtils(schemes: MaterialSchemes) : ViewThemeUtilsBase(schemes) {
     }
 
     companion object {
-        private val cache = mutableMapOf<Int, SearchThemeUtils>()
-        fun of(color: Int): SearchThemeUtils {
+        private val cache = mutableMapOf<Int, ThemeUtils>()
+        fun of(color: Int): ThemeUtils {
             return cache.computeIfAbsent(color) {
-                SearchThemeUtils(fromColor(color))
+                ThemeUtils(fromColor(color))
             }
         }
     }

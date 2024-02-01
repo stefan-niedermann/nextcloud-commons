@@ -563,7 +563,7 @@ public class MarkdownUtil {
     }
 
     public static void searchAndColor(@NonNull Context context, @NonNull Spannable editable, @Nullable CharSequence searchText, @ColorInt int color, @Nullable Integer current) {
-        final var util = SearchThemeUtils.Companion.of(color);
+        final var util = ThemeUtils.Companion.of(color);
         if (searchText != null) {
             final var m = Pattern
                     .compile(searchText.toString(), Pattern.CASE_INSENSITIVE | Pattern.LITERAL)

@@ -30,6 +30,8 @@ import it.niedermann.nextcloud.ocs.OcsAPI;
 public class DisplayNameUtil {
 
     private static final String TAG = DisplayNameUtil.class.getSimpleName();
+    private static final String API_URL_OCS = "/ocs/v2.php/cloud/";
+    private final ApiProvider.Factory apiFactory;
     @NonNull
     private final Map<String, String> userCache;
     @NonNull
@@ -37,8 +39,15 @@ public class DisplayNameUtil {
 
     public DisplayNameUtil(@NonNull Map<String, String> userCache,
                            @NonNull Set<String> noUserCache) {
+        this(userCache, noUserCache, new ApiProvider.Factory());
+    }
+
+    private DisplayNameUtil(@NonNull Map<String, String> userCache,
+                            @NonNull Set<String> noUserCache,
+                            @NonNull ApiProvider.Factory apiFactory) {
         this.userCache = userCache;
         this.noUserCache = noUserCache;
+        this.apiFactory = apiFactory;
     }
 
     @WorkerThread
@@ -92,11 +101,9 @@ public class DisplayNameUtil {
         result.putAll(cachedUsers);
 
         final var latch = new CountDownLatch(usernamesToCheck.size());
-        final var apiFactory = new ApiProvider.Factory();
+        final var executor = Executors.newFixedThreadPool(usernamesToCheck.size());
 
-        try (final var apiProvider = apiFactory.createApiProvider(context, ssoAccount, OcsAPI.class, "/ocs/v2.php/cloud/")) {
-            final var executor = Executors.newFixedThreadPool(usernamesToCheck.size());
-
+        try (final var apiProvider = apiFactory.createApiProvider(context, ssoAccount, OcsAPI.class, API_URL_OCS)) {
             for (final var potentialUsername : usernamesToCheck) {
                 executor.submit(() -> {
                     try {
@@ -117,10 +124,12 @@ public class DisplayNameUtil {
                     }
                 });
             }
-
-            executor.shutdown();
             latch.await();
+
+        } finally {
+            executor.shutdown();
         }
+
         return result;
     }
 

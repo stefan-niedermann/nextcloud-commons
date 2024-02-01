@@ -11,7 +11,7 @@ import androidx.annotation.NonNull;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Objects;
 
-import it.niedermann.android.markdown.SearchThemeUtils;
+import it.niedermann.android.markdown.ThemeUtils;
 
 public class SearchSpan extends MetricAffectingSpan {
 
@@ -34,7 +34,7 @@ public class SearchSpan extends MetricAffectingSpan {
 
             Objects.requireNonNull(context);
 
-            final var util = SearchThemeUtils.Companion.of(color);
+            final var util = ThemeUtils.Companion.of(color);
 
             if (current) {
                 this.colorBackground = util.getPrimary(context);
