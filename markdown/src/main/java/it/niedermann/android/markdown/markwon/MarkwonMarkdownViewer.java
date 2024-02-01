@@ -2,11 +2,14 @@ package it.niedermann.android.markdown.markwon;
 
 import static androidx.lifecycle.Transformations.distinctUntilChanged;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
+import android.os.Build;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.util.TypedValue;
 
 import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
@@ -47,6 +50,7 @@ import io.noties.prism4j.Prism4j;
 import io.noties.prism4j.annotations.PrismBundle;
 import it.niedermann.android.markdown.MarkdownEditor;
 import it.niedermann.android.markdown.MarkdownUtil;
+import it.niedermann.android.markdown.R;
 import it.niedermann.android.markdown.markwon.plugins.CustomGlideStore;
 import it.niedermann.android.markdown.markwon.plugins.LinkClickInterceptorPlugin;
 import it.niedermann.android.markdown.markwon.plugins.MentionsPlugin;
@@ -79,20 +83,37 @@ public class MarkwonMarkdownViewer extends AppCompatTextView implements Markdown
 
     public MarkwonMarkdownViewer(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        this.markwon = createMarkwonBuilder(context).build();
+
+        final boolean enableMentions;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            try (var styles = context.obtainStyledAttributes(attrs, R.styleable.MarkwonMarkdownViewer, defStyleAttr, 0)) {
+                enableMentions = getResources().getBoolean(styles.getResourceId(R.styleable.MarkwonMarkdownViewer_mentions, R.bool.mentionsEnabled));
+            }
+        } else {
+            @SuppressLint("Recycle") var styles = context.obtainStyledAttributes(attrs, R.styleable.MarkwonMarkdownViewer, defStyleAttr, 0);
+            enableMentions = getResources().getBoolean(styles.getResourceId(R.styleable.MarkwonMarkdownViewer_mentions, R.bool.mentionsEnabled));
+        }
+
+        final var typedValue = new TypedValue();
+        final var theme = context.getTheme();
+        theme.resolveAttribute(androidx.appcompat.R.attr.colorPrimary, typedValue, true);
+
+        this.markwon = createMarkwonBuilder(context, enableMentions, typedValue.data).build();
         this.renderService = Executors.newSingleThreadExecutor();
     }
 
-    private Markwon.Builder createMarkwonBuilder(@NonNull Context context) {
+    private Markwon.Builder createMarkwonBuilder(@NonNull Context context,
+                                                 boolean enableMentions,
+                                                 @ColorInt int color) {
         final Prism4jTheme prism4jTheme = PlatformThemeUtil.isDarkMode(context)
                 ? Prism4jThemeDarkula.create()
                 : Prism4jThemeDefault.create();
-        return Markwon.builder(context)
+        final var builder = Markwon.builder(context)
                 .usePlugin(ThemePlugin.create(context))
                 .usePlugin(StrikethroughPlugin.create())
                 .usePlugin(SimpleExtPlugin.create())
                 .usePlugin(MarkwonInlineParserPlugin.create())
-                .usePlugin(SearchHighlightPlugin.create(context))
+                .usePlugin(SearchHighlightPlugin.create(color))
                 .usePlugin(TablePlugin.create(context))
                 .usePlugin(TaskListPlugin.create(context))
                 .usePlugin(LinkifyPlugin.create(true))
@@ -102,7 +123,6 @@ public class MarkwonMarkdownViewer extends AppCompatTextView implements Markdown
                 .usePlugin(SoftBreakAddsNewLinePlugin.create())
                 .usePlugin(SyntaxHighlightPlugin.create(prism4j, prism4jTheme))
                 .usePlugin(RelativeImageUrlPlugin.create())
-                .usePlugin(MentionsPlugin.create(getContext(), (int) getTextSize()))
                 .usePlugin(new ToggleableTaskListPlugin((toggledCheckboxPosition, newCheckedState) -> {
                     final var oldUnrenderedText = unrenderedText$.getValue();
                     if (oldUnrenderedText == null) {
@@ -111,14 +131,23 @@ public class MarkwonMarkdownViewer extends AppCompatTextView implements Markdown
                     final var newUnrenderedText = MarkdownUtil.setCheckboxStatus(oldUnrenderedText.toString(), toggledCheckboxPosition, newCheckedState);
                     this.setMarkdownString(newUnrenderedText);
                 }));
+
+        if (enableMentions) {
+            return builder.usePlugin(MentionsPlugin.create(getContext(), (int) getTextSize(), color));
+        }
+
+        return builder;
     }
 
     /**
-     * @deprecated use {@link #createMarkwonBuilder(Context)} and {@link #setCurrentSingleSignOnAccount(SingleSignOnAccount, int)} to fetch and render mentions automatically.
+     * @deprecated use {@link #createMarkwonBuilder(Context, boolean, int)} and {@link #setCurrentSingleSignOnAccount(SingleSignOnAccount, int)} to fetch and render mentions automatically.
      */
     @Deprecated(forRemoval = true)
     public Markwon.Builder createMarkwonBuilder(@NonNull Context context, @NonNull Map<String, String> ignored) {
-        return createMarkwonBuilder(context);
+        final var typedValue = new TypedValue();
+        final var theme = context.getTheme();
+        theme.resolveAttribute(androidx.appcompat.R.attr.colorPrimary, typedValue, true);
+        return createMarkwonBuilder(context, true, typedValue.data);
     }
 
     @Override
@@ -197,13 +226,14 @@ public class MarkwonMarkdownViewer extends AppCompatTextView implements Markdown
         if (searchHighlightPlugin == null) {
             Log.w(TAG, SearchHighlightPlugin.class.getSimpleName() + " is not a registered " + MarkwonPlugin.class.getSimpleName());
         } else {
-            searchHighlightPlugin.setSearchColor(color);
+            searchHighlightPlugin.setColor(color);
         }
 
         final var mentionsPlugin = this.markwon.getPlugin(MentionsPlugin.class);
         if (mentionsPlugin == null) {
             Log.w(TAG, MentionsPlugin.class.getSimpleName() + " is not a registered " + TextWatcher.class.getSimpleName());
         } else {
+            mentionsPlugin.setColor(color);
             mentionsPlugin.setCurrentSingleSignOnAccount(ssoAccount);
         }
 
@@ -243,16 +273,7 @@ public class MarkwonMarkdownViewer extends AppCompatTextView implements Markdown
 
     @Override
     public void setTextSize(float size) {
-        super.setTextSize(size);
-
-        final var mentionsPlugin = this.markwon.getPlugin(MentionsPlugin.class);
-        if (mentionsPlugin == null) {
-            Log.w(TAG, MentionsPlugin.class.getSimpleName() + " is not a registered " + TextWatcher.class.getSimpleName());
-        } else {
-            mentionsPlugin.setTextSize((int) getTextSize());
-        }
-
-        this.renderService.execute(() -> post(() -> this.markwon.setMarkdown(this, getMarkdownString().getValue().toString())));
+        setTextSize(TypedValue.COMPLEX_UNIT_SP, size);
     }
 
     @Override

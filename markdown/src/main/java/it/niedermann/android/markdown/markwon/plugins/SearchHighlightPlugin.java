@@ -25,6 +25,7 @@ public class SearchHighlightPlugin extends AbstractMarkwonPlugin {
     @ColorInt
     private int color;
 
+    @Deprecated(forRemoval = true)
     public SearchHighlightPlugin(@NonNull Context context) {
         final var typedValue = new TypedValue();
         final var theme = context.getTheme();
@@ -32,8 +33,17 @@ public class SearchHighlightPlugin extends AbstractMarkwonPlugin {
         this.color = typedValue.data;
     }
 
+    public SearchHighlightPlugin(@ColorInt int color) {
+        this.color = color;
+    }
+
+    @Deprecated(forRemoval = true)
     public static MarkwonPlugin create(@NonNull Context context) {
         return new SearchHighlightPlugin(context);
+    }
+
+    public static MarkwonPlugin create(@ColorInt int color) {
+        return new SearchHighlightPlugin(color);
     }
 
     public void setSearchText(@Nullable CharSequence searchText, @Nullable Integer current, @NonNull TextView textView) {
@@ -47,16 +57,16 @@ public class SearchHighlightPlugin extends AbstractMarkwonPlugin {
         }
     }
 
-    public void setSearchColor(@ColorInt int color) {
+    public void setColor(@ColorInt int color) {
         this.color = color;
     }
 
     /**
-     * @deprecated use {@link #setSearchColor(int)}
+     * @deprecated use {@link #setColor(int)}
      */
     @Deprecated(forRemoval = true)
     public void setSearchColor(@ColorInt int color, @NonNull TextView ignored) {
-        setSearchColor(color);
+        setColor(color);
     }
 
     @Override

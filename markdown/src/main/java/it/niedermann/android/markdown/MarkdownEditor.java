@@ -78,7 +78,7 @@ public interface MarkdownEditor {
     void setCurrentSingleSignOnAccount(@Nullable SingleSignOnAccount ssoAccount, @ColorInt int color);
 
     /**
-     * See {@link #setSearchText(CharSequence, Integer)}
+     * @see #setSearchText(CharSequence, Integer)
      */
     default void setSearchText(@Nullable CharSequence searchText) {
         setSearchText(searchText, null);
@@ -90,9 +90,7 @@ public interface MarkdownEditor {
      * @param searchText the term to highlight
      * @param current    highlights the occurrence of the {@param searchText} at this position special
      */
-    default void setSearchText(@Nullable CharSequence searchText, @Nullable Integer current) {
-        Log.w(TAG, "This feature is not supported by the currently used implementation.");
-    }
+    void setSearchText(@Nullable CharSequence searchText, @Nullable Integer current);
 
     /**
      * Intercepts each click on a clickable element like {@link URLSpan}s

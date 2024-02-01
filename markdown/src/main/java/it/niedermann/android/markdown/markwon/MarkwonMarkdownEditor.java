@@ -4,6 +4,7 @@ import android.content.Context;
 import android.text.TextWatcher;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.util.TypedValue;
 import android.widget.EditText;
 
 import androidx.annotation.ColorInt;
@@ -61,7 +62,11 @@ public class MarkwonMarkdownEditor extends AppCompatEditText implements Markdown
     public MarkwonMarkdownEditor(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
 
-        final var markwon = createMarkwonBuilder(context).build();
+        final var typedValue = new TypedValue();
+        final var theme = context.getTheme();
+        theme.resolveAttribute(androidx.appcompat.R.attr.colorPrimary, typedValue, true);
+
+        final var markwon = createMarkwonBuilder(context, typedValue.data).build();
         final var editor = createMarkwonEditorBuilder(markwon).build();
 
         combinedWatcher = new CombinedTextWatcher(editor, this);
@@ -70,14 +75,14 @@ public class MarkwonMarkdownEditor extends AppCompatEditText implements Markdown
         setCustomInsertionActionModeCallback(new ContextBasedFormattingCallback(this));
     }
 
-    private static Markwon.Builder createMarkwonBuilder(@NonNull Context context) {
+    private static Markwon.Builder createMarkwonBuilder(@NonNull Context context, @ColorInt int color) {
         return Markwon.builder(context)
                 .usePlugin(ThemePlugin.create(context))
                 .usePlugin(StrikethroughPlugin.create())
                 .usePlugin(SimpleExtPlugin.create())
                 .usePlugin(ImagesPlugin.create())
                 .usePlugin(MarkwonInlineParserPlugin.create())
-                .usePlugin(SearchHighlightPlugin.create(context));
+                .usePlugin(SearchHighlightPlugin.create(color));
     }
 
     private static MarkwonEditor.Builder createMarkwonEditorBuilder(@NonNull Markwon markwon) {

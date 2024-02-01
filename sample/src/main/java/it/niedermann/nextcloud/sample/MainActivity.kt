@@ -41,7 +41,7 @@ class MainActivity : AppCompatActivity() {
         sampleException.text = getDebugInfos(this, RuntimeException())
 
         markdownEditor.setMarkdownStringChangedListener { str ->
-            markdownViewer.setMarkdownStringAndHighlightMentions(str, mentions)
+            markdownViewer.setMarkdownString(str)
         }
         markdownEditor.setMarkdownString(getString(R.string.markdown_content))
 
@@ -53,7 +53,6 @@ class MainActivity : AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, data)
         AccountImporter.onActivityResult(requestCode, resultCode, data, this) {
             SingleAccountHelper.commitCurrentAccount(this, it.name)
-            mentions[it.userId] = it.name
             currentUser.text = it.name
             currentUser.visibility = View.VISIBLE
             markdownEditor.setCurrentSingleSignOnAccount(it, Color.RED)

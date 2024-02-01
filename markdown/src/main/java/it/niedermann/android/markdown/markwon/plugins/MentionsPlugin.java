@@ -11,10 +11,12 @@ import android.text.style.ImageSpan;
 import android.util.Log;
 import android.widget.TextView;
 
+import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.Px;
 import androidx.annotation.WorkerThread;
+import androidx.core.content.ContextCompat;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.DataSource;
@@ -62,6 +64,7 @@ import io.noties.markwon.inlineparser.MarkwonInlineParser;
 import io.noties.markwon.inlineparser.MarkwonInlineParserContext;
 import it.niedermann.android.markdown.MarkdownUtil;
 import it.niedermann.android.markdown.R;
+import it.niedermann.android.markdown.SearchThemeUtils;
 import it.niedermann.nextcloud.ocs.ApiProvider;
 import it.niedermann.nextcloud.ocs.OcsAPI;
 
@@ -85,18 +88,24 @@ public class MentionsPlugin extends AbstractMarkwonPlugin {
     @NonNull
     private final AtomicReference<SingleSignOnAccount> ssoAccountRef = new AtomicReference<>();
     @NonNull
-    private final AtomicInteger textSizeRef;
+    private final AtomicInteger avatarSizeRef = new AtomicInteger();
+    private Drawable avatarPlaceholder;
+    private Drawable avatarBroken;
 
     private MentionsPlugin(@NonNull Context context,
                            @NonNull ExecutorService executor,
-                           @Px int textSize) {
+                           @Px int textSize,
+                           @ColorInt int color) {
         this.context = context.getApplicationContext();
         this.executor = executor;
-        this.textSizeRef = new AtomicInteger(textSize);
+        setTextSize(textSize);
+        setColor(color);
     }
 
-    public static MarkwonPlugin create(@NonNull Context context, @Px int textSize) {
-        return new MentionsPlugin(context, Executors.newCachedThreadPool(), textSize);
+    public static MarkwonPlugin create(@NonNull Context context,
+                                       @Px int textSize,
+                                       @ColorInt int color) {
+        return new MentionsPlugin(context, Executors.newCachedThreadPool(), textSize, color);
     }
 
     @Override
@@ -112,13 +121,13 @@ public class MentionsPlugin extends AbstractMarkwonPlugin {
 
     @Override
     public void configureVisitor(@NonNull MarkwonVisitor.Builder builder) {
-        builder.on(AvatarNode.class, new AvatarVisitor(ssoAccountRef, textSizeRef));
+        builder.on(AvatarNode.class, new AvatarVisitor(ssoAccountRef, avatarSizeRef));
         builder.on(DisplayNameNode.class, new DisplayNameVisitor());
     }
 
     @Override
     public void configureSpansFactory(@NonNull MarkwonSpansFactory.Builder builder) {
-        builder.setFactory(AvatarNode.class, new AvatarSpanFactory(context));
+        builder.setFactory(AvatarNode.class, new AvatarSpanFactory());
         builder.setFactory(DisplayNameNode.class, new DisplayNameSpanFactory());
     }
 
@@ -133,12 +142,25 @@ public class MentionsPlugin extends AbstractMarkwonPlugin {
         final var ssoAccount = ssoAccountRef.get();
         if (ssoAccount != null) {
             executor.submit(() -> {
+                final var spannable = MarkdownUtil.getContentAsSpannable(textView);
                 try {
-                    final var initialSpannable = MarkdownUtil.getContentAsSpannable(textView);
-                    final var spannableWithDisplayNames = replaceUserNames(textView.getContext(), initialSpannable, ssoAccount);
-                    final var finalSpannable = replaceAvatars(textView.getContext(), spannableWithDisplayNames);
+                    final var spannableWithDisplayNames = insertActualDisplayNames(spannable, ssoAccount);
+                    final var spannableWithDisplayNamesAndAvatarPlaceholders = replacePotentialAvatarsWithPlaceholders(spannableWithDisplayNames);
 
-                    textView.post(() -> textView.setText(finalSpannable));
+                    textView.post(() -> {
+                        textView.setText(spannableWithDisplayNamesAndAvatarPlaceholders);
+                        executor.submit(() -> {
+                            try {
+                                final var spannableWithDisplayNamesAndActualAvatars = insertActualAvatars(
+                                        textView.getContext(),
+                                        MarkdownUtil.getContentAsSpannable(textView),
+                                        avatarBroken);
+                                textView.post(() -> textView.setText(spannableWithDisplayNamesAndActualAvatars));
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                        });
+                    });
                 } catch (InterruptedException | NextcloudFilesAppAccountNotFoundException e) {
                     e.printStackTrace();
                 }
@@ -152,8 +174,22 @@ public class MentionsPlugin extends AbstractMarkwonPlugin {
         ssoAccountRef.set(ssoAccount);
     }
 
+    public void setColor(@ColorInt int color) {
+        final var utils = SearchThemeUtils.Companion.of(color);
+
+        final var avatarSize = avatarSizeRef.get();
+
+        final var avatarPlaceholderDrawable = Objects.requireNonNull(ContextCompat.getDrawable(context, R.drawable.ic_baseline_account_circle_24dp));
+        avatarPlaceholderDrawable.setBounds(0, 0, avatarSize, avatarSize);
+        avatarPlaceholder = utils.tintDrawable(context, avatarPlaceholderDrawable);
+
+        final var avatarBrokenDrawable = Objects.requireNonNull(ContextCompat.getDrawable(context, R.drawable.ic_baseline_broken_image_24));
+        avatarBrokenDrawable.setBounds(0, 0, avatarSize, avatarSize);
+        avatarBroken = utils.tintDrawable(context, avatarBrokenDrawable);
+    }
+
     public void setTextSize(@Px int textSize) {
-        textSizeRef.set(textSize);
+        avatarSizeRef.set((int) (textSize * 1.5));
     }
 
     static class MentionInlineProcessor extends InlineProcessor {
@@ -215,7 +251,7 @@ public class MentionsPlugin extends AbstractMarkwonPlugin {
 
     private record AvatarVisitor(
             @NonNull AtomicReference<SingleSignOnAccount> ssoAccountRef,
-            @NonNull AtomicInteger textSizeRef) implements MarkwonVisitor.NodeVisitor<AvatarNode> {
+            @NonNull AtomicInteger avatarSizeRef) implements MarkwonVisitor.NodeVisitor<AvatarNode> {
 
         @Override
         public void visit(@NonNull MarkwonVisitor visitor, @NonNull AvatarNode avatarNode) {
@@ -228,7 +264,7 @@ public class MentionsPlugin extends AbstractMarkwonPlugin {
 
             final int start = visitor.length();
             MentionProps.MENTION_AVATAR_USER_ID_PROPS.set(visitor.renderProps(), avatarNode.userId);
-            MentionProps.MENTION_AVATAR_URL_PROPS.set(visitor.renderProps(), getAvatarUrl(ssoAccount, avatarNode.userId, (int) (textSizeRef.get() * 1.5)));
+            MentionProps.MENTION_AVATAR_URL_PROPS.set(visitor.renderProps(), getAvatarUrl(ssoAccount, avatarNode.userId, avatarSizeRef.get()));
             visitor.visitChildren(avatarNode);
             visitor.setSpansForNodeOptional(avatarNode, start);
         }
@@ -249,17 +285,10 @@ public class MentionsPlugin extends AbstractMarkwonPlugin {
     }
 
     private static class AvatarSpanFactory implements SpanFactory {
-        @NonNull
-        private final Context context;
-
-        private AvatarSpanFactory(@NonNull Context context) {
-            this.context = context;
-        }
-
         @Nullable
         @Override
         public Object getSpans(@NonNull MarkwonConfiguration configuration, @NonNull RenderProps props) {
-            return new AvatarSpan(context, MentionProps.MENTION_AVATAR_USER_ID_PROPS.require(props), MentionProps.MENTION_AVATAR_URL_PROPS.require(props));
+            return new PotentialAvatarSpan(MentionProps.MENTION_AVATAR_USER_ID_PROPS.require(props), MentionProps.MENTION_AVATAR_URL_PROPS.require(props));
         }
     }
 
@@ -267,22 +296,14 @@ public class MentionsPlugin extends AbstractMarkwonPlugin {
         @Nullable
         @Override
         public Object getSpans(@NonNull MarkwonConfiguration configuration, @NonNull RenderProps props) {
-            return new DisplayNameSpan(MentionProps.MENTION_DISPLAY_NAME_USER_ID_PROPS.require(props));
+            return new PotentialDisplayNameSpan(MentionProps.MENTION_DISPLAY_NAME_USER_ID_PROPS.require(props));
         }
     }
 
-    private static class AvatarSpan extends ImageSpan {
-        public final String userId;
-        public final String url;
-
-        public AvatarSpan(@NonNull Context context, @NonNull String userId, @NonNull String url) {
-            super(context, R.drawable.ic_baseline_account_circle_24dp);
-            this.userId = userId;
-            this.url = url;
-        }
+    private record PotentialAvatarSpan(@NonNull String userId, @NonNull String url) {
     }
 
-    private record DisplayNameSpan(@NonNull String userId) {
+    private record PotentialDisplayNameSpan(@NonNull String userId) {
     }
 
     private abstract static class MentionProps {
@@ -294,29 +315,28 @@ public class MentionsPlugin extends AbstractMarkwonPlugin {
         }
     }
 
-    @WorkerThread
-    private Spannable replaceUserNames(@NonNull Context context, @NonNull Spannable spannable, @NonNull SingleSignOnAccount ssoAccount) throws InterruptedException, NextcloudFilesAppAccountNotFoundException {
-        final var userNames = findUserNames(spannable);
-        final var displayNames = fetchDisplayNames(context, ssoAccount, userNames);
+    @NonNull
+    private Spannable insertActualDisplayNames(@NonNull Spannable spannable, @NonNull SingleSignOnAccount ssoAccount) throws InterruptedException, NextcloudFilesAppAccountNotFoundException {
+        final var potentialMentions = spannable.getSpans(0, spannable.length(), PotentialDisplayNameSpan.class);
+        final var potentialUserNames = Arrays.stream(potentialMentions)
+                .map(span -> span.userId)
+                .collect(Collectors.toUnmodifiableSet());
+
+        final var displayNames = fetchDisplayNames(context, ssoAccount, potentialUserNames);
+
         final var spannableStringBuilder = new SpannableStringBuilder(spannable);
-        final var displayNameSpans = Arrays.stream(spannable.getSpans(0, spannable.length(), DisplayNameSpan.class))
+        final var displayNameSpans = Arrays.stream(potentialMentions)
                 .filter(displayNameSpan -> displayNames.containsKey(displayNameSpan.userId))
-                .toArray(DisplayNameSpan[]::new);
+                .toArray(PotentialDisplayNameSpan[]::new);
 
         for (final var span : displayNameSpans) {
-            final var displayName = Objects.requireNonNull(displayNames.get(span.userId));
-            final int start = spannable.getSpanStart(span);
-            final int end = spannable.getSpanEnd(span);
+            final var displayName = " " + Objects.requireNonNull(displayNames.get(span.userId));
+            final int start = spannableStringBuilder.getSpanStart(span);
+            final int end = spannableStringBuilder.getSpanEnd(span);
 
             spannableStringBuilder.replace(start, end, displayName);
         }
         return spannableStringBuilder;
-    }
-
-    public Set<String> findUserNames(@NonNull Spannable spannable) {
-        return Arrays.stream(spannable.getSpans(0, spannable.length(), DisplayNameSpan.class))
-                .map(span -> span.userId)
-                .collect(Collectors.toUnmodifiableSet());
     }
 
     @WorkerThread
@@ -333,7 +353,7 @@ public class MentionsPlugin extends AbstractMarkwonPlugin {
         final var apiFactory = new ApiProvider.Factory();
         try (final var apiProvider = apiFactory.createApiProvider(context, ssoAccount, OcsAPI.class, "/ocs/v2.php/cloud/")) {
             for (final var potentialUsername : potentialUserNames) {
-                fetchDisplayName(apiProvider.getApi(), potentialUsername).whenComplete((displayName, exception) -> {
+                fetchDisplayName(executor, apiProvider.getApi(), potentialUsername).whenComplete((displayName, exception) -> {
                     if (exception == null) {
                         if (displayName != null) {
                             result.put(potentialUsername, displayName);
@@ -352,7 +372,8 @@ public class MentionsPlugin extends AbstractMarkwonPlugin {
     }
 
     @NonNull
-    public CompletableFuture<String> fetchDisplayName(@NonNull OcsAPI ocsApi,
+    public CompletableFuture<String> fetchDisplayName(@NonNull ExecutorService executor,
+                                                      @NonNull OcsAPI ocsApi,
                                                       @NonNull String potentialUsername) {
         if (userCache.containsKey(potentialUsername)) {
             return CompletableFuture.completedFuture(userCache.get(potentialUsername));
@@ -396,12 +417,40 @@ public class MentionsPlugin extends AbstractMarkwonPlugin {
     }
 
     @WorkerThread
-    private Spannable replaceAvatars(@NonNull Context context, @NonNull Spannable spannable) throws InterruptedException {
-        final var avatarSpans = Arrays.stream(spannable.getSpans(0, spannable.length(), AvatarSpan.class))
+    private Spannable replacePotentialAvatarsWithPlaceholders(@NonNull Spannable foo) throws InterruptedException {
+        final var spannable = new SpannableStringBuilder(foo);
+        final var avatarSpans = Arrays.stream(spannable.getSpans(0, spannable.length(), PotentialAvatarSpan.class))
                 .filter(span -> !noUserCache.contains(span.userId))
-                .toArray(AvatarSpan[]::new);
+                .toArray(PotentialAvatarSpan[]::new);
 
-        final var spannableStringBuilder = new SpannableStringBuilder(spannable);
+        for (final var span : avatarSpans) {
+            final var spanStart = spannable.getSpanStart(span);
+            final var spanEnd = spannable.getSpanEnd(span);
+            spannable.setSpan(new AvatarPlaceholderSpan(avatarPlaceholder, span), spanStart, spanEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        }
+
+        return spannable;
+    }
+
+    private static class AvatarPlaceholderSpan extends ImageSpan {
+        @NonNull
+        private final String userId;
+        @NonNull
+        private final String url;
+
+        public AvatarPlaceholderSpan(@NonNull Drawable drawable, @NonNull PotentialAvatarSpan potentialAvatarSpan) {
+            super(drawable);
+            this.userId = potentialAvatarSpan.userId;
+            this.url = potentialAvatarSpan.url;
+        }
+    }
+
+    @WorkerThread
+    private Spannable insertActualAvatars(@NonNull Context context, @NonNull Spannable sourceSpannable, @NonNull Drawable avatarBroken) throws InterruptedException {
+        final var spannable = new SpannableStringBuilder(sourceSpannable);
+        final var avatarSpans = Arrays.stream(spannable.getSpans(0, spannable.length(), AvatarPlaceholderSpan.class))
+                .filter(span -> !noUserCache.contains(span.userId))
+                .toArray(AvatarPlaceholderSpan[]::new);
 
         final var latch = new CountDownLatch(avatarSpans.length);
         for (final var span : avatarSpans) {
@@ -410,7 +459,6 @@ public class MentionsPlugin extends AbstractMarkwonPlugin {
 
             Glide.with(context)
                     .asBitmap()
-//                    .placeholder(R.drawable.ic_baseline_account_circle_24dp)
                     .load(span.url)
                     .apply(RequestOptions.circleCropTransform())
                     .listener(new RequestListener<>() {
@@ -423,15 +471,17 @@ public class MentionsPlugin extends AbstractMarkwonPlugin {
                                 for (final var cause : causes) {
                                     if (cause instanceof HttpException httpException) {
                                         if (httpException.getStatusCode() == HttpURLConnection.HTTP_NOT_FOUND) {
-                                            spannableStringBuilder.removeSpan(span); // FIXME does not work as expected, placeholder stays
+                                            // Actually should never happen because the noUserCache should hold this user name from trying to fetch its display names
                                             noUserCache.add(span.userId);
                                             return false;
                                         }
                                     }
                                 }
+                                e.printStackTrace();
                             }
 
-                            spannableStringBuilder.setSpan(new ImageSpan(context, R.drawable.ic_baseline_broken_image_24), spanStart, spanEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                            spannable.setSpan(new ImageSpan(avatarBroken), spanStart, spanEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                            spannable.removeSpan(span);
                             return false;
                         }
 
@@ -443,7 +493,8 @@ public class MentionsPlugin extends AbstractMarkwonPlugin {
                     .into(new CustomTarget<Bitmap>() {
                         @Override
                         public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
-                            spannableStringBuilder.setSpan(new ImageSpan(context, resource), spanStart, spanEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                            spannable.setSpan(new ImageSpan(context, resource), spanStart, spanEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                            spannable.removeSpan(span);
                             latch.countDown();
                         }
 
@@ -454,6 +505,6 @@ public class MentionsPlugin extends AbstractMarkwonPlugin {
                     });
         }
         latch.await();
-        return spannableStringBuilder;
+        return spannable;
     }
 }

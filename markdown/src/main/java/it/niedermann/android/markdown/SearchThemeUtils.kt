@@ -1,6 +1,8 @@
 package it.niedermann.android.markdown
 
 import android.content.Context
+import android.content.res.ColorStateList
+import android.graphics.drawable.Drawable
 import com.nextcloud.android.common.ui.theme.MaterialSchemes
 import com.nextcloud.android.common.ui.theme.MaterialSchemes.Companion.fromColor
 import com.nextcloud.android.common.ui.theme.ViewThemeUtilsBase
@@ -21,6 +23,16 @@ class SearchThemeUtils(schemes: MaterialSchemes) : ViewThemeUtilsBase(schemes) {
 
     fun getOnSecondary(context: Context): Int {
         return withScheme(context) { scheme -> scheme.onSecondary }
+    }
+
+    fun tintDrawable(
+        context: Context,
+        drawable: Drawable
+    ): Drawable {
+        return withScheme(context) { scheme ->
+            drawable.setTintList(ColorStateList.valueOf(scheme.onSurfaceVariant))
+            drawable
+        }
     }
 
     companion object {
