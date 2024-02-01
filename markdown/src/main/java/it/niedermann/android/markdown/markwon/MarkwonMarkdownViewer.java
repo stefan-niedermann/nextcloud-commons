@@ -237,7 +237,7 @@ public class MarkwonMarkdownViewer extends AppCompatTextView implements Markdown
             mentionsPlugin.setCurrentSingleSignOnAccount(ssoAccount);
         }
 
-        this.renderService.execute(() -> post(() -> this.markwon.setMarkdown(this, getMarkdownString().getValue().toString())));
+        rerender();
     }
 
     @Override
@@ -249,7 +249,7 @@ public class MarkwonMarkdownViewer extends AppCompatTextView implements Markdown
             searchHighlightPlugin.setSearchText(searchText, current, this);
         }
 
-        this.renderService.execute(() -> post(() -> this.markwon.setMarkdown(this, getMarkdownString().getValue().toString())));
+        rerender();
     }
 
     /**
@@ -287,6 +287,13 @@ public class MarkwonMarkdownViewer extends AppCompatTextView implements Markdown
             mentionsPlugin.setTextSize((int) getTextSize());
         }
 
-        this.renderService.execute(() -> post(() -> this.markwon.setMarkdown(this, getMarkdownString().getValue().toString())));
+        rerender();
+    }
+
+    private void rerender() {
+        this.renderService.execute(() -> post(() -> {
+            final var currentValue = unrenderedText$.getValue();
+            this.markwon.setMarkdown(this, currentValue == null ? "" : currentValue.toString());
+        }));
     }
 }
