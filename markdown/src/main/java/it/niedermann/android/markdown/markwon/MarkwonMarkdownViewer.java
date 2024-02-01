@@ -53,11 +53,11 @@ import it.niedermann.android.markdown.MarkdownUtil;
 import it.niedermann.android.markdown.R;
 import it.niedermann.android.markdown.markwon.plugins.CustomGlideStore;
 import it.niedermann.android.markdown.markwon.plugins.LinkClickInterceptorPlugin;
-import it.niedermann.android.markdown.markwon.plugins.MentionsPlugin;
 import it.niedermann.android.markdown.markwon.plugins.RelativeImageUrlPlugin;
 import it.niedermann.android.markdown.markwon.plugins.SearchHighlightPlugin;
 import it.niedermann.android.markdown.markwon.plugins.ThemePlugin;
 import it.niedermann.android.markdown.markwon.plugins.ToggleableTaskListPlugin;
+import it.niedermann.android.markdown.markwon.plugins.mentions.MentionsPlugin;
 
 @PrismBundle(includeAll = true, grammarLocatorClassName = ".MarkwonGrammarLocator")
 public class MarkwonMarkdownViewer extends AppCompatTextView implements MarkdownEditor {
