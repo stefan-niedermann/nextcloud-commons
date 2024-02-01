@@ -112,7 +112,7 @@ public class NextcloudMentionsPlugin extends AbstractMarkwonPlugin {
                 final int spanEnd = messageBuilder.getSpanEnd(span);
                 Glide.with(context)
                         .asBitmap()
-                        .placeholder(R.drawable.ic_person_grey600_24dp)
+                        .placeholder(R.drawable.ic_baseline_account_circle_24dp)
                         .error(R.drawable.ic_baseline_broken_image_24)
                         .load(ssoAccount.url + "/index.php/avatar/" + messageBuilder.subSequence(spanStart + 1, spanEnd) + "/" + span.getDrawable().getIntrinsicHeight())
                         .apply(RequestOptions.circleCropTransform())
@@ -240,7 +240,7 @@ public class NextcloudMentionsPlugin extends AbstractMarkwonPlugin {
             final String mentionDisplayName = " " + mentions.get(userId);
             int index = messageBuilder.toString().lastIndexOf(mentionId);
             while (index >= 0) {
-                messageBuilder.setSpan(new MentionSpan(context, R.drawable.ic_person_grey600_24dp), index, index + mentionId.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                messageBuilder.setSpan(new MentionSpan(context, R.drawable.ic_baseline_account_circle_24dp), index, index + mentionId.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
                 messageBuilder.insert(index + mentionId.length(), mentionDisplayName);
                 index = messageBuilder.toString().substring(0, index).lastIndexOf(mentionId);
             }
@@ -265,7 +265,7 @@ public class NextcloudMentionsPlugin extends AbstractMarkwonPlugin {
     @Override
     public void configureSpansFactory(@NonNull MarkwonSpansFactory.Builder builder) {
         builder.setFactory(Mention.class, (configuration, props) -> {
-            return new MentionSpan(context, R.drawable.ic_person_grey600_24dp);
+            return new MentionSpan(context, R.drawable.ic_baseline_account_circle_24dp);
         });
     }
 

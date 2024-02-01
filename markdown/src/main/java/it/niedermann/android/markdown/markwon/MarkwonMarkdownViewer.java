@@ -102,7 +102,7 @@ public class MarkwonMarkdownViewer extends AppCompatTextView implements Markdown
                 .usePlugin(SoftBreakAddsNewLinePlugin.create())
                 .usePlugin(SyntaxHighlightPlugin.create(prism4j, prism4jTheme))
                 .usePlugin(RelativeImageUrlPlugin.create())
-                .usePlugin(MentionsPlugin.create((int) getTextSize()))
+                .usePlugin(MentionsPlugin.create(getContext(), (int) getTextSize()))
                 .usePlugin(new ToggleableTaskListPlugin((toggledCheckboxPosition, newCheckedState) -> {
                     final var oldUnrenderedText = unrenderedText$.getValue();
                     if (oldUnrenderedText == null) {
@@ -222,7 +222,11 @@ public class MarkwonMarkdownViewer extends AppCompatTextView implements Markdown
         this.renderService.execute(() -> post(() -> this.markwon.setMarkdown(this, getMarkdownString().getValue().toString())));
     }
 
+    /**
+     * @deprecated use {@link #setMarkdownString(CharSequence)}, mentions will get highlighted implicitly
+     */
     @Override
+    @Deprecated
     public void setMarkdownStringAndHighlightMentions(CharSequence text, @NonNull Map<String, String> mentions) {
         setMarkdownString(text);
     }

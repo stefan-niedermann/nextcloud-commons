@@ -42,10 +42,9 @@ public interface MarkdownEditor {
     void setMarkdownString(CharSequence text, @Nullable Runnable afterRender);
 
     /**
-     * Will replace all `@mention`s of Nextcloud users with the avatar and given display name.
-     *
-     * @param mentions {@link Map} of mentions, where the key is the user id and the value is the display name
+     * @deprecated use {@link #setMarkdownString(CharSequence)}, mentions will get highlighted implicitly
      */
+    @Deprecated(forRemoval = true)
     default void setMarkdownStringAndHighlightMentions(CharSequence text, @NonNull Map<String, String> mentions) {
         setMarkdownString(text);
     }
