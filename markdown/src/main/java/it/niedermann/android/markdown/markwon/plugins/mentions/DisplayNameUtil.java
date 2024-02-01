@@ -77,21 +77,27 @@ public class DisplayNameUtil {
             return Collections.emptyMap();
         }
 
-        final var result = new ConcurrentHashMap<String, String>(potentialUserNames.size());
-        result.putAll(userCache);
+        final var cachedUsers = userCache
+                .entrySet()
+                .stream()
+                .filter(entry -> potentialUserNames.contains(entry.getKey()))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
-        final var potentialUserNamesToCheck = potentialUserNames.stream()
+        final var usernamesToCheck = potentialUserNames.stream()
                 .filter(potentialUserName -> !userCache.containsKey(potentialUserName))
                 .filter(potentialUserName -> !noUserCache.contains(potentialUserName))
                 .collect(Collectors.toUnmodifiableSet());
 
-        final var latch = new CountDownLatch(potentialUserNamesToCheck.size());
+        final var result = new ConcurrentHashMap<String, String>(cachedUsers.size() + usernamesToCheck.size());
+        result.putAll(cachedUsers);
+
+        final var latch = new CountDownLatch(usernamesToCheck.size());
         final var apiFactory = new ApiProvider.Factory();
 
         try (final var apiProvider = apiFactory.createApiProvider(context, ssoAccount, OcsAPI.class, "/ocs/v2.php/cloud/")) {
-            final var executor = Executors.newFixedThreadPool(potentialUserNamesToCheck.size());
+            final var executor = Executors.newFixedThreadPool(usernamesToCheck.size());
 
-            for (final var potentialUsername : potentialUserNamesToCheck) {
+            for (final var potentialUsername : usernamesToCheck) {
                 executor.submit(() -> {
                     try {
                         final String displayName = fetchDisplayName(context, apiProvider.getApi(), potentialUsername);
