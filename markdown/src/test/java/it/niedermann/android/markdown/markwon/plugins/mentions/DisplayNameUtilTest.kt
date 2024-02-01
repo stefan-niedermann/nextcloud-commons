@@ -94,19 +94,26 @@ class DisplayNameUtilTest : TestCase() {
         assertEquals("Baz Lightyear", displayNames["baz"])
 
         assertTrue(userCache.containsKey("foo"))
-        assertTrue(userCache.containsKey("bar"))
-        assertTrue(userCache.containsKey("baz"))
+        assertTrue(
+            "Should add the username to cache to avoid querying it the next time",
+            userCache.containsKey("bar")
+        )
+        assertTrue(
+            "Should add the username to cache to avoid querying it the next time",
+            userCache.containsKey("baz")
+        )
 
         assertTrue(noUserCache.contains("qux"))
-        assertTrue(noUserCache.contains("quux"))
+        assertTrue(
+            "Should add the invalid username to cache to avoid querying it the next time",
+            noUserCache.contains("quux")
+        )
     }
 
     private fun getApiProviderMock(): ApiProvider<OcsAPI> {
         return mockk<ApiProvider<OcsAPI>> {
             every { getApi() } returns getOcsApiMock()
-            every { close() } answers {
-
-            }
+            every { close() } answers { }
         }
     }
 
