@@ -21,6 +21,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
@@ -31,23 +32,31 @@ public class DisplayNameUtil {
 
     private static final String TAG = DisplayNameUtil.class.getSimpleName();
     private static final String API_URL_OCS = "/ocs/v2.php/cloud/";
-    private final ApiProvider.Factory apiFactory;
     @NonNull
     private final Map<String, String> userCache;
     @NonNull
     private final Set<String> noUserCache;
+    @NonNull
+    private final ApiProvider.Factory apiFactory;
+    @NonNull
+    private final ExecutorServiceFactory executorFactory;
 
     public DisplayNameUtil(@NonNull Map<String, String> userCache,
                            @NonNull Set<String> noUserCache) {
-        this(userCache, noUserCache, new ApiProvider.Factory());
+        this(userCache,
+                noUserCache,
+                new ApiProvider.Factory(),
+                taskCount -> Executors.newFixedThreadPool(Math.min(taskCount, 50)));
     }
 
     private DisplayNameUtil(@NonNull Map<String, String> userCache,
                             @NonNull Set<String> noUserCache,
-                            @NonNull ApiProvider.Factory apiFactory) {
+                            @NonNull ApiProvider.Factory apiFactory,
+                            @NonNull ExecutorServiceFactory executorFactory) {
         this.userCache = userCache;
         this.noUserCache = noUserCache;
         this.apiFactory = apiFactory;
+        this.executorFactory = executorFactory;
     }
 
     @WorkerThread
@@ -101,7 +110,7 @@ public class DisplayNameUtil {
         result.putAll(cachedUsers);
 
         final var latch = new CountDownLatch(usernamesToCheck.size());
-        final var executor = Executors.newFixedThreadPool(usernamesToCheck.size());
+        final var executor = this.executorFactory.createExecutor(usernamesToCheck.size());
 
         try (final var apiProvider = apiFactory.createApiProvider(context, ssoAccount, OcsAPI.class, API_URL_OCS)) {
             for (final var potentialUsername : usernamesToCheck) {
@@ -158,5 +167,10 @@ public class DisplayNameUtil {
 
             throw exception;
         }
+    }
+
+    interface ExecutorServiceFactory {
+        @NonNull
+        ExecutorService createExecutor(int taskCount);
     }
 }

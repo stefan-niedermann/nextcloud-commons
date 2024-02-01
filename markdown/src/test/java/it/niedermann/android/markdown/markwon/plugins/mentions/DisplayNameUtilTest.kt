@@ -1,11 +1,13 @@
 package it.niedermann.android.markdown.markwon.plugins.mentions
 
 import androidx.test.core.app.ApplicationProvider
+import com.google.common.util.concurrent.MoreExecutors
 import com.nextcloud.android.sso.model.SingleSignOnAccount
 import com.nextcloud.android.sso.model.ocs.OcsResponse
 import com.nextcloud.android.sso.model.ocs.OcsUser
 import io.mockk.every
 import io.mockk.mockk
+import it.niedermann.android.markdown.markwon.plugins.mentions.DisplayNameUtil.ExecutorServiceFactory
 import it.niedermann.nextcloud.ocs.ApiProvider
 import it.niedermann.nextcloud.ocs.OcsAPI
 import junit.framework.TestCase
@@ -17,6 +19,7 @@ import org.robolectric.RobolectricTestRunner
 import retrofit2.Call
 import retrofit2.Response
 import java.util.*
+
 
 @RunWith(RobolectricTestRunner::class)
 class DisplayNameUtilTest : TestCase() {
@@ -49,7 +52,8 @@ class DisplayNameUtilTest : TestCase() {
         val utilConstructor = DisplayNameUtil::class.java.getDeclaredConstructor(
             Map::class.java,
             Set::class.java,
-            ApiProvider.Factory::class.java
+            ApiProvider.Factory::class.java,
+            ExecutorServiceFactory::class.java
         )
 
         utilConstructor.isAccessible = true
@@ -61,6 +65,9 @@ class DisplayNameUtilTest : TestCase() {
                 every {
                     createApiProvider<OcsAPI>(any(), any(), any(), any())
                 } returns getApiProviderMock()
+            },
+            ExecutorServiceFactory {
+                MoreExecutors.newDirectExecutorService()
             }
         )
     }
