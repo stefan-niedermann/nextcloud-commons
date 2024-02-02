@@ -11,9 +11,9 @@ class AvatarPlaceholderSpan extends ImageSpan {
     @NonNull
     final String url;
 
-    AvatarPlaceholderSpan(@NonNull Drawable drawable, @NonNull PotentialAvatarSpan potentialAvatarSpan) {
+    AvatarPlaceholderSpan(@NonNull Drawable drawable, @NonNull String userId, @NonNull String url) {
         super(drawable);
-        this.userId = potentialAvatarSpan.userId();
-        this.url = potentialAvatarSpan.url();
+        this.userId = userId;
+        this.url = url;
     }
 }

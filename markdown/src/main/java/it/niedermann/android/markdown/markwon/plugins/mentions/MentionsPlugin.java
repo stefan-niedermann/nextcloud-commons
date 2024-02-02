@@ -60,6 +60,10 @@ public class MentionsPlugin extends AbstractMarkwonPlugin {
     @NonNull
     private final AvatarUtil avatarUtil;
     @NonNull
+    private final AtomicReference<Drawable> avatarPlaceholder = new AtomicReference<>();
+    @NonNull
+    private final AtomicReference<Drawable> avatarBroken = new AtomicReference<>();
+    @NonNull
     private final AtomicReference<SingleSignOnAccount> ssoAccountRef = new AtomicReference<>();
     @NonNull
     private final AtomicInteger avatarSizeRef = new AtomicInteger();
@@ -68,7 +72,7 @@ public class MentionsPlugin extends AbstractMarkwonPlugin {
                            @Px int textSize,
                            @ColorInt int color) {
         this.context = context.getApplicationContext();
-        this.avatarUtil = new AvatarUtil(noUserCache);
+        this.avatarUtil = new AvatarUtil(noUserCache, avatarPlaceholder, avatarBroken);
         this.displayNameUtil = new DisplayNameUtil(userCache, noUserCache);
         setTextSize(textSize);
         setColor(color);
@@ -84,7 +88,7 @@ public class MentionsPlugin extends AbstractMarkwonPlugin {
     public void configureParser(@NonNull Parser.Builder builder) {
         try {
             builder.inlineParserFactory(MarkwonInlineParser.factoryBuilder()
-                    .addInlineProcessor(new MentionInlineProcessor(ssoAccountRef))
+                    .addInlineProcessor(new MentionInlineProcessor(userCache, noUserCache, ssoAccountRef))
                     .build());
         } catch (Exception e) {
             e.printStackTrace();
@@ -93,12 +97,14 @@ public class MentionsPlugin extends AbstractMarkwonPlugin {
 
     @Override
     public void configureVisitor(@NonNull MarkwonVisitor.Builder builder) {
+        builder.on(AvatarPlaceholderNode.class, new AvatarPlaceholderVisitor(ssoAccountRef, avatarSizeRef));
         builder.on(AvatarNode.class, new AvatarVisitor(ssoAccountRef, avatarSizeRef));
         builder.on(DisplayNameNode.class, new DisplayNameVisitor());
     }
 
     @Override
     public void configureSpansFactory(@NonNull MarkwonSpansFactory.Builder builder) {
+        builder.setFactory(AvatarPlaceholderNode.class, new AvatarPlaceholderSpanFactory(avatarPlaceholder));
         builder.setFactory(AvatarNode.class, new AvatarSpanFactory());
         builder.setFactory(DisplayNameNode.class, new DisplayNameSpanFactory());
     }
@@ -173,8 +179,8 @@ public class MentionsPlugin extends AbstractMarkwonPlugin {
         final var utils = ThemeUtils.Companion.of(color);
         final var size = avatarSizeRef.get();
 
-        avatarUtil.setAvatarPlaceholder(getTintedDrawable(utils, context, R.drawable.ic_baseline_account_circle_24dp, size));
-        avatarUtil.setAvatarBroken(getTintedDrawable(utils, context, R.drawable.ic_baseline_broken_image_24, size));
+        avatarPlaceholder.set(getTintedDrawable(utils, context, R.drawable.ic_baseline_account_circle_24dp, size));
+        avatarBroken.set(getTintedDrawable(utils, context, R.drawable.ic_baseline_broken_image_24, size));
     }
 
     private Drawable getTintedDrawable(@NonNull ThemeUtils utils, @NonNull Context context, @DrawableRes int drawableRes, @Px int size) {
@@ -185,6 +191,6 @@ public class MentionsPlugin extends AbstractMarkwonPlugin {
     }
 
     public void setTextSize(@Px int textSize) {
-        avatarSizeRef.set((int) (textSize * 1.5));
+        avatarSizeRef.set((int) textSize);
     }
 }

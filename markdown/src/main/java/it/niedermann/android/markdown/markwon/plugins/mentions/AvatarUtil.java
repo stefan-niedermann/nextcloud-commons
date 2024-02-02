@@ -25,24 +25,23 @@ import java.net.HttpURLConnection;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicReference;
 
 @WorkerThread
 public class AvatarUtil {
 
     @NonNull
     private final Set<String> noUserCache;
-    private Drawable avatarPlaceholder;
-    private Drawable avatarBroken;
+    @NonNull
+    private final AtomicReference<Drawable> avatarPlaceholder;
+    @NonNull
+    private final AtomicReference<Drawable> avatarBroken;
 
-    AvatarUtil(@NonNull Set<String> noUserCache) {
+    AvatarUtil(@NonNull Set<String> noUserCache,
+               @NonNull AtomicReference<Drawable> avatarPlaceholder,
+               @NonNull AtomicReference<Drawable> avatarBroken) {
         this.noUserCache = noUserCache;
-    }
-
-    public void setAvatarPlaceholder(@NonNull Drawable avatarPlaceholder) {
         this.avatarPlaceholder = avatarPlaceholder;
-    }
-
-    public void setAvatarBroken(@NonNull Drawable avatarBroken) {
         this.avatarBroken = avatarBroken;
     }
 
@@ -56,7 +55,7 @@ public class AvatarUtil {
         for (final var span : avatarSpans) {
             final var spanStart = spannable.getSpanStart(span);
             final var spanEnd = spannable.getSpanEnd(span);
-            spannable.setSpan(new AvatarPlaceholderSpan(avatarPlaceholder, span), spanStart, spanEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            spannable.setSpan(new AvatarPlaceholderSpan(avatarPlaceholder.get(), span.userId(), span.url()), spanStart, spanEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
         }
 
         return spannable;
@@ -97,7 +96,7 @@ public class AvatarUtil {
                                 e.printStackTrace();
                             }
 
-                            spannable.setSpan(new ImageSpan(avatarBroken), spanStart, spanEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                            spannable.setSpan(new ImageSpan(avatarBroken.get()), spanStart, spanEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
                             spannable.removeSpan(span);
                             return false;
                         }
