@@ -7,7 +7,6 @@ import android.view.View;
 
 import androidx.annotation.NonNull;
 
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
 
 import io.noties.markwon.ext.tasklist.TaskListSpan;
@@ -16,13 +15,11 @@ public class ToggleTaskListSpan extends ClickableSpan {
 
     private static final String TAG = ToggleTaskListSpan.class.getSimpleName();
 
-    private final AtomicBoolean enabled;
     private final BiConsumer<Integer, Boolean> toggleListener;
     private final TaskListSpan span;
     private final int position;
 
-    public ToggleTaskListSpan(@NonNull AtomicBoolean enabled, @NonNull BiConsumer<Integer, Boolean> toggleListener, @NonNull TaskListSpan span, int position) {
-        this.enabled = enabled;
+    public ToggleTaskListSpan(@NonNull BiConsumer<Integer, Boolean> toggleListener, @NonNull TaskListSpan span, int position) {
         this.toggleListener = toggleListener;
         this.span = span;
         this.position = position;
@@ -30,7 +27,8 @@ public class ToggleTaskListSpan extends ClickableSpan {
 
     @Override
     public void onClick(@NonNull View widget) {
-        if (enabled.get()) {
+        if (widget.isEnabled()) {
+            widget.invalidate();
             span.setDone(!span.isDone());
             widget.invalidate();
             toggleListener.accept(position, span.isDone());

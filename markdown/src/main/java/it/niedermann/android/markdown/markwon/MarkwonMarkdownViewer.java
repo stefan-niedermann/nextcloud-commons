@@ -128,8 +128,13 @@ public class MarkwonMarkdownViewer extends AppCompatTextView implements Markdown
                     if (oldUnrenderedText == null) {
                         throw new IllegalStateException("Checkbox #" + toggledCheckboxPosition + ", but unrenderedText$ value is null.");
                     }
-                    final var newUnrenderedText = MarkdownUtil.setCheckboxStatus(oldUnrenderedText.toString(), toggledCheckboxPosition, newCheckedState);
-                    this.setMarkdownString(newUnrenderedText);
+
+                    unrenderedText$.setValue(MarkdownUtil.setCheckboxStatus(oldUnrenderedText.toString(), toggledCheckboxPosition, newCheckedState));
+
+                    // https://stackoverflow.com/q/14785848
+                    if (isTextSelectable()) {
+                        rerender();
+                    }
                 }));
 
         if (enableMentions) {
@@ -160,20 +165,10 @@ public class MarkwonMarkdownViewer extends AppCompatTextView implements Markdown
         }
     }
 
-    @Override
-    public void setEnabled(boolean enabled) {
-        final var plugin = this.markwon.getPlugin(ToggleableTaskListPlugin.class);
-        if (plugin == null) {
-            Log.w(TAG, "Tried to set enabled state for " + ToggleableTaskListPlugin.class.getSimpleName() + ", but " + ToggleableTaskListPlugin.class.getSimpleName() + " is not a registered " + MarkwonPlugin.class.getSimpleName() + ".");
-        } else {
-            plugin.setEnabled(enabled);
-        }
-    }
-
     public void setMarkdownImageUrlPrefix(@NonNull String prefix) {
         final var plugin = this.markwon.getPlugin(RelativeImageUrlPlugin.class);
         if (plugin == null) {
-            Log.w(TAG, "Tried to change image url prefix for " + ToggleableTaskListPlugin.class.getSimpleName() + ", but " + ToggleableTaskListPlugin.class.getSimpleName() + " is not a registered " + MarkwonPlugin.class.getSimpleName() + ".");
+            Log.w(TAG, "Tried to change image url prefix for " + RelativeImageUrlPlugin.class.getSimpleName() + ", but " + RelativeImageUrlPlugin.class.getSimpleName() + " is not a registered " + MarkwonPlugin.class.getSimpleName() + ".");
         } else {
             plugin.setImagePrefix(prefix);
         }

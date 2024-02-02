@@ -21,7 +21,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
@@ -42,16 +41,10 @@ import it.niedermann.android.markdown.markwon.span.ToggleTaskListSpan;
 public class ToggleableTaskListPlugin extends AbstractMarkwonPlugin {
 
     @NonNull
-    private final AtomicBoolean enabled = new AtomicBoolean(true);
-    @NonNull
     private final BiConsumer<Integer, Boolean> toggleListener;
 
     public ToggleableTaskListPlugin(@NonNull BiConsumer<Integer, Boolean> toggleListener) {
         this.toggleListener = toggleListener;
-    }
-
-    public void setEnabled(boolean enabled) {
-        this.enabled.set(enabled);
     }
 
     /**
@@ -123,7 +116,7 @@ public class ToggleableTaskListPlugin extends AbstractMarkwonPlugin {
             final var freeRanges = findFreeRanges(visitor.builder(), start, end);
             for (Range<Integer> freeRange : freeRanges) {
                 visitor.builder().setSpan(
-                        new ToggleTaskListSpan(enabled, toggleListener, ((ToggleMarkerSpan) markerSpan.what).getTaskListSpan(), position),
+                        new ToggleTaskListSpan(toggleListener, ((ToggleMarkerSpan) markerSpan.what).getTaskListSpan(), position),
                         freeRange.getLower(), freeRange.getUpper());
             }
         }
