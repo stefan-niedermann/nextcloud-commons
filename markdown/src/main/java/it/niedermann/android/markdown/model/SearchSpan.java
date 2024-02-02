@@ -1,66 +1,57 @@
 package it.niedermann.android.markdown.model;
 
-import android.graphics.Color;
+import android.annotation.SuppressLint;
+import android.content.Context;
 import android.text.TextPaint;
 import android.text.style.MetricAffectingSpan;
 
 import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 
-import it.niedermann.android.util.ColorUtil;
+import java.lang.reflect.InvocationTargetException;
+import java.util.Objects;
+
+import it.niedermann.android.markdown.ThemeUtils;
 
 public class SearchSpan extends MetricAffectingSpan {
 
-    private final boolean current;
     @ColorInt
-    private final int mainColor;
+    private final int colorBackground;
     @ColorInt
-    private final int highlightColor;
-    private final boolean darkTheme;
+    private final int colorOnBackground;
 
-    public SearchSpan(@ColorInt int mainColor, @ColorInt int highlightColor, boolean current, boolean darkTheme) {
-        this.mainColor = mainColor;
-        this.current = current;
-        this.highlightColor = highlightColor;
-        this.darkTheme = darkTheme;
+    public SearchSpan(@ColorInt int colorBackground, @ColorInt int colorOnBackground) {
+        this.colorBackground = colorBackground;
+        this.colorOnBackground = colorOnBackground;
+    }
+
+    @Deprecated(forRemoval = true)
+    public SearchSpan(@ColorInt int color, @ColorInt int ignoredColor, boolean current, boolean ignoredDarkTheme) {
+        try {
+            @SuppressLint("PrivateApi") final var context = (Context) Class.forName("android.app.ActivityThread")
+                    .getMethod("currentApplication")
+                    .invoke(null, (Object[]) null);
+
+            Objects.requireNonNull(context);
+
+            final var util = ThemeUtils.Companion.of(color);
+
+            if (current) {
+                this.colorBackground = util.getPrimary(context);
+                this.colorOnBackground = util.getOnPrimary(context);
+            } else {
+                this.colorBackground = util.getSecondary(context);
+                this.colorOnBackground = util.getOnSecondary(context);
+            }
+        } catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
     public void updateDrawState(TextPaint tp) {
-        if (current) {
-            if (darkTheme) {
-                if (ColorUtil.isColorDark(mainColor)) {
-                    tp.bgColor = Color.WHITE;
-                    tp.setColor(mainColor);
-                } else {
-                    tp.bgColor = mainColor;
-                    tp.setColor(Color.BLACK);
-                }
-            } else {
-                if (ColorUtil.isColorDark(mainColor)) {
-                    tp.bgColor = mainColor;
-                    tp.setColor(Color.WHITE);
-                } else {
-                    if (ColorUtil.getContrastRatio(mainColor, highlightColor) > 3d) {
-                        tp.bgColor = highlightColor;
-                    } else {
-                        tp.bgColor = Color.BLACK;
-                    }
-                    tp.setColor(mainColor);
-                }
-            }
-        } else {
-            tp.bgColor = highlightColor;
-            if (ColorUtil.getContrastRatio(mainColor, highlightColor) > 3d) {
-                tp.setColor(mainColor);
-            } else {
-                if (darkTheme) {
-                    tp.setColor(Color.WHITE);
-                } else {
-                    tp.setColor(Color.BLACK);
-                }
-            }
-        }
+        tp.bgColor = colorBackground;
+        tp.setColor(colorOnBackground);
         tp.setFakeBoldText(true);
     }
 

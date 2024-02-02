@@ -1,18 +1,23 @@
 package it.niedermann.android.markdown.markwon;
 
 import android.content.Context;
-import android.content.res.Configuration;
 
 import androidx.annotation.NonNull;
 
+import com.nextcloud.android.common.ui.util.PlatformThemeUtil;
+
+@Deprecated(forRemoval = true)
 public class MarkwonMarkdownUtil {
 
     private MarkwonMarkdownUtil() {
         // Util class
     }
 
+    /**
+     * @deprecated Use {@link PlatformThemeUtil#isDarkMode(Context)}
+     */
+    @Deprecated(forRemoval = true)
     public static boolean isDarkThemeActive(@NonNull Context context) {
-        final int uiMode = context.getResources().getConfiguration().uiMode;
-        return (uiMode & Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES;
+        return PlatformThemeUtil.isDarkMode(context);
     }
 }

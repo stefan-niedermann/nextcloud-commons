@@ -1,6 +1,7 @@
 package it.niedermann.nextcloud.sample
 
 import android.content.Intent
+import android.graphics.Color
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
@@ -40,18 +41,22 @@ class MainActivity : AppCompatActivity() {
         sampleException.text = getDebugInfos(this, RuntimeException())
 
         markdownEditor.setMarkdownStringChangedListener { str ->
-            markdownViewer.setMarkdownStringAndHighlightMentions(str, mentions)
+            markdownViewer.setMarkdownString(str)
         }
         markdownEditor.setMarkdownString(getString(R.string.markdown_content))
+
+        markdownEditor.setSearchText("and", 2)
+        markdownViewer.setSearchText("and", 2)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         AccountImporter.onActivityResult(requestCode, resultCode, data, this) {
             SingleAccountHelper.commitCurrentAccount(this, it.name)
-            mentions[it.userId] = it.name
             currentUser.text = it.name
             currentUser.visibility = View.VISIBLE
+            markdownEditor.setCurrentSingleSignOnAccount(it, Color.RED)
+            markdownViewer.setCurrentSingleSignOnAccount(it, Color.RED)
         }
     }
 }

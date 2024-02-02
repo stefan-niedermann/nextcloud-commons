@@ -2,10 +2,14 @@ package it.niedermann.android.markdown.markwon;
 
 import static androidx.lifecycle.Transformations.distinctUntilChanged;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
+import android.os.Build;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.util.TypedValue;
 
 import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
@@ -13,6 +17,12 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatTextView;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
+
+import com.nextcloud.android.common.ui.util.PlatformThemeUtil;
+import com.nextcloud.android.sso.exceptions.NextcloudFilesAppAccountNotFoundException;
+import com.nextcloud.android.sso.exceptions.NoCurrentAccountSelectedException;
+import com.nextcloud.android.sso.helper.SingleAccountHelper;
+import com.nextcloud.android.sso.model.SingleSignOnAccount;
 
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -40,13 +50,14 @@ import io.noties.prism4j.Prism4j;
 import io.noties.prism4j.annotations.PrismBundle;
 import it.niedermann.android.markdown.MarkdownEditor;
 import it.niedermann.android.markdown.MarkdownUtil;
+import it.niedermann.android.markdown.R;
 import it.niedermann.android.markdown.markwon.plugins.CustomGlideStore;
 import it.niedermann.android.markdown.markwon.plugins.LinkClickInterceptorPlugin;
-import it.niedermann.android.markdown.markwon.plugins.NextcloudMentionsPlugin;
 import it.niedermann.android.markdown.markwon.plugins.RelativeImageUrlPlugin;
 import it.niedermann.android.markdown.markwon.plugins.SearchHighlightPlugin;
 import it.niedermann.android.markdown.markwon.plugins.ThemePlugin;
 import it.niedermann.android.markdown.markwon.plugins.ToggleableTaskListPlugin;
+import it.niedermann.android.markdown.markwon.plugins.mentions.MentionsPlugin;
 
 @PrismBundle(includeAll = true, grammarLocatorClassName = ".MarkwonGrammarLocator")
 public class MarkwonMarkdownViewer extends AppCompatTextView implements MarkdownEditor {
@@ -55,7 +66,7 @@ public class MarkwonMarkdownViewer extends AppCompatTextView implements Markdown
 
     private static final Prism4j prism4j = new Prism4j(new MarkwonGrammarLocator());
 
-    private Markwon markwon;
+    private final Markwon markwon;
     @Nullable
     private Consumer<CharSequence> listener = null;
     private final MutableLiveData<CharSequence> unrenderedText$ = new MutableLiveData<>();
@@ -72,20 +83,37 @@ public class MarkwonMarkdownViewer extends AppCompatTextView implements Markdown
 
     public MarkwonMarkdownViewer(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        this.markwon = createMarkwonBuilder(context).build();
+
+        final boolean enableMentions;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            try (var styles = context.obtainStyledAttributes(attrs, R.styleable.MarkwonMarkdownViewer, defStyleAttr, 0)) {
+                enableMentions = getResources().getBoolean(styles.getResourceId(R.styleable.MarkwonMarkdownViewer_mentions, R.bool.mentionsEnabled));
+            }
+        } else {
+            @SuppressLint("Recycle") var styles = context.obtainStyledAttributes(attrs, R.styleable.MarkwonMarkdownViewer, defStyleAttr, 0);
+            enableMentions = getResources().getBoolean(styles.getResourceId(R.styleable.MarkwonMarkdownViewer_mentions, R.bool.mentionsEnabled));
+        }
+
+        final var typedValue = new TypedValue();
+        final var theme = context.getTheme();
+        theme.resolveAttribute(androidx.appcompat.R.attr.colorPrimary, typedValue, true);
+
+        this.markwon = createMarkwonBuilder(context, enableMentions, typedValue.data).build();
         this.renderService = Executors.newSingleThreadExecutor();
     }
 
-    private Markwon.Builder createMarkwonBuilder(@NonNull Context context) {
-        final Prism4jTheme prism4jTheme = MarkwonMarkdownUtil.isDarkThemeActive(context)
+    private Markwon.Builder createMarkwonBuilder(@NonNull Context context,
+                                                 boolean enableMentions,
+                                                 @ColorInt int color) {
+        final Prism4jTheme prism4jTheme = PlatformThemeUtil.isDarkMode(context)
                 ? Prism4jThemeDarkula.create()
                 : Prism4jThemeDefault.create();
-        return Markwon.builder(context)
+        final var builder = Markwon.builder(context)
                 .usePlugin(ThemePlugin.create(context))
                 .usePlugin(StrikethroughPlugin.create())
                 .usePlugin(SimpleExtPlugin.create())
                 .usePlugin(MarkwonInlineParserPlugin.create())
-                .usePlugin(SearchHighlightPlugin.create(context))
+                .usePlugin(SearchHighlightPlugin.create(color))
                 .usePlugin(TablePlugin.create(context))
                 .usePlugin(TaskListPlugin.create(context))
                 .usePlugin(LinkifyPlugin.create(true))
@@ -103,11 +131,23 @@ public class MarkwonMarkdownViewer extends AppCompatTextView implements Markdown
                     final var newUnrenderedText = MarkdownUtil.setCheckboxStatus(oldUnrenderedText.toString(), toggledCheckboxPosition, newCheckedState);
                     this.setMarkdownString(newUnrenderedText);
                 }));
+
+        if (enableMentions) {
+            return builder.usePlugin(MentionsPlugin.create(getContext(), (int) getTextSize(), color));
+        }
+
+        return builder;
     }
 
-    public Markwon.Builder createMarkwonBuilder(@NonNull Context context, @NonNull Map<String, String> mentions) {
-        return createMarkwonBuilder(context)
-                .usePlugin(NextcloudMentionsPlugin.create(context, mentions));
+    /**
+     * @deprecated use {@link #createMarkwonBuilder(Context, boolean, int)} and {@link #setCurrentSingleSignOnAccount(SingleSignOnAccount, int)} to fetch and render mentions automatically.
+     */
+    @Deprecated(forRemoval = true)
+    public Markwon.Builder createMarkwonBuilder(@NonNull Context context, @NonNull Map<String, String> ignored) {
+        final var typedValue = new TypedValue();
+        final var theme = context.getTheme();
+        theme.resolveAttribute(androidx.appcompat.R.attr.colorPrimary, typedValue, true);
+        return createMarkwonBuilder(context, true, typedValue.data);
     }
 
     @Override
@@ -165,14 +205,39 @@ public class MarkwonMarkdownViewer extends AppCompatTextView implements Markdown
         }
     }
 
+    /**
+     * @param color which will be used for highlighting. See {@link #setSearchText(CharSequence)}
+     * @deprecated Use {@link MarkdownEditor#setCurrentSingleSignOnAccount(SingleSignOnAccount, int)}
+     */
     @Override
-    public void setSearchColor(@ColorInt int color) {
+    @Deprecated(forRemoval = true)
+    public void setSearchColor(int color) {
+        try {
+            final var ssoAccount = SingleAccountHelper.getCurrentSingleSignOnAccount(getContext());
+            setCurrentSingleSignOnAccount(ssoAccount, color);
+        } catch (NoCurrentAccountSelectedException | NextcloudFilesAppAccountNotFoundException e) {
+            setCurrentSingleSignOnAccount(null, color);
+        }
+    }
+
+    @Override
+    public void setCurrentSingleSignOnAccount(@Nullable SingleSignOnAccount ssoAccount, @ColorInt int color) {
         final var searchHighlightPlugin = this.markwon.getPlugin(SearchHighlightPlugin.class);
         if (searchHighlightPlugin == null) {
             Log.w(TAG, SearchHighlightPlugin.class.getSimpleName() + " is not a registered " + MarkwonPlugin.class.getSimpleName());
         } else {
-            searchHighlightPlugin.setSearchColor(color, this);
+            searchHighlightPlugin.setColor(color);
         }
+
+        final var mentionsPlugin = this.markwon.getPlugin(MentionsPlugin.class);
+        if (mentionsPlugin == null) {
+            Log.w(TAG, MentionsPlugin.class.getSimpleName() + " is not a registered " + TextWatcher.class.getSimpleName());
+        } else {
+            mentionsPlugin.setColor(color);
+            mentionsPlugin.setCurrentSingleSignOnAccount(ssoAccount);
+        }
+
+        rerender();
     }
 
     @Override
@@ -183,11 +248,16 @@ public class MarkwonMarkdownViewer extends AppCompatTextView implements Markdown
         } else {
             searchHighlightPlugin.setSearchText(searchText, current, this);
         }
+
+        rerender();
     }
 
+    /**
+     * @deprecated use {@link #setMarkdownString(CharSequence)}, mentions will get highlighted implicitly
+     */
     @Override
+    @Deprecated
     public void setMarkdownStringAndHighlightMentions(CharSequence text, @NonNull Map<String, String> mentions) {
-        this.markwon = createMarkwonBuilder(getContext(), mentions).build();
         setMarkdownString(text);
     }
 
@@ -199,5 +269,31 @@ public class MarkwonMarkdownViewer extends AppCompatTextView implements Markdown
     @Override
     public void setMarkdownStringChangedListener(@Nullable Consumer<CharSequence> listener) {
         this.listener = listener;
+    }
+
+    @Override
+    public void setTextSize(float size) {
+        setTextSize(TypedValue.COMPLEX_UNIT_SP, size);
+    }
+
+    @Override
+    public void setTextSize(int unit, float size) {
+        super.setTextSize(unit, size);
+
+        final var mentionsPlugin = this.markwon.getPlugin(MentionsPlugin.class);
+        if (mentionsPlugin == null) {
+            Log.w(TAG, MentionsPlugin.class.getSimpleName() + " is not a registered " + TextWatcher.class.getSimpleName());
+        } else {
+            mentionsPlugin.setTextSize((int) getTextSize());
+        }
+
+        rerender();
+    }
+
+    private void rerender() {
+        this.renderService.execute(() -> post(() -> {
+            final var currentValue = unrenderedText$.getValue();
+            this.markwon.setMarkdown(this, currentValue == null ? "" : currentValue.toString());
+        }));
     }
 }

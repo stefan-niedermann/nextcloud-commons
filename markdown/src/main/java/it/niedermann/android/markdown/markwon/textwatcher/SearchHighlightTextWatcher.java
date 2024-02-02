@@ -3,16 +3,14 @@ package it.niedermann.android.markdown.markwon.textwatcher;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.util.TypedValue;
 
 import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.content.ContextCompat;
 
 import it.niedermann.android.markdown.MarkdownUtil;
-import it.niedermann.android.markdown.R;
 import it.niedermann.android.markdown.markwon.MarkwonMarkdownEditor;
-import it.niedermann.android.markdown.markwon.MarkwonMarkdownUtil;
 import it.niedermann.android.markdown.model.SearchSpan;
 
 public class SearchHighlightTextWatcher extends InterceptorTextWatcher {
@@ -20,20 +18,19 @@ public class SearchHighlightTextWatcher extends InterceptorTextWatcher {
     private final MarkwonMarkdownEditor editText;
     @Nullable
     private CharSequence searchText;
+    @Nullable
     private Integer current;
     @ColorInt
     private int color;
-    @ColorInt
-    private final int highlightColor;
-    private final boolean darkTheme;
 
     public SearchHighlightTextWatcher(@NonNull TextWatcher originalWatcher, @NonNull MarkwonMarkdownEditor editText) {
         super(originalWatcher);
         this.editText = editText;
         final var context = editText.getContext();
-        this.color = ContextCompat.getColor(context, R.color.search_color);
-        this.highlightColor = ContextCompat.getColor(context, R.color.bg_highlighted);
-        this.darkTheme = MarkwonMarkdownUtil.isDarkThemeActive(context);
+        final var typedValue = new TypedValue();
+        final var theme = context.getTheme();
+        theme.resolveAttribute(androidx.appcompat.R.attr.colorPrimary, typedValue, true);
+        this.color = typedValue.data;
     }
 
     public void setSearchText(@Nullable CharSequence searchText, @Nullable Integer current) {
@@ -60,7 +57,7 @@ public class SearchHighlightTextWatcher extends InterceptorTextWatcher {
         originalWatcher.afterTextChanged(s);
         if (searchText != null) {
             MarkdownUtil.removeSpans(s, SearchSpan.class);
-            MarkdownUtil.searchAndColor(s, searchText, current, color, highlightColor, darkTheme);
+            MarkdownUtil.searchAndColor(editText.getContext(), s, searchText, color, current);
         }
     }
 }

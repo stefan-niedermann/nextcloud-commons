@@ -16,6 +16,10 @@ import java.util.Map;
 import io.noties.markwon.AbstractMarkwonPlugin;
 import io.noties.markwon.MarkwonPlugin;
 
+/**
+ * @deprecated use {@link it.niedermann.android.markdown.markwon.plugins.mentions.MentionsPlugin}
+ */
+@Deprecated(forRemoval = true)
 public class NextcloudMentionsPlugin extends AbstractMarkwonPlugin {
 
     @NonNull

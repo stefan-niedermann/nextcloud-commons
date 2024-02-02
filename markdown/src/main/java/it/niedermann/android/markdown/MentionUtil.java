@@ -20,7 +20,9 @@ import com.nextcloud.android.sso.model.SingleSignOnAccount;
 
 import java.util.Map;
 
+
 @RestrictTo(RestrictTo.Scope.LIBRARY)
+@Deprecated(forRemoval = true)
 public class MentionUtil {
 
     private MentionUtil() {
@@ -49,7 +51,7 @@ public class MentionUtil {
             final int spanEnd = messageBuilder.getSpanEnd(span);
             Glide.with(context)
                     .asBitmap()
-                    .placeholder(R.drawable.ic_person_grey600_24dp)
+                    .placeholder(R.drawable.ic_baseline_account_circle_24dp)
                     .load(account.url + "/index.php/avatar/" + messageBuilder.subSequence(spanStart + 1, spanEnd) + "/" + span.getDrawable().getIntrinsicHeight())
                     .apply(RequestOptions.circleCropTransform())
                     .into(new CustomTarget<Bitmap>() {
@@ -75,7 +77,7 @@ public class MentionUtil {
             final String mentionDisplayName = " " + mentions.get(userId);
             int index = messageBuilder.toString().lastIndexOf(mentionId);
             while (index >= 0) {
-                messageBuilder.setSpan(new MentionSpan(context, R.drawable.ic_person_grey600_24dp), index, index + mentionId.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                messageBuilder.setSpan(new MentionSpan(context, R.drawable.ic_baseline_account_circle_24dp), index, index + mentionId.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
                 messageBuilder.insert(index + mentionId.length(), mentionDisplayName);
                 index = messageBuilder.toString().substring(0, index).lastIndexOf(mentionId);
             }

@@ -8,6 +8,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.lifecycle.LiveData;
 
+import com.nextcloud.android.sso.model.SingleSignOnAccount;
+
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -21,12 +23,13 @@ import java.util.function.Function;
 public interface MarkdownEditor {
 
     String TAG = MarkdownEditor.class.getSimpleName();
+    String LOG_WARNING_UNSUPPORTED_FEATURE = "This feature is not supported by the currently used implementation.";
 
     /**
      * @param prefix used to render relative image URLs
      */
     default void setMarkdownImageUrlPrefix(@NonNull String prefix) {
-        Log.w(TAG, "This feature is not supported by the currently used implementation.");
+        Log.w(TAG, LOG_WARNING_UNSUPPORTED_FEATURE);
     }
 
     /**
@@ -40,10 +43,9 @@ public interface MarkdownEditor {
     void setMarkdownString(CharSequence text, @Nullable Runnable afterRender);
 
     /**
-     * Will replace all `@mention`s of Nextcloud users with the avatar and given display name.
-     *
-     * @param mentions {@link Map} of mentions, where the key is the user id and the value is the display name
+     * @deprecated use {@link #setMarkdownString(CharSequence)}, mentions will get highlighted implicitly
      */
+    @Deprecated(forRemoval = true)
     default void setMarkdownStringAndHighlightMentions(CharSequence text, @NonNull Map<String, String> mentions) {
         setMarkdownString(text);
     }
@@ -64,13 +66,20 @@ public interface MarkdownEditor {
 
     /**
      * @param color which will be used for highlighting. See {@link #setSearchText(CharSequence)}
+     * @deprecated Use {@link #setCurrentSingleSignOnAccount(SingleSignOnAccount, int)}
      */
-    default void setSearchColor(@ColorInt int color) {
-        Log.w(TAG, "This feature is not supported by the currently used implementation.");
-    }
+    @Deprecated(forRemoval = true)
+    void setSearchColor(@ColorInt int color);
 
     /**
-     * See {@link #setSearchText(CharSequence, Integer)}
+     * @param ssoAccount the account who wants to make the requests, e. g. to fetch avatars.
+     *                   If <code>null</code> is passed, some features like avatar loading might not work as expected.
+     * @param color      the color that is the base of the current theming, e. g. the instance color
+     */
+    void setCurrentSingleSignOnAccount(@Nullable SingleSignOnAccount ssoAccount, @ColorInt int color);
+
+    /**
+     * @see #setSearchText(CharSequence, Integer)
      */
     default void setSearchText(@Nullable CharSequence searchText) {
         setSearchText(searchText, null);
@@ -82,9 +91,7 @@ public interface MarkdownEditor {
      * @param searchText the term to highlight
      * @param current    highlights the occurrence of the {@param searchText} at this position special
      */
-    default void setSearchText(@Nullable CharSequence searchText, @Nullable Integer current) {
-        Log.w(TAG, "This feature is not supported by the currently used implementation.");
-    }
+    void setSearchText(@Nullable CharSequence searchText, @Nullable Integer current);
 
     /**
      * Intercepts each click on a clickable element like {@link URLSpan}s
@@ -92,6 +99,22 @@ public interface MarkdownEditor {
      * @param callback Will be called on a click. When the {@param callback} returns <code>true</code>, the click will not be propagated further.
      */
     default void registerOnLinkClickCallback(@NonNull Function<String, Boolean> callback) {
-        Log.w(TAG, "This feature is not supported by the currently used implementation.");
+        Log.w(TAG, LOG_WARNING_UNSUPPORTED_FEATURE);
+    }
+
+    int getSelectionStart();
+
+    int getSelectionEnd();
+
+    int getVerticalScrollbarPosition();
+
+    void setVerticalScrollbarPosition(int position);
+
+    default void setSelection(int index) {
+        setSelection(index, index);
+    }
+
+    default void setSelection(int start, int stop) {
+        Log.w(TAG, LOG_WARNING_UNSUPPORTED_FEATURE);
     }
 }

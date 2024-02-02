@@ -1,5 +1,6 @@
 package it.niedermann.android.markdown;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Paint;
 import android.os.Build;
@@ -21,13 +22,17 @@ import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.core.text.HtmlCompat;
 
+import com.nextcloud.android.common.ui.theme.utils.AndroidViewThemeUtils;
+
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -180,24 +185,22 @@ public class MarkdownUtil {
 
     @NonNull
     private static Optional<String> getCheckboxEmoji(boolean checked) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            final String[] emojis;
-            // Seriously what the fuck, Samsung?
-            // https://emojipedia.org/ballot-box-with-x/
-            if (Build.MANUFACTURER != null && Build.MANUFACTURER.toLowerCase(Locale.getDefault()).contains("samsung")) {
-                emojis = checked
-                        ? new String[]{"✅", "☑️", "✔️"}
-                        : new String[]{"❌", "\uD83D\uDD32️", "☐️"};
-            } else {
-                emojis = checked
-                        ? new String[]{"☒", "✅", "☑️", "✔️"}
-                        : new String[]{"☐", "❌", "\uD83D\uDD32️", "☐️"};
-            }
-            final var paint = new Paint();
-            for (String emoji : emojis) {
-                if (paint.hasGlyph(emoji)) {
-                    return Optional.of(emoji);
-                }
+        final String[] emojis;
+        // Seriously what the fuck, Samsung?
+        // https://emojipedia.org/ballot-box-with-x#designs
+        if (Build.MANUFACTURER != null && Build.MANUFACTURER.toLowerCase(Locale.getDefault()).contains("samsung")) {
+            emojis = checked
+                    ? new String[]{"✅", "☑️", "✔️"}
+                    : new String[]{"❌", "\uD83D\uDD32️", "☐️"};
+        } else {
+            emojis = checked
+                    ? new String[]{"☒", "✅", "☑️", "✔️"}
+                    : new String[]{"☐", "❌", "\uD83D\uDD32️", "☐️"};
+        }
+        final var paint = new Paint();
+        for (String emoji : emojis) {
+            if (paint.hasGlyph(emoji)) {
+                return Optional.of(emoji);
             }
         }
         return Optional.empty();
@@ -238,10 +241,7 @@ public class MarkdownUtil {
     }
 
     public static boolean isCheckboxLine(String line) {
-        if (lineStartsWithCheckbox(line) && line.trim().length() > EListType.DASH.checkboxChecked.length()) {
-            return true;
-        }
-        return false;
+        return lineStartsWithCheckbox(line) && line.trim().length() > EListType.DASH.checkboxChecked.length();
     }
 
     public static int getStartOfLine(@NonNull CharSequence s, int cursorPosition) {
@@ -262,12 +262,8 @@ public class MarkdownUtil {
 
     public static Optional<String> getListItemIfIsEmpty(@NonNull String line) {
         final String trimmedLine = line.trim();
-        // TODO use Java 11 String::repeat
-        final var builder = new StringBuilder();
         final int indention = line.indexOf(trimmedLine);
-        for (int i = 0; i < indention; i++) {
-            builder.append(" ");
-        }
+        final var builder = new StringBuilder(" ".repeat(indention));
         for (final var listType : EListType.values()) {
             if (trimmedLine.equals(listType.checkboxUnchecked)) {
                 return Optional.of(builder.append(listType.checkboxUncheckedWithTrailingSpace).toString());
@@ -549,7 +545,25 @@ public class MarkdownUtil {
         return false;
     }
 
-    public static void searchAndColor(@NonNull Spannable editable, @Nullable CharSequence searchText, @Nullable Integer current, @ColorInt int mainColor, @ColorInt int highlightColor, boolean darkTheme) {
+    /**
+     * @deprecated use {@link AndroidViewThemeUtils#highlightText(TextView, String, String)}
+     */
+    @Deprecated(forRemoval = true)
+    public static void searchAndColor(@NonNull Spannable editable, @Nullable CharSequence searchText, @Nullable Integer current, @ColorInt int color, @ColorInt int ignoredColor, boolean ignoredDarkTheme) {
+        try {
+            @SuppressLint("PrivateApi") final var context = (Context) Class.forName("android.app.ActivityThread")
+                    .getMethod("currentApplication")
+                    .invoke(null, (Object[]) null);
+
+            searchAndColor(Objects.requireNonNull(context), editable, searchText, color, current);
+        } catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException |
+                 IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static void searchAndColor(@NonNull Context context, @NonNull Spannable editable, @Nullable CharSequence searchText, @ColorInt int color, @Nullable Integer current) {
+        final var util = ThemeUtils.Companion.of(color);
         if (searchText != null) {
             final var m = Pattern
                     .compile(searchText.toString(), Pattern.CASE_INSENSITIVE | Pattern.LITERAL)
@@ -559,7 +573,10 @@ public class MarkdownUtil {
             while (m.find()) {
                 int start = m.start();
                 int end = m.end();
-                editable.setSpan(new SearchSpan(mainColor, highlightColor, (current != null && i == current), darkTheme), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                final var span = current == null || i == current
+                        ? new SearchSpan(util.getPrimary(context), util.getOnPrimary(context))
+                        : new SearchSpan(util.getSecondary(context), util.getOnSecondary(context));
+                editable.setSpan(span, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
                 i++;
             }
         }
@@ -610,10 +627,6 @@ public class MarkdownUtil {
             return "";
         }
         final String html = RENDERER.render(PARSER.parse(replaceCheckboxesWithEmojis(s)));
-        final Spanned spanned = HtmlCompat.fromHtml(html, HtmlCompat.FROM_HTML_MODE_COMPACT);
-        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.M) {
-            return spanned.toString().trim().replaceAll("\n\n", "\n");
-        }
-        return spanned.toString().trim();
+        return HtmlCompat.fromHtml(html, HtmlCompat.FROM_HTML_MODE_COMPACT).toString().trim();
     }
 }

@@ -4,7 +4,7 @@ apply plugin: 'maven-publish' // needed for JitPack.io
 
 android {
     compileSdk 34
-    namespace 'it.niedermann.nextcloud.exception'
+    namespace 'it.niedermann.nextcloud.ocs'
 
     defaultConfig {
         minSdk 22
@@ -50,7 +50,7 @@ afterEvaluate {
                 from components.release
 
                 groupId = 'com.github.stefan-niedermann.nextcloud-commons'
-                artifactId = 'exception'
+                artifactId = 'ocs'
             }
         }
     }
@@ -60,11 +60,9 @@ dependencies {
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.4'
 
     api "com.github.nextcloud:Android-SingleSignOn:$sso_version"
-    implementation 'com.github.stefan-niedermann:android-commons:1.0.0'
+    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
 
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-
-    testImplementation 'junit:junit:4.13.2'
+    testImplementation 'androidx.test:core:1.5.0'
     testImplementation "io.mockk:mockk:1.13.9"
-    testImplementation 'org.robolectric:robolectric:4.11.1'
+    testImplementation 'junit:junit:4.13.2'
 }

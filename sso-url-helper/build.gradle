@@ -57,8 +57,6 @@ afterEvaluate {
 }
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
-
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.4'
 
     api "com.github.nextcloud:Android-SingleSignOn:$sso_version"

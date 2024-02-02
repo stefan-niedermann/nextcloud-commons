@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="MarkwonMarkdownViewer">
+        <!-- Replaces mentions with display name and an avatar. Requires internet connection and might cause flickering while rendering -->
+        <attr name="mentions" format="boolean" />
+    </declare-styleable>
+</resources>
