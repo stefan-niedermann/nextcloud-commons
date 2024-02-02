@@ -95,7 +95,7 @@ public class DisplayNameUtil {
             return Collections.emptyMap();
         }
 
-        final var cachedUsers = userCache
+        final var checkedUsernames = userCache
                 .entrySet()
                 .stream()
                 .filter(entry -> potentialUserNames.contains(entry.getKey()))
@@ -106,8 +106,12 @@ public class DisplayNameUtil {
                 .filter(potentialUserName -> !noUserCache.contains(potentialUserName))
                 .collect(Collectors.toUnmodifiableSet());
 
-        final var result = new ConcurrentHashMap<String, String>(cachedUsers.size() + usernamesToCheck.size());
-        result.putAll(cachedUsers);
+        if (usernamesToCheck.isEmpty()) {
+            return checkedUsernames;
+        }
+
+        final var result = new ConcurrentHashMap<String, String>(checkedUsernames.size() + usernamesToCheck.size());
+        result.putAll(checkedUsernames);
 
         final var latch = new CountDownLatch(usernamesToCheck.size());
         final var executor = this.executorFactory.createExecutor(usernamesToCheck.size());

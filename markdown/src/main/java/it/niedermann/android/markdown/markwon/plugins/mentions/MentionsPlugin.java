@@ -1,5 +1,7 @@
 package it.niedermann.android.markdown.markwon.plugins.mentions;
 
+import static java.util.function.Predicate.not;
+
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.text.Spanned;
@@ -17,6 +19,8 @@ import com.nextcloud.android.sso.model.SingleSignOnAccount;
 
 import org.commonmark.parser.Parser;
 
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -48,9 +52,9 @@ public class MentionsPlugin extends AbstractMarkwonPlugin {
     @NonNull
     private final Set<String> noUserCache = ConcurrentHashMap.newKeySet();
     @NonNull
-    private final Context context;
+    private final Collection<ExecutorService> executors = new HashSet<>(2);
     @NonNull
-    private final ExecutorService executor;
+    private final Context context;
     @NonNull
     private final DisplayNameUtil displayNameUtil;
     @NonNull
@@ -61,11 +65,9 @@ public class MentionsPlugin extends AbstractMarkwonPlugin {
     private final AtomicInteger avatarSizeRef = new AtomicInteger();
 
     private MentionsPlugin(@NonNull Context context,
-                           @NonNull ExecutorService executor,
                            @Px int textSize,
                            @ColorInt int color) {
         this.context = context.getApplicationContext();
-        this.executor = executor;
         this.avatarUtil = new AvatarUtil(noUserCache);
         this.displayNameUtil = new DisplayNameUtil(userCache, noUserCache);
         setTextSize(textSize);
@@ -75,7 +77,7 @@ public class MentionsPlugin extends AbstractMarkwonPlugin {
     public static MarkwonPlugin create(@NonNull Context context,
                                        @Px int textSize,
                                        @ColorInt int color) {
-        return new MentionsPlugin(context, Executors.newCachedThreadPool(), textSize, color);
+        return new MentionsPlugin(context, textSize, color);
     }
 
     @Override
@@ -103,6 +105,12 @@ public class MentionsPlugin extends AbstractMarkwonPlugin {
 
     @Override
     public void beforeSetText(@NonNull TextView textView, @NonNull Spanned markdown) {
+        executors.stream()
+                .filter(not(ExecutorService::isShutdown))
+                .forEach(ExecutorService::shutdownNow);
+
+        executors.removeIf(ExecutorService::isShutdown);
+
         super.beforeSetText(textView, markdown);
     }
 
@@ -111,25 +119,44 @@ public class MentionsPlugin extends AbstractMarkwonPlugin {
         super.afterSetText(textView);
         final var ssoAccount = ssoAccountRef.get();
         if (ssoAccount != null) {
+            final var executor = Executors.newFixedThreadPool(2);
+            executors.add(executor);
             executor.submit(() -> {
                 final var spannable = MarkdownUtil.getContentAsSpannable(textView);
                 try {
                     final var spannableWithDisplayNames = displayNameUtil.insertActualDisplayNames(textView.getContext(), spannable, ssoAccount);
+
+                    if (executor.isShutdown()) return;
+
                     final var spannableWithDisplayNamesAndAvatarPlaceholders = avatarUtil.replacePotentialAvatarsWithPlaceholders(spannableWithDisplayNames);
+
+                    if (executor.isShutdown()) return;
 
                     textView.post(() -> {
                         textView.setText(spannableWithDisplayNamesAndAvatarPlaceholders);
+
+                        if (executor.isShutdown()) return;
+
                         executor.submit(() -> {
                             try {
                                 final var spannableWithDisplayNamesAndActualAvatars = avatarUtil.insertActualAvatars(textView.getContext(), MarkdownUtil.getContentAsSpannable(textView));
-                                Thread.sleep(5_000);
-                                textView.post(() -> textView.setText(spannableWithDisplayNamesAndActualAvatars));
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
+
+                                if (executor.isShutdown()) return;
+
+                                textView.post(() -> {
+
+                                    if (executor.isShutdown()) return;
+
+                                    textView.setText(spannableWithDisplayNamesAndActualAvatars);
+                                });
+                            } catch (InterruptedException ignored) {
+                            } finally {
+                                executor.shutdown();
                             }
                         });
                     });
-                } catch (InterruptedException | NextcloudFilesAppAccountNotFoundException e) {
+                } catch (InterruptedException ignored) {
+                } catch (NextcloudFilesAppAccountNotFoundException e) {
                     e.printStackTrace();
                 }
             });

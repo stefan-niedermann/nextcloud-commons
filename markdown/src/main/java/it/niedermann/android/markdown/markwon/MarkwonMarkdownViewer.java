@@ -133,7 +133,7 @@ public class MarkwonMarkdownViewer extends AppCompatTextView implements Markdown
                 }));
 
         if (enableMentions) {
-//            return builder.usePlugin(MentionsPlugin.create(getContext(), (int) getTextSize(), color));
+            return builder.usePlugin(MentionsPlugin.create(getContext(), (int) getTextSize(), color));
         }
 
         return builder;
