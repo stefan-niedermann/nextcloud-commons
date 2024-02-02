@@ -23,12 +23,13 @@ import java.util.function.Function;
 public interface MarkdownEditor {
 
     String TAG = MarkdownEditor.class.getSimpleName();
+    String LOG_WARNING_UNSUPPORTED_FEATURE = "This feature is not supported by the currently used implementation.";
 
     /**
      * @param prefix used to render relative image URLs
      */
     default void setMarkdownImageUrlPrefix(@NonNull String prefix) {
-        Log.w(TAG, "This feature is not supported by the currently used implementation.");
+        Log.w(TAG, LOG_WARNING_UNSUPPORTED_FEATURE);
     }
 
     /**
@@ -98,6 +99,22 @@ public interface MarkdownEditor {
      * @param callback Will be called on a click. When the {@param callback} returns <code>true</code>, the click will not be propagated further.
      */
     default void registerOnLinkClickCallback(@NonNull Function<String, Boolean> callback) {
-        Log.w(TAG, "This feature is not supported by the currently used implementation.");
+        Log.w(TAG, LOG_WARNING_UNSUPPORTED_FEATURE);
+    }
+
+    int getSelectionStart();
+
+    int getSelectionEnd();
+
+    int getVerticalScrollbarPosition();
+
+    void setVerticalScrollbarPosition(int position);
+
+    default void setSelection(int index) {
+        setSelection(index, index);
+    }
+
+    default void setSelection(int start, int stop) {
+        Log.w(TAG, LOG_WARNING_UNSUPPORTED_FEATURE);
     }
 }
