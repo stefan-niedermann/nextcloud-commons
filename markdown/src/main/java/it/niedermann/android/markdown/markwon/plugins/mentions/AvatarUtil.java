@@ -23,9 +23,12 @@ import com.bumptech.glide.request.transition.Transition;
 
 import java.net.HttpURLConnection;
 import java.util.Arrays;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
+
+import it.niedermann.android.markdown.markwon.plugins.mentions.AvatarSpanFactory.PotentialAvatarSpan;
 
 @WorkerThread
 public class AvatarUtil {
@@ -33,14 +36,18 @@ public class AvatarUtil {
     @NonNull
     private final Set<String> noUserCache;
     @NonNull
+    private final Map<String, Drawable> avatarCache;
+    @NonNull
     private final AtomicReference<Drawable> avatarPlaceholder;
     @NonNull
     private final AtomicReference<Drawable> avatarBroken;
 
     AvatarUtil(@NonNull Set<String> noUserCache,
+               @NonNull Map<String, Drawable> avatarCache,
                @NonNull AtomicReference<Drawable> avatarPlaceholder,
                @NonNull AtomicReference<Drawable> avatarBroken) {
         this.noUserCache = noUserCache;
+        this.avatarCache = avatarCache;
         this.avatarPlaceholder = avatarPlaceholder;
         this.avatarBroken = avatarBroken;
     }
@@ -109,7 +116,9 @@ public class AvatarUtil {
                     .into(new CustomTarget<Bitmap>() {
                         @Override
                         public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
-                            spannable.setSpan(new ImageSpan(context, resource), spanStart, spanEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                            final var imageSpan = new ImageSpan(context, resource);
+                            avatarCache.putIfAbsent(span.userId, imageSpan.getDrawable());
+                            spannable.setSpan(imageSpan, spanStart, spanEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
                             spannable.removeSpan(span);
                             latch.countDown();
                         }

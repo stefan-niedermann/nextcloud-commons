@@ -52,6 +52,8 @@ public class MentionsPlugin extends AbstractMarkwonPlugin {
     @NonNull
     private final Set<String> noUserCache = ConcurrentHashMap.newKeySet();
     @NonNull
+    private final Map<String, Drawable> avatarCache = new ConcurrentHashMap<>();
+    @NonNull
     private final Collection<ExecutorService> executors = new HashSet<>(2);
     @NonNull
     private final Context context;
@@ -72,7 +74,7 @@ public class MentionsPlugin extends AbstractMarkwonPlugin {
                            @Px int textSize,
                            @ColorInt int color) {
         this.context = context.getApplicationContext();
-        this.avatarUtil = new AvatarUtil(noUserCache, avatarPlaceholder, avatarBroken);
+        this.avatarUtil = new AvatarUtil(noUserCache, avatarCache, avatarPlaceholder, avatarBroken);
         this.displayNameUtil = new DisplayNameUtil(userCache, noUserCache);
         setTextSize(textSize);
         setColor(color);
@@ -88,7 +90,7 @@ public class MentionsPlugin extends AbstractMarkwonPlugin {
     public void configureParser(@NonNull Parser.Builder builder) {
         try {
             builder.inlineParserFactory(MarkwonInlineParser.factoryBuilder()
-                    .addInlineProcessor(new MentionInlineProcessor(userCache, noUserCache, ssoAccountRef))
+                    .addInlineProcessor(new MentionInlineProcessor(userCache, noUserCache, avatarCache, ssoAccountRef))
                     .build());
         } catch (Exception e) {
             e.printStackTrace();
@@ -97,15 +99,13 @@ public class MentionsPlugin extends AbstractMarkwonPlugin {
 
     @Override
     public void configureVisitor(@NonNull MarkwonVisitor.Builder builder) {
-        builder.on(AvatarPlaceholderNode.class, new AvatarPlaceholderVisitor(ssoAccountRef, avatarSizeRef));
         builder.on(AvatarNode.class, new AvatarVisitor(ssoAccountRef, avatarSizeRef));
         builder.on(DisplayNameNode.class, new DisplayNameVisitor());
     }
 
     @Override
     public void configureSpansFactory(@NonNull MarkwonSpansFactory.Builder builder) {
-        builder.setFactory(AvatarPlaceholderNode.class, new AvatarPlaceholderSpanFactory(avatarPlaceholder));
-        builder.setFactory(AvatarNode.class, new AvatarSpanFactory());
+        builder.setFactory(AvatarNode.class, new AvatarSpanFactory(avatarPlaceholder));
         builder.setFactory(DisplayNameNode.class, new DisplayNameSpanFactory());
     }
 
@@ -131,39 +131,31 @@ public class MentionsPlugin extends AbstractMarkwonPlugin {
                 final var spannable = MarkdownUtil.getContentAsSpannable(textView);
                 try {
                     final var spannableWithDisplayNames = displayNameUtil.insertActualDisplayNames(textView.getContext(), spannable, ssoAccount);
-
                     if (executor.isShutdown()) return;
-
                     final var spannableWithDisplayNamesAndAvatarPlaceholders = avatarUtil.replacePotentialAvatarsWithPlaceholders(spannableWithDisplayNames);
-
                     if (executor.isShutdown()) return;
-
                     textView.post(() -> {
                         textView.setText(spannableWithDisplayNamesAndAvatarPlaceholders);
-
                         if (executor.isShutdown()) return;
-
                         executor.submit(() -> {
                             try {
                                 final var spannableWithDisplayNamesAndActualAvatars = avatarUtil.insertActualAvatars(textView.getContext(), MarkdownUtil.getContentAsSpannable(textView));
-
                                 if (executor.isShutdown()) return;
-
                                 textView.post(() -> {
-
                                     if (executor.isShutdown()) return;
-
                                     textView.setText(spannableWithDisplayNamesAndActualAvatars);
+                                    executor.shutdown();
                                 });
                             } catch (InterruptedException ignored) {
-                            } finally {
                                 executor.shutdown();
                             }
                         });
                     });
-                } catch (InterruptedException ignored) {
+                } catch (InterruptedException e) {
+                    executor.shutdown();
                 } catch (NextcloudFilesAppAccountNotFoundException e) {
                     e.printStackTrace();
+                    executor.shutdown();
                 }
             });
         }
@@ -172,6 +164,7 @@ public class MentionsPlugin extends AbstractMarkwonPlugin {
     public void setCurrentSingleSignOnAccount(@Nullable SingleSignOnAccount ssoAccount) {
         userCache.clear();
         noUserCache.clear();
+        avatarCache.clear();
         ssoAccountRef.set(ssoAccount);
     }
 

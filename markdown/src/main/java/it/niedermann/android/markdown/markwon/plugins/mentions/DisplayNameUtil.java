@@ -25,6 +25,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
+import it.niedermann.android.markdown.markwon.plugins.mentions.DisplayNameSpanFactory.PotentialDisplayNameSpan;
 import it.niedermann.nextcloud.ocs.ApiProvider;
 import it.niedermann.nextcloud.ocs.OcsAPI;
 

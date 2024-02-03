@@ -1,5 +1,6 @@
 package it.niedermann.android.markdown.markwon.plugins.mentions;
 
+import android.graphics.drawable.Drawable;
 import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
@@ -9,7 +10,6 @@ import com.nextcloud.android.sso.model.SingleSignOnAccount;
 import org.commonmark.node.Node;
 
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
@@ -25,13 +25,17 @@ class MentionInlineProcessor extends InlineProcessor {
     private final Map<String, String> userCache;
     @NonNull
     private final Set<String> noUserCache;
+    @NonNull
+    private final Map<String, Drawable> avatarCache;
 
     MentionInlineProcessor(@NonNull Map<String, String> userCache,
                            @NonNull Set<String> noUserCache,
+                           @NonNull Map<String, Drawable> avatarCache,
                            @NonNull AtomicReference<SingleSignOnAccount> ssoAccountRef) {
         this.ssoAccountRef = ssoAccountRef;
         this.userCache = userCache;
         this.noUserCache = noUserCache;
+        this.avatarCache = avatarCache;
     }
 
     @Override
@@ -52,10 +56,6 @@ class MentionInlineProcessor extends InlineProcessor {
 
         final String userId = mention.substring(1);
 
-        if (userCache.containsKey(userId)) {
-            return new CachedMentionNode(super.context, userId, Objects.requireNonNull(userCache.get(userId)));
-        } else {
-            return new MentionNode(super.context, userId);
-        }
+        return new MentionNode(super.context, userId, userCache.get(userId), avatarCache.get(userId));
     }
 }

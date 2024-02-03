@@ -29,8 +29,10 @@ record AvatarVisitor(
         }
 
         final int start = visitor.length();
-        MentionProps.MENTION_AVATAR_USER_ID_PROPS.set(visitor.renderProps(), avatarNode.userId);
+        MentionProps.MENTION_USER_ID_PROPS.set(visitor.renderProps(), avatarNode.userId);
+        MentionProps.MENTION_USER_IS_KNOWN_PROPS.set(visitor.renderProps(), avatarNode.userIsKnown);
         MentionProps.MENTION_AVATAR_URL_PROPS.set(visitor.renderProps(), getAvatarUrl(ssoAccount, avatarNode.userId, avatarSizeRef.get()));
+        MentionProps.MENTION_AVATAR_DRAWABLE_PROPS.set(visitor.renderProps(), avatarNode.avatar);
         visitor.visitChildren(avatarNode);
         visitor.setSpansForNodeOptional(avatarNode, start);
     }
