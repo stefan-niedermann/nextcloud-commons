@@ -6,13 +6,11 @@ import androidx.annotation.NonNull;
 
 import com.nextcloud.android.sso.model.SingleSignOnAccount;
 
-import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 import io.noties.markwon.AbstractMarkwonPlugin;
 
@@ -81,13 +79,6 @@ public class MentionsCache extends AbstractMarkwonPlugin {
     }
 
     @NonNull
-    public Map<String, String> getDisplayNames(@NonNull SingleSignOnAccount ssoAccount) {
-        return getCache(ssoAccount)
-                .map(AccountCache::getDisplayNames)
-                .orElse(Collections.emptyMap());
-    }
-
-    @NonNull
     public Optional<String> getDisplayName(@NonNull SingleSignOnAccount ssoAccount, @NonNull String userId) {
         return getCache(ssoAccount)
                 .flatMap(cache -> cache.getDisplayName(userId));
@@ -150,15 +141,6 @@ public class MentionsCache extends AbstractMarkwonPlugin {
 
         public void addKnownInvalidUserId(@NonNull String userId) {
             this.invalidUserCache.add(userId);
-        }
-
-        @NonNull
-        public Map<String, String> getDisplayNames() {
-            // TODO Deep clone?
-            return displayNameCache
-                    .entrySet()
-                    .stream()
-                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
         }
 
         @NonNull

@@ -4,6 +4,7 @@ import android.content.Context;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.util.Log;
+import android.util.Pair;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.WorkerThread;
@@ -90,11 +91,11 @@ public class DisplayNameUtil {
             return Collections.emptyMap();
         }
 
-        final var validDisplayNames = cache.getDisplayNames(ssoAccount)
-                .entrySet()
-                .stream()
-                .filter(cachedEntry -> potentialUserNames.contains(cachedEntry.getKey()))
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        final var validDisplayNames = potentialUserNames.stream()
+                .map(potentialUserName -> new Pair<>(potentialUserName, cache.getDisplayName(ssoAccount, potentialUserName)))
+                .filter(pair -> pair.second.isPresent())
+                .map(pair -> new Pair<>(pair.first, pair.second.get()))
+                .collect(Collectors.toUnmodifiableMap(pair -> pair.first, pair -> pair.second));
 
         final var usernamesToCheck = potentialUserNames.stream()
                 .filter(potentialUserName -> !cache.isKnownValidUserId(ssoAccount, potentialUserName))
