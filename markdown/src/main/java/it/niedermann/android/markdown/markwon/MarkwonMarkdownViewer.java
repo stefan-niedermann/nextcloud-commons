@@ -1,6 +1,7 @@
 package it.niedermann.android.markdown.markwon;
 
 import static androidx.lifecycle.Transformations.distinctUntilChanged;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -25,8 +26,9 @@ import com.nextcloud.android.sso.helper.SingleAccountHelper;
 import com.nextcloud.android.sso.model.SingleSignOnAccount;
 
 import java.util.Map;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -99,7 +101,9 @@ public class MarkwonMarkdownViewer extends AppCompatTextView implements Markdown
         theme.resolveAttribute(androidx.appcompat.R.attr.colorPrimary, typedValue, true);
 
         this.markwon = createMarkwonBuilder(context, enableMentions, typedValue.data).build();
-        this.renderService = Executors.newSingleThreadExecutor();
+        this.renderService = new ThreadPoolExecutor(1, 1, 0, MILLISECONDS,
+                new ArrayBlockingQueue<>(2),
+                new ThreadPoolExecutor.DiscardOldestPolicy());
     }
 
     private Markwon.Builder createMarkwonBuilder(@NonNull Context context,
