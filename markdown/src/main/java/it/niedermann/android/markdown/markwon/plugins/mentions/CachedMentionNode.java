@@ -12,6 +12,6 @@ class CachedMentionNode extends CustomNode {
                       @NonNull String userId,
                       @NonNull String displayName) {
         appendChild(new AvatarPlaceholderNode(context, userId));
-        appendChild(context.text(displayName));
+        appendChild(context.text(" " + displayName));
     }
 }
