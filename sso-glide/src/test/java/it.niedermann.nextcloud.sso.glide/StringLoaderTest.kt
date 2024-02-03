@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package it.niedermann.nextcloud.sso.glide
 
 import androidx.test.core.app.ApplicationProvider

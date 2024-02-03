@@ -26,8 +26,8 @@ class DisplayNameUtilTest : TestCase() {
 
     private lateinit var util: DisplayNameUtil
     private val actualUsers = mutableMapOf<String, String>()
-    private val userCache = mutableMapOf<String, String>()
-    private val noUserCache = mutableSetOf<String>()
+    private val cache = MentionsCache.getInstance()
+    private val ssoAccount = SingleSignOnAccount("john-doe@example.com", "", "", "", "")
 
     @Before
     fun setup() {
@@ -38,20 +38,11 @@ class DisplayNameUtilTest : TestCase() {
                 "baz" to "Baz Lightyear"
             )
         )
-        userCache.putAll(
-            mapOf(
-                "foo" to "Foo Bidoo"
-            )
-        )
-        noUserCache.addAll(
-            setOf(
-                "qux"
-            )
-        )
+        cache.setDisplayName(ssoAccount, "qux", "Foo Bidoo")
+        cache.addKnownInvalidUserId(ssoAccount, "qux")
 
         val utilConstructor = DisplayNameUtil::class.java.getDeclaredConstructor(
-            Map::class.java,
-            Set::class.java,
+            MentionsCache::class.java,
             ApiProvider.Factory::class.java,
             ExecutorServiceFactory::class.java
         )
@@ -59,8 +50,7 @@ class DisplayNameUtilTest : TestCase() {
         utilConstructor.isAccessible = true
 
         util = utilConstructor.newInstance(
-            userCache,
-            noUserCache,
+            cache,
             mockk<ApiProvider.Factory> {
                 every {
                     createApiProvider<OcsAPI>(any(), any(), any(), any())
@@ -75,8 +65,7 @@ class DisplayNameUtilTest : TestCase() {
     @After
     fun teardown() {
         actualUsers.clear()
-        userCache.clear()
-        noUserCache.clear()
+        cache.clear()
     }
 
     @Test
@@ -85,7 +74,7 @@ class DisplayNameUtilTest : TestCase() {
 
         val displayNames = util.fetchDisplayNames(
             ApplicationProvider.getApplicationContext(),
-            mockk<SingleSignOnAccount>(),
+            ssoAccount,
             potentialUserNames
         )
 
@@ -93,20 +82,20 @@ class DisplayNameUtilTest : TestCase() {
         assertEquals("Bar Iton", displayNames["bar"])
         assertEquals("Baz Lightyear", displayNames["baz"])
 
-        assertTrue(userCache.containsKey("foo"))
+        assertTrue(cache.isKnownValidUserId(ssoAccount, "foo"))
         assertTrue(
             "Should add the username to cache to avoid querying it the next time",
-            userCache.containsKey("bar")
+            cache.isKnownValidUserId(ssoAccount, "bar")
         )
         assertTrue(
             "Should add the username to cache to avoid querying it the next time",
-            userCache.containsKey("baz")
+            cache.isKnownValidUserId(ssoAccount, "baz")
         )
 
-        assertTrue(noUserCache.contains("qux"))
+        assertTrue(cache.isKnownInvalidUserId(ssoAccount, "qux"))
         assertTrue(
             "Should add the invalid username to cache to avoid querying it the next time",
-            noUserCache.contains("quux")
+            cache.isKnownInvalidUserId(ssoAccount, "quux")
         )
     }
 

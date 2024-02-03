@@ -6,6 +6,7 @@ import androidx.annotation.NonNull;
 
 import com.nextcloud.android.sso.model.SingleSignOnAccount;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -27,16 +28,7 @@ public class MentionsCache extends AbstractMarkwonPlugin {
      * {@link Map} of existing users. Keys are the username, values are the display name
      */
     @NonNull
-    private final Map<MentionedUser, String> displayNameCache = new ConcurrentHashMap<>();
-
-    @NonNull
-    private final Map<MentionedUser, Drawable> avatarCache = new ConcurrentHashMap<>();
-
-    /**
-     * {@link Set} of userIds which are known to belong to not existing users
-     */
-    @NonNull
-    private final Set<MentionedUser> invalidUserCache = ConcurrentHashMap.newKeySet();
+    private final Map<String, AccountCache> accountCaches = new ConcurrentHashMap<>();
 
     private MentionsCache() {
         // Silence is gold
@@ -47,100 +39,144 @@ public class MentionsCache extends AbstractMarkwonPlugin {
         return INSTANCE;
     }
 
+    private Optional<AccountCache> getCache(@NonNull SingleSignOnAccount ssoAccount) {
+        return Optional.ofNullable(accountCaches.get(Objects.requireNonNull(ssoAccount.name)));
+    }
+
+    private AccountCache getOrCreateCache(@NonNull SingleSignOnAccount ssoAccount) {
+        return accountCaches.computeIfAbsent(Objects.requireNonNull(ssoAccount.name), key -> new AccountCache());
+    }
+
     public void clear() {
-        displayNameCache.clear();
-        invalidUserCache.clear();
-        avatarCache.clear();
+        accountCaches.values().forEach(AccountCache::clear);
+        accountCaches.clear();
     }
 
     public void clear(@NonNull SingleSignOnAccount ssoAccount) {
-        for (final var key : displayNameCache.keySet()) {
-            if (key.ssoAccountName.equals(ssoAccount.name)) {
-                displayNameCache.remove(key);
-            }
-        }
-
-        invalidUserCache.removeIf(user -> ssoAccount.name.equals(user.ssoAccountName));
-
-        for (final var key : avatarCache.keySet()) {
-            if (key.ssoAccountName.equals(ssoAccount.name)) {
-                displayNameCache.remove(key);
-            }
-        }
+        getCache(ssoAccount).ifPresent(AccountCache::clear);
+        accountCaches.remove(Objects.requireNonNull(ssoAccount.name));
     }
 
     /**
-     * @return <code>true</code> if the {@param userId} is known to not exist for {@param ssoAccount}.
+     * @return <code>true</code> if the {@param userId} is known to exist for {@param ssoAccount}.
      */
     public boolean isKnownValidUserId(@NonNull SingleSignOnAccount ssoAccount, @NonNull String userId) {
-        final var key = new MentionedUser(ssoAccount, userId);
-        return displayNameCache.containsKey(key) || avatarCache.containsKey(key);
+        return getCache(ssoAccount)
+                .map(cache -> cache.isKnownValidUserId(userId))
+                .orElse(false);
     }
 
     /**
-     * @return <code>true</code> if the {@param userId} is known to not exist for {@param ssoAccount}.
+     * @return <code>true</code> if the {@param userId} is known to <strong>not</strong> exist for {@param ssoAccount}.
      */
     public boolean isKnownInvalidUserId(@NonNull SingleSignOnAccount ssoAccount, @NonNull String userId) {
-        return invalidUserCache.contains(new MentionedUser(ssoAccount, userId));
+        return getCache(ssoAccount)
+                .map(cache -> cache.isKnownInvalidUserId(userId))
+                .orElse(false);
     }
 
     public void addKnownInvalidUserId(@NonNull SingleSignOnAccount ssoAccount, @NonNull String userId) {
-        this.invalidUserCache.add(new MentionedUser(ssoAccount, userId));
+        getOrCreateCache(ssoAccount)
+                .addKnownInvalidUserId(userId);
     }
 
-    /**
-     * @return a {@link Map} with userId as keys and display names as values. Contains only entries which are searched for by {@param needles}
-     * @see #getDisplayName(SingleSignOnAccount, String)
-     */
     @NonNull
     public Map<String, String> getDisplayNames(@NonNull SingleSignOnAccount ssoAccount) {
-        return displayNameCache
-                .entrySet()
-                .stream()
-                .filter(cachedEntry -> cachedEntry.getKey().ssoAccountName.equals(ssoAccount.name))
-                .collect(Collectors.toMap(cacheKeyStringEntry -> cacheKeyStringEntry.getKey().userId, Map.Entry::getValue));
+        return getCache(ssoAccount)
+                .map(AccountCache::getDisplayNames)
+                .orElse(Collections.emptyMap());
     }
 
     @NonNull
     public Optional<String> getDisplayName(@NonNull SingleSignOnAccount ssoAccount, @NonNull String userId) {
-        return Optional.ofNullable(displayNameCache.get(new MentionedUser(ssoAccount, userId)));
+        return getCache(ssoAccount)
+                .flatMap(cache -> cache.getDisplayName(userId));
     }
 
     public void setDisplayName(@NonNull SingleSignOnAccount ssoAccount, @NonNull String userId, @NonNull String displayName) {
-        this.displayNameCache.putIfAbsent(new MentionedUser(ssoAccount, userId), displayName);
+        getOrCreateCache(ssoAccount)
+                .setDisplayName(userId, displayName);
     }
 
     @NonNull
     public Optional<Drawable> getAvatar(@NonNull SingleSignOnAccount ssoAccount, @NonNull String userId) {
-        return Optional.ofNullable(avatarCache.get(new MentionedUser(ssoAccount, userId)));
+        return getCache(ssoAccount)
+                .flatMap(cache -> cache.getAvatar(userId));
     }
 
     public void setAvatar(@NonNull SingleSignOnAccount ssoAccount, @NonNull String userId, @NonNull Drawable avatar) {
-        avatarCache.putIfAbsent(new MentionedUser(ssoAccount, userId), avatar);
+        getOrCreateCache(ssoAccount)
+                .setAvatar(userId, avatar);
     }
 
-    private static class MentionedUser {
+    private static class AccountCache {
+        /**
+         * {@link Map} of existing users. Keys are the username, values are the display name
+         */
         @NonNull
-        final String ssoAccountName;
-        @NonNull
-        final String userId;
+        private final Map<String, String> displayNameCache = new ConcurrentHashMap<>();
 
-        public MentionedUser(@NonNull SingleSignOnAccount ssoAccount, @NonNull String userId) {
-            this.ssoAccountName = Objects.requireNonNull(ssoAccount.name);
-            this.userId = userId;
+        @NonNull
+        private final Map<String, Drawable> avatarCache = new ConcurrentHashMap<>();
+
+        /**
+         * {@link Set} of userIds which are known to belong to not existing users
+         */
+        @NonNull
+        private final Set<String> invalidUserCache = ConcurrentHashMap.newKeySet();
+
+        private AccountCache() {
+            // Silence is gold
         }
 
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            MentionedUser mentionedUser = (MentionedUser) o;
-            return Objects.equals(ssoAccountName, mentionedUser.ssoAccountName) && Objects.equals(userId, mentionedUser.userId);
+        @NonNull
+        public static MentionsCache getInstance() {
+            return INSTANCE;
         }
 
-        @Override
-        public int hashCode() {
-            return Objects.hash(ssoAccountName, userId);
+        public void clear() {
+            displayNameCache.clear();
+            invalidUserCache.clear();
+            avatarCache.clear();
+        }
+
+        public boolean isKnownValidUserId(@NonNull String userId) {
+            return displayNameCache.containsKey(userId) || avatarCache.containsKey(userId);
+        }
+
+        public boolean isKnownInvalidUserId(@NonNull String userId) {
+            return invalidUserCache.contains(userId);
+        }
+
+        public void addKnownInvalidUserId(@NonNull String userId) {
+            this.invalidUserCache.add(userId);
+        }
+
+        @NonNull
+        public Map<String, String> getDisplayNames() {
+            // TODO Deep clone?
+            return displayNameCache
+                    .entrySet()
+                    .stream()
+                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        }
+
+        @NonNull
+        public Optional<String> getDisplayName(@NonNull String userId) {
+            return Optional.ofNullable(displayNameCache.get(userId));
+        }
+
+        public void setDisplayName(@NonNull String userId, @NonNull String displayName) {
+            this.displayNameCache.putIfAbsent(userId, displayName);
+        }
+
+        @NonNull
+        public Optional<Drawable> getAvatar(@NonNull String userId) {
+            return Optional.ofNullable(avatarCache.get(userId));
+        }
+
+        public void setAvatar(@NonNull String userId, @NonNull Drawable avatar) {
+            avatarCache.putIfAbsent(userId, avatar);
         }
     }
 }
