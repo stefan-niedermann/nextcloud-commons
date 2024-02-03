@@ -1,8 +1,8 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
 buildscript {
-    ext.version_code = 2000001
-    ext.version_name = '2.0.1'
+    ext.version_code = 2001000
+    ext.version_name = '2.1.0'
     ext.kotlin_version = '1.9.22'
     ext.sso_version = '1.0.0'
 
