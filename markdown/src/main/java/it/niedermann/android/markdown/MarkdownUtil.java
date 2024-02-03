@@ -1,6 +1,5 @@
 package it.niedermann.android.markdown;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Paint;
 import android.os.Build;
@@ -22,17 +21,13 @@ import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.core.text.HtmlCompat;
 
-import com.nextcloud.android.common.ui.theme.utils.AndroidViewThemeUtils;
-
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.Locale;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -543,23 +538,6 @@ public class MarkdownUtil {
             }
         }
         return false;
-    }
-
-    /**
-     * @deprecated use {@link AndroidViewThemeUtils#highlightText(TextView, String, String)}
-     */
-    @Deprecated(forRemoval = true)
-    public static void searchAndColor(@NonNull Spannable editable, @Nullable CharSequence searchText, @Nullable Integer current, @ColorInt int color, @ColorInt int ignoredColor, boolean ignoredDarkTheme) {
-        try {
-            @SuppressLint("PrivateApi") final var context = (Context) Class.forName("android.app.ActivityThread")
-                    .getMethod("currentApplication")
-                    .invoke(null, (Object[]) null);
-
-            searchAndColor(Objects.requireNonNull(context), editable, searchText, color, current);
-        } catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException |
-                 IllegalAccessException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     public static void searchAndColor(@NonNull Context context, @NonNull Spannable editable, @Nullable CharSequence searchText, @ColorInt int color, @Nullable Integer current) {

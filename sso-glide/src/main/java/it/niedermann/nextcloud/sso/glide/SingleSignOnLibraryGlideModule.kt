@@ -19,6 +19,5 @@ class SingleSignOnLibraryGlideModule : LibraryGlideModule() {
     override fun registerComponents(context: Context, glide: Glide, registry: Registry) {
         Log.i(SingleSignOnLibraryGlideModule::class.java.simpleName, "Adding Glide support for Nextcloud SingleSignOn")
         registry.prepend(SingleSignOnUrl::class.java, InputStream::class.java, SingleSignOnUrlLoader.Factory(context))
-        registry.prepend(String::class.java, InputStream::class.java, StringLoader.Factory(context))
     }
 }

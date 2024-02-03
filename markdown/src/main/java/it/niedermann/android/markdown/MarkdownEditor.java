@@ -10,7 +10,6 @@ import androidx.lifecycle.LiveData;
 
 import com.nextcloud.android.sso.model.SingleSignOnAccount;
 
-import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -43,14 +42,6 @@ public interface MarkdownEditor {
     void setMarkdownString(CharSequence text, @Nullable Runnable afterRender);
 
     /**
-     * @deprecated use {@link #setMarkdownString(CharSequence)}, mentions will get highlighted implicitly
-     */
-    @Deprecated(forRemoval = true)
-    default void setMarkdownStringAndHighlightMentions(CharSequence text, @NonNull Map<String, String> mentions) {
-        setMarkdownString(text);
-    }
-
-    /**
      * @return the source {@link CharSequence} of the currently rendered markdown
      */
     LiveData<CharSequence> getMarkdownString();
@@ -63,13 +54,6 @@ public interface MarkdownEditor {
     void setMarkdownStringChangedListener(@Nullable Consumer<CharSequence> listener);
 
     void setEnabled(boolean enabled);
-
-    /**
-     * @param color which will be used for highlighting. See {@link #setSearchText(CharSequence)}
-     * @deprecated Use {@link #setCurrentSingleSignOnAccount(SingleSignOnAccount, int)}
-     */
-    @Deprecated(forRemoval = true)
-    void setSearchColor(@ColorInt int color);
 
     /**
      * @param ssoAccount the account who wants to make the requests, e. g. to fetch avatars.

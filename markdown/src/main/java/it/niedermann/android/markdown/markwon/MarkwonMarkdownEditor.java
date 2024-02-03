@@ -14,9 +14,6 @@ import androidx.appcompat.widget.AppCompatEditText;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
-import com.nextcloud.android.sso.exceptions.NextcloudFilesAppAccountNotFoundException;
-import com.nextcloud.android.sso.exceptions.NoCurrentAccountSelectedException;
-import com.nextcloud.android.sso.helper.SingleAccountHelper;
 import com.nextcloud.android.sso.model.SingleSignOnAccount;
 
 import java.util.function.Consumer;
@@ -94,21 +91,6 @@ public class MarkwonMarkdownEditor extends AppCompatEditText implements Markdown
                 .useEditHandler(new CodeBlockEditHandler())
                 .useEditHandler(new BlockQuoteEditHandler())
                 .useEditHandler(new HeadingEditHandler());
-    }
-
-    /**
-     * @deprecated Use {@link MarkdownEditor#setCurrentSingleSignOnAccount(SingleSignOnAccount, int)}
-     * @param color which will be used for highlighting. See {@link #setSearchText(CharSequence)}
-     */
-    @Override
-    @Deprecated(forRemoval = true)
-    public void setSearchColor(int color) {
-        try {
-            final var ssoAccount = SingleAccountHelper.getCurrentSingleSignOnAccount(getContext());
-            setCurrentSingleSignOnAccount(ssoAccount, color);
-        } catch (NoCurrentAccountSelectedException | NextcloudFilesAppAccountNotFoundException e) {
-            setCurrentSingleSignOnAccount(null, color);
-        }
     }
 
     @Override

@@ -20,12 +20,8 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import com.nextcloud.android.common.ui.util.PlatformThemeUtil;
-import com.nextcloud.android.sso.exceptions.NextcloudFilesAppAccountNotFoundException;
-import com.nextcloud.android.sso.exceptions.NoCurrentAccountSelectedException;
-import com.nextcloud.android.sso.helper.SingleAccountHelper;
 import com.nextcloud.android.sso.model.SingleSignOnAccount;
 
-import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -145,17 +141,6 @@ public class MarkwonMarkdownViewer extends AppCompatTextView implements Markdown
         return builder;
     }
 
-    /**
-     * @deprecated use {@link #createMarkwonBuilder(Context, boolean, int)} and {@link #setCurrentSingleSignOnAccount(SingleSignOnAccount, int)} to fetch and render mentions automatically.
-     */
-    @Deprecated(forRemoval = true)
-    public Markwon.Builder createMarkwonBuilder(@NonNull Context context, @NonNull Map<String, String> ignored) {
-        final var typedValue = new TypedValue();
-        final var theme = context.getTheme();
-        theme.resolveAttribute(androidx.appcompat.R.attr.colorPrimary, typedValue, true);
-        return createMarkwonBuilder(context, true, typedValue.data);
-    }
-
     @Override
     public void registerOnLinkClickCallback(@NonNull Function<String, Boolean> callback) {
         final var plugin = this.markwon.getPlugin(LinkClickInterceptorPlugin.class);
@@ -201,21 +186,6 @@ public class MarkwonMarkdownViewer extends AppCompatTextView implements Markdown
         }
     }
 
-    /**
-     * @param color which will be used for highlighting. See {@link #setSearchText(CharSequence)}
-     * @deprecated Use {@link MarkdownEditor#setCurrentSingleSignOnAccount(SingleSignOnAccount, int)}
-     */
-    @Override
-    @Deprecated(forRemoval = true)
-    public void setSearchColor(int color) {
-        try {
-            final var ssoAccount = SingleAccountHelper.getCurrentSingleSignOnAccount(getContext());
-            setCurrentSingleSignOnAccount(ssoAccount, color);
-        } catch (NoCurrentAccountSelectedException | NextcloudFilesAppAccountNotFoundException e) {
-            setCurrentSingleSignOnAccount(null, color);
-        }
-    }
-
     @Override
     public void setCurrentSingleSignOnAccount(@Nullable SingleSignOnAccount ssoAccount, @ColorInt int color) {
         final var searchHighlightPlugin = this.markwon.getPlugin(SearchHighlightPlugin.class);
@@ -246,15 +216,6 @@ public class MarkwonMarkdownViewer extends AppCompatTextView implements Markdown
         }
 
         rerender();
-    }
-
-    /**
-     * @deprecated use {@link #setMarkdownString(CharSequence)}, mentions will get highlighted implicitly
-     */
-    @Override
-    @Deprecated
-    public void setMarkdownStringAndHighlightMentions(CharSequence text, @NonNull Map<String, String> mentions) {
-        setMarkdownString(text);
     }
 
     @Override
