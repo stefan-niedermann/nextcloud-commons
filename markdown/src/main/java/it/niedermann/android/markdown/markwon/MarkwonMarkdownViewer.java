@@ -44,7 +44,6 @@ import io.noties.markwon.inlineparser.MarkwonInlineParserPlugin;
 import io.noties.markwon.linkify.LinkifyPlugin;
 import io.noties.markwon.movement.MovementMethodPlugin;
 import io.noties.markwon.simple.ext.SimpleExtPlugin;
-import io.noties.markwon.syntax.Prism4jTheme;
 import io.noties.markwon.syntax.Prism4jThemeDarkula;
 import io.noties.markwon.syntax.Prism4jThemeDefault;
 import io.noties.markwon.syntax.SyntaxHighlightPlugin;
@@ -65,14 +64,11 @@ import it.niedermann.android.markdown.markwon.plugins.mentions.MentionsPlugin;
 public class MarkwonMarkdownViewer extends AppCompatTextView implements MarkdownEditor {
 
     private static final String TAG = MarkwonMarkdownViewer.class.getSimpleName();
-
     private static final Prism4j prism4j = new Prism4j(new MarkwonGrammarLocator());
-
     private final Markwon markwon;
     @Nullable
     private Consumer<CharSequence> listener = null;
     private final MutableLiveData<CharSequence> unrenderedText$ = new MutableLiveData<>();
-
     private final ExecutorService renderService;
 
     public MarkwonMarkdownViewer(@NonNull Context context) {
@@ -109,9 +105,10 @@ public class MarkwonMarkdownViewer extends AppCompatTextView implements Markdown
     private Markwon.Builder createMarkwonBuilder(@NonNull Context context,
                                                  boolean enableMentions,
                                                  @ColorInt int color) {
-        final Prism4jTheme prism4jTheme = PlatformThemeUtil.isDarkMode(context)
+        final var prism4jTheme = PlatformThemeUtil.isDarkMode(context)
                 ? Prism4jThemeDarkula.create()
                 : Prism4jThemeDefault.create();
+
         final var builder = Markwon.builder(context)
                 .usePlugin(ThemePlugin.create(context))
                 .usePlugin(StrikethroughPlugin.create())
@@ -142,7 +139,7 @@ public class MarkwonMarkdownViewer extends AppCompatTextView implements Markdown
                 }));
 
         if (enableMentions) {
-            return builder.usePlugin(MentionsPlugin.create(getContext(), (int) getTextSize(), color));
+            return builder.usePlugin(MentionsPlugin.create(getContext(), color));
         }
 
         return builder;
@@ -268,25 +265,6 @@ public class MarkwonMarkdownViewer extends AppCompatTextView implements Markdown
     @Override
     public void setMarkdownStringChangedListener(@Nullable Consumer<CharSequence> listener) {
         this.listener = listener;
-    }
-
-    @Override
-    public void setTextSize(float size) {
-        setTextSize(TypedValue.COMPLEX_UNIT_SP, size);
-    }
-
-    @Override
-    public void setTextSize(int unit, float size) {
-        super.setTextSize(unit, size);
-
-        final var mentionsPlugin = this.markwon.getPlugin(MentionsPlugin.class);
-        if (mentionsPlugin == null) {
-            Log.w(TAG, MentionsPlugin.class.getSimpleName() + " is not a registered " + TextWatcher.class.getSimpleName());
-        } else {
-            mentionsPlugin.setTextSize((int) getTextSize());
-        }
-
-        rerender();
     }
 
     private void rerender() {

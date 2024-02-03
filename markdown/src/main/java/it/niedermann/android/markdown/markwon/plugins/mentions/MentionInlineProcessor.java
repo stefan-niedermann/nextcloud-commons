@@ -1,6 +1,5 @@
 package it.niedermann.android.markdown.markwon.plugins.mentions;
 
-import android.graphics.drawable.Drawable;
 import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
@@ -9,8 +8,6 @@ import com.nextcloud.android.sso.model.SingleSignOnAccount;
 
 import org.commonmark.node.Node;
 
-import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
 
@@ -22,20 +19,12 @@ class MentionInlineProcessor extends InlineProcessor {
     @NonNull
     private final AtomicReference<SingleSignOnAccount> ssoAccountRef;
     @NonNull
-    private final Map<String, String> userCache;
-    @NonNull
-    private final Set<String> noUserCache;
-    @NonNull
-    private final Map<String, Drawable> avatarCache;
+    private final MentionsCache cache;
 
-    MentionInlineProcessor(@NonNull Map<String, String> userCache,
-                           @NonNull Set<String> noUserCache,
-                           @NonNull Map<String, Drawable> avatarCache,
+    MentionInlineProcessor(@NonNull MentionsCache cache,
                            @NonNull AtomicReference<SingleSignOnAccount> ssoAccountRef) {
         this.ssoAccountRef = ssoAccountRef;
-        this.userCache = userCache;
-        this.noUserCache = noUserCache;
-        this.avatarCache = avatarCache;
+        this.cache = cache;
     }
 
     @Override
@@ -50,12 +39,20 @@ class MentionInlineProcessor extends InlineProcessor {
 
         final String mention = match(REGEX_MENTION);
 
-        if (TextUtils.isEmpty(mention) || mention.length() < 2 || noUserCache.contains(mention)) {
+        if (TextUtils.isEmpty(mention) || mention.length() < 2) {
             return null;
         }
 
         final String userId = mention.substring(1);
+        final var ssoAccount = ssoAccountRef.get();
 
-        return new MentionNode(super.context, userId, userCache.get(userId), avatarCache.get(userId));
+        if (cache.isKnownInvalidUserId(ssoAccount, userId)) {
+            return null;
+        }
+
+        return new MentionNode(super.context,
+                userId,
+                cache.getDisplayName(ssoAccount, userId).orElse(null),
+                cache.getAvatar(ssoAccount, userId).orElse(null));
     }
 }

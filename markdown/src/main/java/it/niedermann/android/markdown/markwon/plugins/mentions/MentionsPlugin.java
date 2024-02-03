@@ -11,7 +11,6 @@ import androidx.annotation.ColorInt;
 import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.Px;
 import androidx.core.content.ContextCompat;
 
 import com.nextcloud.android.sso.exceptions.NextcloudFilesAppAccountNotFoundException;
@@ -21,10 +20,7 @@ import org.commonmark.parser.Parser;
 
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -41,18 +37,8 @@ import it.niedermann.android.markdown.ThemeUtils;
 
 public class MentionsPlugin extends AbstractMarkwonPlugin {
 
-    /**
-     * Map of existing users. Keys are the username, values are the display name
-     */
     @NonNull
-    private final Map<String, String> userCache = new ConcurrentHashMap<>();
-    /**
-     * Set of user names which are known to belong to not existing users
-     */
-    @NonNull
-    private final Set<String> noUserCache = ConcurrentHashMap.newKeySet();
-    @NonNull
-    private final Map<String, Drawable> avatarCache = new ConcurrentHashMap<>();
+    private final MentionsCache cache;
     @NonNull
     private final Collection<ExecutorService> executors = new HashSet<>(2);
     @NonNull
@@ -71,26 +57,25 @@ public class MentionsPlugin extends AbstractMarkwonPlugin {
     private final AtomicInteger avatarSizeRef = new AtomicInteger();
 
     private MentionsPlugin(@NonNull Context context,
-                           @Px int textSize,
+                           @NonNull MentionsCache cache,
                            @ColorInt int color) {
         this.context = context.getApplicationContext();
-        this.avatarUtil = new AvatarUtil(noUserCache, avatarCache, avatarPlaceholder, avatarBroken);
-        this.displayNameUtil = new DisplayNameUtil(userCache, noUserCache);
-        setTextSize(textSize);
+        this.cache = cache;
+        this.avatarUtil = new AvatarUtil(cache, avatarPlaceholder, avatarBroken);
+        this.displayNameUtil = new DisplayNameUtil(cache);
         setColor(color);
     }
 
     public static MarkwonPlugin create(@NonNull Context context,
-                                       @Px int textSize,
                                        @ColorInt int color) {
-        return new MentionsPlugin(context, textSize, color);
+        return new MentionsPlugin(context, MentionsCache.getInstance(), color);
     }
 
     @Override
     public void configureParser(@NonNull Parser.Builder builder) {
         try {
             builder.inlineParserFactory(MarkwonInlineParser.factoryBuilder()
-                    .addInlineProcessor(new MentionInlineProcessor(userCache, noUserCache, avatarCache, ssoAccountRef))
+                    .addInlineProcessor(new MentionInlineProcessor(cache, ssoAccountRef))
                     .build());
         } catch (Exception e) {
             e.printStackTrace();
@@ -132,14 +117,14 @@ public class MentionsPlugin extends AbstractMarkwonPlugin {
                 try {
                     final var spannableWithDisplayNames = displayNameUtil.insertActualDisplayNames(textView.getContext(), spannable, ssoAccount);
                     if (executor.isShutdown()) return;
-                    final var spannableWithDisplayNamesAndAvatarPlaceholders = avatarUtil.replacePotentialAvatarsWithPlaceholders(spannableWithDisplayNames);
+                    final var spannableWithDisplayNamesAndAvatarPlaceholders = avatarUtil.replacePotentialAvatarsWithPlaceholders(ssoAccount, spannableWithDisplayNames);
                     if (executor.isShutdown()) return;
                     textView.post(() -> {
                         textView.setText(spannableWithDisplayNamesAndAvatarPlaceholders);
                         if (executor.isShutdown()) return;
                         executor.submit(() -> {
                             try {
-                                final var spannableWithDisplayNamesAndActualAvatars = avatarUtil.insertActualAvatars(textView.getContext(), MarkdownUtil.getContentAsSpannable(textView));
+                                final var spannableWithDisplayNamesAndActualAvatars = avatarUtil.insertActualAvatars(ssoAccount, textView.getContext(), MarkdownUtil.getContentAsSpannable(textView));
                                 if (executor.isShutdown()) return;
                                 textView.post(() -> {
                                     if (executor.isShutdown()) return;
@@ -162,28 +147,20 @@ public class MentionsPlugin extends AbstractMarkwonPlugin {
     }
 
     public void setCurrentSingleSignOnAccount(@Nullable SingleSignOnAccount ssoAccount) {
-        userCache.clear();
-        noUserCache.clear();
-        avatarCache.clear();
         ssoAccountRef.set(ssoAccount);
     }
 
     public void setColor(@ColorInt int color) {
         final var utils = ThemeUtils.Companion.of(color);
-        final var size = avatarSizeRef.get();
 
-        avatarPlaceholder.set(getTintedDrawable(utils, context, R.drawable.ic_baseline_account_circle_24dp, size));
-        avatarBroken.set(getTintedDrawable(utils, context, R.drawable.ic_baseline_broken_image_24, size));
+        avatarPlaceholder.set(getTintedDrawable(utils, context, R.drawable.ic_baseline_account_circle_24dp));
+        avatarBroken.set(getTintedDrawable(utils, context, R.drawable.ic_baseline_broken_image_24));
     }
 
-    private Drawable getTintedDrawable(@NonNull ThemeUtils utils, @NonNull Context context, @DrawableRes int drawableRes, @Px int size) {
+    private Drawable getTintedDrawable(@NonNull ThemeUtils utils, @NonNull Context context, @DrawableRes int drawableRes) {
         final var drawable = ContextCompat.getDrawable(context, drawableRes);
         final var tintedDrawable = Objects.requireNonNull(drawable);
         tintedDrawable.setBounds(0, 0, drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight());
         return utils.tintDrawable(context, tintedDrawable);
-    }
-
-    public void setTextSize(@Px int textSize) {
-        avatarSizeRef.set((int) textSize);
     }
 }

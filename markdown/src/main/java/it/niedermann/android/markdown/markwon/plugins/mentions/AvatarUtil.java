@@ -22,11 +22,10 @@ import com.bumptech.glide.request.RequestOptions;
 import com.bumptech.glide.request.target.CustomTarget;
 import com.bumptech.glide.request.target.Target;
 import com.bumptech.glide.request.transition.Transition;
+import com.nextcloud.android.sso.model.SingleSignOnAccount;
 
 import java.net.HttpURLConnection;
 import java.util.Arrays;
-import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -36,29 +35,26 @@ import it.niedermann.android.markdown.markwon.plugins.mentions.AvatarSpanFactory
 public class AvatarUtil {
 
     @NonNull
-    private final Set<String> noUserCache;
-    @NonNull
-    private final Map<String, Drawable> avatarCache;
+    private final MentionsCache cache;
     @NonNull
     private final AtomicReference<Drawable> avatarPlaceholder;
     @NonNull
     private final AtomicReference<Drawable> avatarBroken;
 
-    AvatarUtil(@NonNull Set<String> noUserCache,
-               @NonNull Map<String, Drawable> avatarCache,
+    AvatarUtil(@NonNull MentionsCache cache,
                @NonNull AtomicReference<Drawable> avatarPlaceholder,
                @NonNull AtomicReference<Drawable> avatarBroken) {
-        this.noUserCache = noUserCache;
-        this.avatarCache = avatarCache;
+        this.cache = cache;
         this.avatarPlaceholder = avatarPlaceholder;
         this.avatarBroken = avatarBroken;
     }
 
     @WorkerThread
-    public Spannable replacePotentialAvatarsWithPlaceholders(@NonNull Spannable foo) throws InterruptedException {
-        final var spannable = new SpannableStringBuilder(foo);
+    public Spannable replacePotentialAvatarsWithPlaceholders(@NonNull SingleSignOnAccount ssoAccount,
+                                                             @NonNull Spannable input) throws InterruptedException {
+        final var spannable = new SpannableStringBuilder(input);
         final var avatarSpans = Arrays.stream(spannable.getSpans(0, spannable.length(), PotentialAvatarSpan.class))
-                .filter(span -> !noUserCache.contains(span.userId()))
+                .filter(span -> !cache.isKnownInvalidUserId(ssoAccount, span.userId()))
                 .toArray(PotentialAvatarSpan[]::new);
 
         for (final var span : avatarSpans) {
@@ -71,10 +67,12 @@ public class AvatarUtil {
     }
 
     @WorkerThread
-    public Spannable insertActualAvatars(@NonNull Context context, @NonNull Spannable sourceSpannable) throws InterruptedException {
+    public Spannable insertActualAvatars(@NonNull SingleSignOnAccount ssoAccount,
+                                         @NonNull Context context,
+                                         @NonNull Spannable sourceSpannable) throws InterruptedException {
         final var spannable = new SpannableStringBuilder(sourceSpannable);
         final var avatarSpans = Arrays.stream(spannable.getSpans(0, spannable.length(), AvatarPlaceholderSpan.class))
-                .filter(span -> !noUserCache.contains(span.userId))
+                .filter(span -> !cache.isKnownInvalidUserId(ssoAccount, span.userId))
                 .toArray(AvatarPlaceholderSpan[]::new);
 
         final var latch = new CountDownLatch(avatarSpans.length);
@@ -96,8 +94,8 @@ public class AvatarUtil {
                                 for (final var cause : causes) {
                                     if (cause instanceof HttpException httpException) {
                                         if (httpException.getStatusCode() == HttpURLConnection.HTTP_NOT_FOUND) {
-                                            // Actually should never happen because the noUserCache should hold this user name from trying to fetch its display names
-                                            noUserCache.add(span.userId);
+                                            // Actually should never happen because the cache should hold this userId from trying to fetch its display names
+                                            cache.addKnownInvalidUserId(ssoAccount, span.userId);
                                             return false;
                                         }
                                     }
@@ -119,7 +117,7 @@ public class AvatarUtil {
                         @Override
                         public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
                             final var imageSpan = new ImageSpan(context, resource);
-                            avatarCache.putIfAbsent(span.userId, imageSpan.getDrawable());
+                            cache.setAvatar(ssoAccount, span.userId, imageSpan.getDrawable());
                             spannable.setSpan(imageSpan, spanStart, spanEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
                             spannable.removeSpan(span);
                             latch.countDown();

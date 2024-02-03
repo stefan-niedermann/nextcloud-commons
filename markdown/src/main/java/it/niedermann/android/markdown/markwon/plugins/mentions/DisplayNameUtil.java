@@ -34,28 +34,22 @@ public class DisplayNameUtil {
     private static final String TAG = DisplayNameUtil.class.getSimpleName();
     private static final String API_URL_OCS = "/ocs/v2.php/cloud/";
     @NonNull
-    private final Map<String, String> userCache;
-    @NonNull
-    private final Set<String> noUserCache;
+    private final MentionsCache cache;
     @NonNull
     private final ApiProvider.Factory apiFactory;
     @NonNull
     private final ExecutorServiceFactory executorFactory;
 
-    public DisplayNameUtil(@NonNull Map<String, String> userCache,
-                           @NonNull Set<String> noUserCache) {
-        this(userCache,
-                noUserCache,
+    public DisplayNameUtil(@NonNull MentionsCache cache) {
+        this(cache,
                 new ApiProvider.Factory(),
                 taskCount -> Executors.newFixedThreadPool(Math.min(taskCount, 50)));
     }
 
-    private DisplayNameUtil(@NonNull Map<String, String> userCache,
-                            @NonNull Set<String> noUserCache,
+    private DisplayNameUtil(@NonNull MentionsCache cache,
                             @NonNull ApiProvider.Factory apiFactory,
                             @NonNull ExecutorServiceFactory executorFactory) {
-        this.userCache = userCache;
-        this.noUserCache = noUserCache;
+        this.cache = cache;
         this.apiFactory = apiFactory;
         this.executorFactory = executorFactory;
     }
@@ -96,23 +90,23 @@ public class DisplayNameUtil {
             return Collections.emptyMap();
         }
 
-        final var checkedUsernames = userCache
+        final var validDisplayNames = cache.getDisplayNames(ssoAccount)
                 .entrySet()
                 .stream()
-                .filter(entry -> potentialUserNames.contains(entry.getKey()))
+                .filter(cachedEntry -> potentialUserNames.contains(cachedEntry.getKey()))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
         final var usernamesToCheck = potentialUserNames.stream()
-                .filter(potentialUserName -> !userCache.containsKey(potentialUserName))
-                .filter(potentialUserName -> !noUserCache.contains(potentialUserName))
+                .filter(potentialUserName -> !cache.isKnownValidUserId(ssoAccount, potentialUserName))
+                .filter(potentialUserName -> !cache.isKnownInvalidUserId(ssoAccount, potentialUserName))
                 .collect(Collectors.toUnmodifiableSet());
 
         if (usernamesToCheck.isEmpty()) {
-            return checkedUsernames;
+            return validDisplayNames;
         }
 
-        final var result = new ConcurrentHashMap<String, String>(checkedUsernames.size() + usernamesToCheck.size());
-        result.putAll(checkedUsernames);
+        final var result = new ConcurrentHashMap<String, String>(validDisplayNames.size() + usernamesToCheck.size());
+        result.putAll(validDisplayNames);
 
         final var latch = new CountDownLatch(usernamesToCheck.size());
         final var executor = this.executorFactory.createExecutor(usernamesToCheck.size());
@@ -124,13 +118,13 @@ public class DisplayNameUtil {
                         final String displayName = fetchDisplayName(context, apiProvider.getApi(), potentialUsername);
 
                         if (displayName != null) {
-                            userCache.putIfAbsent(potentialUsername, displayName);
+                            cache.setDisplayName(ssoAccount, potentialUsername, displayName);
                             result.put(potentialUsername, displayName);
                         } else {
                             Log.v(TAG, "Username " + potentialUsername + " does not have a displayName");
                         }
                     } catch (NextcloudHttpRequestFailedException e) {
-                        noUserCache.add(potentialUsername);
+                        cache.addKnownInvalidUserId(ssoAccount, potentialUsername);
                     } catch (IOException exception) {
                         Log.w(TAG, "Could not fetch display name for " + potentialUsername + ", " + exception.getMessage());
                     } finally {
