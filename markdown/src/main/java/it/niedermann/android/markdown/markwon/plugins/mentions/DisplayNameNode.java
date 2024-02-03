@@ -5,6 +5,8 @@ import androidx.annotation.Nullable;
 
 import org.commonmark.node.CustomNode;
 
+import java.util.Optional;
+
 import io.noties.markwon.inlineparser.MarkwonInlineParserContext;
 
 class DisplayNameNode extends CustomNode {
@@ -19,10 +21,10 @@ class DisplayNameNode extends CustomNode {
         this.userId = userId;
         this.displayName = displayName;
 
-        if (displayName == null) {
-            appendChild(context.text(userId));
-        } else {
-            appendChild(context.text(" " + displayName));
-        }
+        final var content = Optional.ofNullable(displayName)
+                .map(n -> " " + n)
+                .orElse(userId);
+
+        appendChild(context.text(content));
     }
 }

@@ -34,14 +34,25 @@ class AvatarSpanFactory implements SpanFactory {
         if (avatar.isPresent()) {
             return new ImageSpan(avatar.get());
         } else {
-            if (userIsKnown) {
-                return new AvatarPlaceholderSpan(avatarPlaceholder.get(), userId, url);
-            } else {
-                return new PotentialAvatarSpan(userId, url);
-            }
+            return userIsKnown
+                    ? new AvatarPlaceholderSpan(avatarPlaceholder.get(), userId, url)
+                    : new PotentialAvatarSpan(userId, url);
         }
     }
 
-    public record PotentialAvatarSpan(@NonNull String userId, @NonNull String url) {
+    static class AvatarPlaceholderSpan extends ImageSpan {
+        @NonNull
+        final String userId;
+        @NonNull
+        final String url;
+
+        AvatarPlaceholderSpan(@NonNull Drawable drawable, @NonNull String userId, @NonNull String url) {
+            super(drawable);
+            this.userId = userId;
+            this.url = url;
+        }
+    }
+
+    record PotentialAvatarSpan(@NonNull String userId, @NonNull String url) {
     }
 }
