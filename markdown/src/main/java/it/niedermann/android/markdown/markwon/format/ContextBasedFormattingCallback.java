@@ -1,82 +1,50 @@
 package it.niedermann.android.markdown.markwon.format;
 
-import static it.niedermann.android.markdown.MarkdownUtil.getEndOfLine;
-import static it.niedermann.android.markdown.MarkdownUtil.getStartOfLine;
-import static it.niedermann.android.markdown.MarkdownUtil.lineStartsWithCheckbox;
-
-import android.util.Log;
+import android.graphics.Typeface;
+import android.text.SpannableString;
+import android.text.style.StyleSpan;
+import android.util.SparseIntArray;
 import android.view.ActionMode;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import it.niedermann.android.markdown.MarkdownUtil;
+import java.util.Map;
+
+import it.niedermann.android.markdown.MarkdownController;
 import it.niedermann.android.markdown.R;
-import it.niedermann.android.markdown.markwon.MarkwonMarkdownEditor;
-import it.niedermann.android.markdown.model.EListType;
-import it.niedermann.android.util.ClipboardUtil;
+import it.niedermann.android.markdown.controller.Command;
 
-public class ContextBasedFormattingCallback implements ActionMode.Callback {
+public class ContextBasedFormattingCallback extends AbstractFormattingCallback implements ActionMode.Callback, MarkdownController {
 
-    private static final String TAG = ContextBasedFormattingCallback.class.getSimpleName();
-
-    private final MarkwonMarkdownEditor editText;
-
-    public ContextBasedFormattingCallback(MarkwonMarkdownEditor editText) {
-        this.editText = editText;
+    public ContextBasedFormattingCallback() {
+        super(R.menu.context_based_formatting, Map.of(
+                R.id.bold, Command.TOGGLE_BOLD,
+                R.id.italic, Command.TOGGLE_ITALIC,
+                R.id.link, Command.INSERT_LINK,
+                R.id.checkbox, Command.TOGGLE_CHECKBOX_LIST
+        ));
     }
 
     @Override
     public boolean onCreateActionMode(ActionMode mode, Menu menu) {
-        mode.getMenuInflater().inflate(R.menu.context_based_formatting, menu);
+        super.onCreateActionMode(mode, menu);
+
+        final var styleFormatMap = new SparseIntArray();
+        styleFormatMap.append(R.id.bold, Typeface.BOLD);
+        styleFormatMap.append(R.id.italic, Typeface.ITALIC);
+
+        MenuItem item;
+        CharSequence title;
+        SpannableString spannableString;
+
+        for (int i = 0; i < styleFormatMap.size(); i++) {
+            item = menu.findItem(styleFormatMap.keyAt(i));
+            title = item.getTitle();
+            spannableString = new SpannableString(title);
+            spannableString.setSpan(new StyleSpan(styleFormatMap.valueAt(i)), 0, title == null ? 0 : title.length(), 0);
+            item.setTitle(spannableString);
+        }
+
         return true;
-    }
-
-    @Override
-    public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
-        final var text = editText.getText();
-        if (text != null) {
-            final int cursorPosition = editText.getSelectionStart();
-            if (cursorPosition >= 0 && cursorPosition <= text.length()) {
-                final int startOfLine = getStartOfLine(text, cursorPosition);
-                final int endOfLine = getEndOfLine(text, cursorPosition);
-                final String line = text.subSequence(startOfLine, endOfLine).toString();
-                if (lineStartsWithCheckbox(line)) {
-                    menu.findItem(R.id.checkbox).setVisible(false);
-                    Log.i(TAG, "Hide checkbox menu item because line starts already with checkbox");
-                }
-            } else {
-                Log.e(TAG, "SelectionStart is " + cursorPosition + ". Expected to be between 0 and " + text.length());
-            }
-        }
-        return false;
-    }
-
-    @Override
-    public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
-        final var editable = editText.getText();
-        if (editable != null) {
-            final int itemId = item.getItemId();
-            final int cursorPosition = editText.getSelectionStart();
-
-            if (itemId == R.id.checkbox) {
-                editable.insert(getStartOfLine(editable, cursorPosition), EListType.DASH.checkboxUncheckedWithTrailingSpace);
-                editText.setMarkdownStringModel(editable);
-                editText.setSelection(cursorPosition + EListType.DASH.checkboxUncheckedWithTrailingSpace.length());
-                return true;
-            } else if (itemId == R.id.link) {
-                final int newSelection = MarkdownUtil.insertLink(editable, cursorPosition, cursorPosition, ClipboardUtil.getClipboardURLorNull(editText.getContext()));
-                editText.setMarkdownStringModel(editable);
-                editText.setSelection(newSelection);
-                return true;
-            }
-        } else {
-            Log.e(TAG, "Editable is null");
-        }
-        return false;
-    }
-
-    @Override
-    public void onDestroyActionMode(ActionMode mode) {
-        // Nothing to do here...
     }
 }

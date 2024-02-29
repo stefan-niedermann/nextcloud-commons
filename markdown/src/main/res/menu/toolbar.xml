@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/italic"
+        android:icon="@drawable/ic_format_italic_black_24dp"
+        android:title="@string/simple_italic"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/bold"
+        android:icon="@drawable/ic_format_bold_black_24dp"
+        android:title="@string/simple_bold"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/checkbox"
+        android:icon="@drawable/ic_baseline_checklist_24"
+        android:title="@string/simple_checkbox"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/unordered_list"
+        android:icon="@drawable/ic_baseline_format_list_bulleted_24"
+        android:title="@string/simple_unordered_list"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/ordered_list"
+        android:icon="@drawable/ic_baseline_format_list_numbered_24"
+        android:title="@string/simple_ordered_list"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/link"
+        android:icon="@drawable/ic_insert_link_black_24dp"
+        android:title="@string/simple_link"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/strikethrough"
+        android:icon="@drawable/ic_baseline_format_strikethrough_24"
+        android:title="@string/simple_strikethrough"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/blockquote"
+        android:icon="@drawable/ic_baseline_format_quote_24"
+        android:title="@string/simple_blockquote"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/codeblock"
+        android:icon="@drawable/ic_baseline_code_24"
+        android:title="@string/simple_codeblock"
+        app:showAsAction="ifRoom" />
+</menu>

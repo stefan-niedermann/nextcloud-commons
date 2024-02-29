@@ -1,6 +1,7 @@
 package it.niedermann.android.markdown.markwon;
 
 import android.content.Context;
+import android.text.SpannableStringBuilder;
 import android.text.TextWatcher;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -19,6 +20,8 @@ import com.nextcloud.android.sso.exceptions.NoCurrentAccountSelectedException;
 import com.nextcloud.android.sso.helper.SingleAccountHelper;
 import com.nextcloud.android.sso.model.SingleSignOnAccount;
 
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.function.Consumer;
 
 import io.noties.markwon.Markwon;
@@ -29,9 +32,13 @@ import io.noties.markwon.ext.strikethrough.StrikethroughPlugin;
 import io.noties.markwon.image.ImagesPlugin;
 import io.noties.markwon.inlineparser.MarkwonInlineParserPlugin;
 import io.noties.markwon.simple.ext.SimpleExtPlugin;
+import it.niedermann.android.markdown.MarkdownController;
 import it.niedermann.android.markdown.MarkdownEditor;
+import it.niedermann.android.markdown.MarkdownUtil;
+import it.niedermann.android.markdown.controller.Command;
+import it.niedermann.android.markdown.controller.CommandReceiver;
+import it.niedermann.android.markdown.controller.EditorStateNotifier;
 import it.niedermann.android.markdown.markwon.format.ContextBasedFormattingCallback;
-import it.niedermann.android.markdown.markwon.format.ContextBasedRangeFormattingCallback;
 import it.niedermann.android.markdown.markwon.handler.BlockQuoteEditHandler;
 import it.niedermann.android.markdown.markwon.handler.CodeBlockEditHandler;
 import it.niedermann.android.markdown.markwon.handler.CodeEditHandler;
@@ -42,14 +49,19 @@ import it.niedermann.android.markdown.markwon.plugins.ThemePlugin;
 import it.niedermann.android.markdown.markwon.textwatcher.CombinedTextWatcher;
 import it.niedermann.android.markdown.markwon.textwatcher.SearchHighlightTextWatcher;
 
-public class MarkwonMarkdownEditor extends AppCompatEditText implements MarkdownEditor {
+public class MarkwonMarkdownEditor extends AppCompatEditText implements MarkdownEditor, CommandReceiver {
 
     private static final String TAG = MarkwonMarkdownEditor.class.getSimpleName();
 
     @Nullable
     private Consumer<CharSequence> listener;
+    @Nullable
+    private final Collection<MarkdownController> controllers = new HashSet<>();
+    private final EditorStateNotifier editorStateNotifier;
     private final MutableLiveData<CharSequence> unrenderedText$ = new MutableLiveData<>();
     private final CombinedTextWatcher combinedWatcher;
+    @ColorInt
+    private int color;
 
     public MarkwonMarkdownEditor(@NonNull Context context) {
         this(context, null);
@@ -65,14 +77,19 @@ public class MarkwonMarkdownEditor extends AppCompatEditText implements Markdown
         final var typedValue = new TypedValue();
         final var theme = context.getTheme();
         theme.resolveAttribute(androidx.appcompat.R.attr.colorPrimary, typedValue, true);
+        this.color = typedValue.data;
 
-        final var markwon = createMarkwonBuilder(context, typedValue.data).build();
+        editorStateNotifier = new EditorStateNotifier(controllers);
+        final var markwon = createMarkwonBuilder(context, color).build();
         final var editor = createMarkwonEditorBuilder(markwon).build();
 
         combinedWatcher = new CombinedTextWatcher(editor, this);
         addTextChangedListener(combinedWatcher);
-        setCustomSelectionActionModeCallback(new ContextBasedRangeFormattingCallback(this));
-        setCustomInsertionActionModeCallback(new ContextBasedFormattingCallback(this));
+
+        final var actionModeCallback = new ContextBasedFormattingCallback();
+        registerController(actionModeCallback);
+        setCustomSelectionActionModeCallback(actionModeCallback);
+        setCustomInsertionActionModeCallback(actionModeCallback);
     }
 
     private static Markwon.Builder createMarkwonBuilder(@NonNull Context context, @ColorInt int color) {
@@ -97,8 +114,8 @@ public class MarkwonMarkdownEditor extends AppCompatEditText implements Markdown
     }
 
     /**
-     * @deprecated Use {@link MarkdownEditor#setCurrentSingleSignOnAccount(SingleSignOnAccount, int)}
      * @param color which will be used for highlighting. See {@link #setSearchText(CharSequence)}
+     * @deprecated Use {@link MarkdownEditor#setCurrentSingleSignOnAccount(SingleSignOnAccount, int)}
      */
     @Override
     @Deprecated(forRemoval = true)
@@ -113,6 +130,8 @@ public class MarkwonMarkdownEditor extends AppCompatEditText implements Markdown
 
     @Override
     public void setCurrentSingleSignOnAccount(@Nullable SingleSignOnAccount account, @ColorInt int color) {
+        this.color = color;
+        notifyControllers();
         final var searchHighlightTextWatcher = combinedWatcher.get(SearchHighlightTextWatcher.class);
         if (searchHighlightTextWatcher == null) {
             Log.w(TAG, SearchHighlightTextWatcher.class.getSimpleName() + " is not a registered " + TextWatcher.class.getSimpleName());
@@ -135,6 +154,7 @@ public class MarkwonMarkdownEditor extends AppCompatEditText implements Markdown
     public void setMarkdownString(CharSequence text) {
         setText(text);
         setMarkdownStringModel(text);
+        notifyControllers();
     }
 
     @Override
@@ -161,5 +181,83 @@ public class MarkwonMarkdownEditor extends AppCompatEditText implements Markdown
     @Override
     public void setMarkdownStringChangedListener(@Nullable Consumer<CharSequence> listener) {
         this.listener = listener;
+    }
+
+    /**
+     * ⚠ This is a <strong>BETA</strong> feature. Please be careful. API changes can happen anytime and won't be announced!
+     */
+    public void registerController(@NonNull MarkdownController controller) {
+        Log.w(TAG, "⚠ This is a BETA feature. Please be careful. API changes can happen anytime and won't be announced!");
+        if (controllers != null) {
+            if (controllers.contains(controller)) {
+                return;
+            }
+
+            controllers.add(controller);
+            controller.setEditor(this);
+            // TODO This should only notify the recently added controller
+            notifyControllers();
+        }
+    }
+
+    /**
+     * ⚠ This is a <strong>BETA</strong> feature. Please be careful. API changes can happen anytime and won't be announced!
+     */
+    public void unregisterController(@NonNull MarkdownController controller) {
+        Log.w(TAG, "⚠ This is a BETA feature. Please be careful. API changes can happen anytime and won't be announced!");
+        if (controllers != null) {
+//            controller.setEditor(null);
+            controllers.remove(controller);
+        }
+    }
+
+    @Override
+    protected void onSelectionChanged(int selStart, int selEnd) {
+        super.onSelectionChanged(selStart, selEnd);
+        notifyControllers();
+    }
+
+    @Override
+    public void setEnabled(boolean enabled) {
+        super.setEnabled(enabled);
+        notifyControllers();
+    }
+
+    private void notifyControllers() {
+        if (editorStateNotifier == null) {
+            return; // Called during constructor
+        }
+
+        editorStateNotifier.notify(
+                getContext(),
+                isEnabled(),
+                this.color,
+                MarkdownUtil.getContentAsSpannable(this),
+                getSelectionStart(),
+                getSelectionEnd());
+    }
+
+    /**
+     * ⚠ This is a <strong>BETA</strong> feature. Please be careful. API changes can happen anytime and won't be announced!
+     */
+    public void executeCommand(@NonNull Command command) throws UnsupportedOperationException {
+        Log.w(TAG, "⚠ This is a BETA feature. Please be careful. API changes can happen anytime and won't be announced!");
+
+        final var spannable = new SpannableStringBuilder(MarkdownUtil.getContentAsSpannable(this));
+        final var start = getSelectionStart();
+        final var end = getSelectionEnd();
+
+        if (!command.isEnabled(getContext(), spannable, start, end)) {
+            throw new UnsupportedOperationException();
+        }
+
+        final var result = command.applyCommand(getContext(), spannable, start, end);
+
+        if (result.isEmpty()) {
+            throw new UnsupportedOperationException();
+        }
+
+        setMarkdownString(result.get().content());
+        setSelection(result.get().selection());
     }
 }
