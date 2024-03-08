@@ -27,6 +27,8 @@ public class EditorStateNotifier {
     @NonNull
     private final Collection<? extends EditorStateListener> listeners;
     @NonNull
+    private final ExecutorService firstNotifyExecutorService;
+    @NonNull
     private final Collection<ExecutorService> executors = new HashSet<>(2);
     @NonNull
     private final Supplier<ExecutorService> executorFactory;
@@ -36,16 +38,46 @@ public class EditorStateNotifier {
     private EditorState lastNotifiedState;
 
     public EditorStateNotifier(@NonNull Collection<? extends EditorStateListener> listeners) {
-        this(listeners, Executors::newSingleThreadExecutor, Executors::newFixedThreadPool);
+        this(listeners, Executors::newSingleThreadExecutor, Executors::newFixedThreadPool, Executors.newFixedThreadPool(2));
     }
 
     private EditorStateNotifier(@NonNull Collection<? extends EditorStateListener> listeners,
                                 @NonNull Supplier<ExecutorService> executorFactory,
-                                @NonNull Function<Integer, ExecutorService> commandStateBuilderExecutorFactory
+                                @NonNull Function<Integer, ExecutorService> commandStateBuilderExecutorFactory,
+                                @NonNull ExecutorService firstNotifyExecutorService
     ) {
         this.listeners = listeners;
         this.executorFactory = executorFactory;
         this.commandStateBuilderExecutorFactory = commandStateBuilderExecutorFactory;
+        this.firstNotifyExecutorService = firstNotifyExecutorService;
+    }
+
+    @AnyThread
+    public void notify(@NonNull Context context,
+                       @NonNull EditorStateListener listener,
+                       boolean editorIsEnabled,
+                       @ColorInt int color,
+                       @NonNull Spannable content,
+                       int selectionStart,
+                       int selectionEnd) {
+
+        firstNotifyExecutorService.submit(() -> {
+            final EditorState state;
+            try {
+                state = build(context,
+                        firstNotifyExecutorService,
+                        editorIsEnabled,
+                        color,
+                        content,
+                        selectionStart,
+                        selectionEnd);
+
+                listener.onEditorStateChanged(state);
+                lastNotifiedState = state;
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 
     @AnyThread

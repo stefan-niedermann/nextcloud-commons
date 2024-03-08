@@ -195,8 +195,13 @@ public class MarkwonMarkdownEditor extends AppCompatEditText implements Markdown
 
             controllers.add(controller);
             controller.setEditor(this);
-            // TODO This should only notify the recently added controller
-            notifyControllers();
+            editorStateNotifier.notify(getContext(),
+                    controller,
+                    isEnabled(),
+                    this.color,
+                    MarkdownUtil.getContentAsSpannable(this),
+                    getSelectionStart(),
+                    getSelectionEnd());
         }
     }
 
