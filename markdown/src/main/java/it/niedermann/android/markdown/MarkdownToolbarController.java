@@ -69,16 +69,7 @@ public class MarkdownToolbarController extends Toolbar implements MarkdownContro
 
     @Override
     public void setEditor(@Nullable MarkwonMarkdownEditor editor) {
-        if (this.editor == null && editor != null) {
-            this.editor = editor;
-            this.editor.registerController(this);
-        } else if (this.editor != editor) {
-            this.editor.unregisterController(this);
-            this.editor = editor;
-            if (this.editor != null) {
-                this.editor.registerController(this);
-            }
-        }
+        this.editor = editor;
     }
 
     /**

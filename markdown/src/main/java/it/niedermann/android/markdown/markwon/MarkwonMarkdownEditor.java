@@ -11,6 +11,7 @@ import android.widget.EditText;
 import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RestrictTo;
 import androidx.appcompat.widget.AppCompatEditText;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
@@ -20,8 +21,8 @@ import com.nextcloud.android.sso.exceptions.NoCurrentAccountSelectedException;
 import com.nextcloud.android.sso.helper.SingleAccountHelper;
 import com.nextcloud.android.sso.model.SingleSignOnAccount;
 
-import java.util.Collection;
 import java.util.HashSet;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import io.noties.markwon.Markwon;
@@ -56,7 +57,7 @@ public class MarkwonMarkdownEditor extends AppCompatEditText implements Markdown
     @Nullable
     private Consumer<CharSequence> listener;
     @Nullable
-    private final Collection<MarkdownController> controllers = new HashSet<>();
+    private final Set<MarkdownController> controllers = new HashSet<>();
     private final EditorStateNotifier editorStateNotifier;
     private final MutableLiveData<CharSequence> unrenderedText$ = new MutableLiveData<>();
     private final CombinedTextWatcher combinedWatcher;
@@ -189,13 +190,9 @@ public class MarkwonMarkdownEditor extends AppCompatEditText implements Markdown
     public void registerController(@NonNull MarkdownController controller) {
         Log.w(TAG, "⚠ This is a BETA feature. Please be careful. API changes can happen anytime and won't be announced!");
         if (controllers != null) {
-            if (controllers.contains(controller)) {
-                return;
-            }
-
             controllers.add(controller);
             controller.setEditor(this);
-            editorStateNotifier.notify(getContext(),
+            editorStateNotifier.initiallyNotify(getContext(),
                     controller,
                     isEnabled(),
                     this.color,
@@ -209,9 +206,15 @@ public class MarkwonMarkdownEditor extends AppCompatEditText implements Markdown
      * ⚠ This is a <strong>BETA</strong> feature. Please be careful. API changes can happen anytime and won't be announced!
      */
     public void unregisterController(@NonNull MarkdownController controller) {
+        unregisterController(controller, true);
+    }
+    @RestrictTo(RestrictTo.Scope.LIBRARY)
+    public void unregisterController(@NonNull MarkdownController controller, boolean skipPropagation) {
         Log.w(TAG, "⚠ This is a BETA feature. Please be careful. API changes can happen anytime and won't be announced!");
         if (controllers != null) {
-//            controller.setEditor(null);
+            if (!skipPropagation) {
+                controller.setEditor(null);
+            }
             controllers.remove(controller);
         }
     }

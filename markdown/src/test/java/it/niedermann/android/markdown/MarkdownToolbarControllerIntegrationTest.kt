@@ -57,7 +57,7 @@ class MarkdownToolbarControllerIntegrationTest : TestCase() {
         controller.setEditor(editor)
 
         assertEquals(editor, controller.getEditor())
-        verify(exactly = 1) { editor.registerController(controller) }
+        verify(exactly = 1) { editor.registerController(controller, true) }
         verify(exactly = 0) { editor.unregisterController(any()) }
     }
 
@@ -70,7 +70,7 @@ class MarkdownToolbarControllerIntegrationTest : TestCase() {
 
         assertNull(controller.getEditor())
         verify(exactly = 0) { editor.registerController(any()) }
-        verify(exactly = 1) { editor.unregisterController(controller) }
+        verify(exactly = 1) { editor.unregisterController(controller, true) }
     }
 
     @Test
@@ -87,7 +87,7 @@ class MarkdownToolbarControllerIntegrationTest : TestCase() {
 
     @Test
     fun `setEditor - from A to B`() {
-        val anotherEditor = MarkwonMarkdownEditor(ApplicationProvider.getApplicationContext())
+        val anotherEditor = spyk(MarkwonMarkdownEditor(ApplicationProvider.getApplicationContext()))
         controller.setEditor(editor)
         clearAllMocks(answers = false)
 
@@ -95,8 +95,8 @@ class MarkdownToolbarControllerIntegrationTest : TestCase() {
 
         assertEquals(anotherEditor, controller.getEditor())
         verify(exactly = 0) { editor.registerController(any()) }
-        verify(exactly = 1) { editor.unregisterController(controller) }
-        verify(exactly = 1) { anotherEditor.registerController(controller) }
+        verify(exactly = 1) { editor.unregisterController(controller, true) }
+        verify(exactly = 1) { anotherEditor.registerController(controller, true) }
         verify(exactly = 0) { anotherEditor.unregisterController(any()) }
     }
 }

@@ -19,6 +19,9 @@ import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -38,7 +41,8 @@ public class EditorStateNotifier {
     private EditorState lastNotifiedState;
 
     public EditorStateNotifier(@NonNull Collection<? extends EditorStateListener> listeners) {
-        this(listeners, Executors::newSingleThreadExecutor, Executors::newFixedThreadPool, Executors.newFixedThreadPool(2));
+        this(listeners, Executors::newSingleThreadExecutor, Executors::newFixedThreadPool,
+                new ThreadPoolExecutor(Command.values().length + 1, Integer.MAX_VALUE, 5L, TimeUnit.SECONDS, new SynchronousQueue<>()));
     }
 
     private EditorStateNotifier(@NonNull Collection<? extends EditorStateListener> listeners,
@@ -53,13 +57,13 @@ public class EditorStateNotifier {
     }
 
     @AnyThread
-    public void notify(@NonNull Context context,
-                       @NonNull EditorStateListener listener,
-                       boolean editorIsEnabled,
-                       @ColorInt int color,
-                       @NonNull Spannable content,
-                       int selectionStart,
-                       int selectionEnd) {
+    public void initiallyNotify(@NonNull Context context,
+                                @NonNull EditorStateListener listener,
+                                boolean editorIsEnabled,
+                                @ColorInt int color,
+                                @NonNull Spannable content,
+                                int selectionStart,
+                                int selectionEnd) {
 
         firstNotifyExecutorService.submit(() -> {
             final EditorState state;
