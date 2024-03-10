@@ -6,13 +6,10 @@ import androidx.test.core.app.ApplicationProvider
 import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.spyk
 import io.mockk.verify
-import it.niedermann.android.markdown.controller.CommandReceiver
 import it.niedermann.android.markdown.controller.EditorStateListener
 import it.niedermann.android.markdown.controller.EditorStateNotifier
 import it.niedermann.android.markdown.controller.MarkdownController
-import it.niedermann.android.markdown.controller.MarkdownToolbarController
 import it.niedermann.android.markdown.markwon.format.AbstractFormattingCallback
 import junit.framework.TestCase
 import org.junit.Before
@@ -27,7 +24,7 @@ class MarkwonMarkdownEditorTest : TestCase() {
     private lateinit var editor: MarkwonMarkdownEditor
     private lateinit var editorStateNotifierMock: EditorStateNotifier
 
-    private fun CommandReceiver.getControllers(filterFormattingCallbacks: Boolean = true): Collection<MarkdownController> {
+    private fun MarkwonMarkdownEditor.getControllers(filterFormattingCallbacks: Boolean = true): Collection<MarkdownController> {
         @Suppress("UNCHECKED_CAST")
         val controllers = (javaClass.getDeclaredField("controllers").let {
             it.isAccessible = true
@@ -38,7 +35,7 @@ class MarkwonMarkdownEditorTest : TestCase() {
     }
 
     private fun createControllerMock(): MarkdownController {
-        return mockk<MarkdownToolbarController> {
+        return mockk<MarkdownController> {
             every { setCommandReceiver(any(MarkwonMarkdownEditor::class)) } returns Unit
         }
     }
@@ -72,14 +69,13 @@ class MarkwonMarkdownEditorTest : TestCase() {
     @Before
     fun setup() {
         editorStateNotifierMock = createEditorStateNotifierMock()
-        editor = spyk(
-            MarkwonMarkdownEditor(
-                ApplicationProvider.getApplicationContext(),
-                null,
-                android.R.attr.editTextStyle
-            ) {
-                editorStateNotifierMock
-            })
+        editor = MarkwonMarkdownEditor(
+            ApplicationProvider.getApplicationContext(),
+            null,
+            android.R.attr.editTextStyle
+        ) {
+            editorStateNotifierMock
+        }
         editor.setMarkdownString("foo")
         clearAllMocks(answers = false)
     }
@@ -106,28 +102,28 @@ class MarkwonMarkdownEditorTest : TestCase() {
         }
     }
 
-//    @Test
-//    fun `should notify all registered controllers on selection changed`() {
-//        val controllerMock = createControllerMock()
-//        val notified = editor.registerController(controllerMock)
-//
-//        assertTrue(notified.isDone)
-//        assertEquals(1, editor.getControllers().size)
-//        assertTrue(editor.getControllers().contains(controllerMock))
-//
-////        editor.setSelection(0)
-////        editor.setSelection(1)
-////        editor.setSelection(2)
-//
-//        verify(exactly = 1) {
-//            editorStateNotifierMock.notify(
-//                any(Context::class),
-//                any(Boolean::class),
-//                any(),
-//                any(Spannable::class),
-//                any(),
-//                any()
-//            )
-//        }
-//    }
+    @Test
+    fun `should notify all registered controllers on selection changed`() {
+        val controllerMock = createControllerMock()
+        val notified = editor.registerController(controllerMock)
+
+        assertTrue(notified.isDone)
+        assertEquals(1, editor.getControllers().size)
+        assertTrue(editor.getControllers().contains(controllerMock))
+
+        editor.setSelection(0) // Does not cause a notification because the selection was already on 0
+        editor.setSelection(1)
+        editor.setSelection(2)
+
+        verify(exactly = 2) {
+            editorStateNotifierMock.notify(
+                any(Context::class),
+                any(Boolean::class),
+                any(),
+                any(Spannable::class),
+                any(),
+                any()
+            )
+        }
+    }
 }

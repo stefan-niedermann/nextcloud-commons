@@ -16,6 +16,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -47,17 +48,17 @@ public class EditorStateNotifier {
                 listeners,
                 Executors::newSingleThreadExecutor,
                 Executors::newFixedThreadPool,
-                new ThreadPoolExecutor(Command.values().length + 1, Integer.MAX_VALUE, 5L, TimeUnit.SECONDS, new SynchronousQueue<>()),
+                new CommandExecutor(),
                 new EditorState.Factory()
         );
     }
 
     @VisibleForTesting
     protected EditorStateNotifier(@NonNull Collection<? extends EditorStateListener> listeners,
-                               @NonNull Supplier<ExecutorService> executorFactory,
-                               @NonNull Function<Integer, ExecutorService> commandStateBuilderExecutorFactory,
-                               @NonNull ExecutorService firstNotifyExecutorService,
-                               @NonNull EditorState.Factory editorStateFactory
+                                  @NonNull Supplier<ExecutorService> executorFactory,
+                                  @NonNull Function<Integer, ExecutorService> commandStateBuilderExecutorFactory,
+                                  @NonNull ExecutorService firstNotifyExecutorService,
+                                  @NonNull EditorState.Factory editorStateFactory
     ) {
         this.listeners = listeners;
         this.executorFactory = executorFactory;
@@ -143,5 +144,15 @@ public class EditorStateNotifier {
 
             return null;
         });
+    }
+
+    /**
+     * {@link Executor} optimized to submit {@link Command} related operations
+     */
+    private static class CommandExecutor extends ThreadPoolExecutor {
+
+        public CommandExecutor() {
+            super(Command.values().length + 1, Integer.MAX_VALUE, 5L, TimeUnit.SECONDS, new SynchronousQueue<>());
+        }
     }
 }
