@@ -3,30 +3,35 @@ package it.niedermann.android.markdown.markwon.format;
 import android.graphics.Typeface;
 import android.text.SpannableString;
 import android.text.style.StyleSpan;
-import android.util.Log;
 import android.util.SparseIntArray;
 import android.view.ActionMode;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import it.niedermann.android.markdown.MarkdownUtil;
+import androidx.annotation.NonNull;
+
+import java.util.Map;
+
 import it.niedermann.android.markdown.R;
+import it.niedermann.android.markdown.controller.Command;
+import it.niedermann.android.markdown.controller.MarkdownController;
 import it.niedermann.android.markdown.markwon.MarkwonMarkdownEditor;
-import it.niedermann.android.util.ClipboardUtil;
 
-public class ContextBasedRangeFormattingCallback implements ActionMode.Callback {
+@Deprecated(forRemoval = true)
+public class ContextBasedRangeFormattingCallback extends AbstractFormattingCallback implements ActionMode.Callback, MarkdownController {
 
-    private static final String TAG = ContextBasedRangeFormattingCallback.class.getSimpleName();
-
-    private final MarkwonMarkdownEditor editText;
-
-    public ContextBasedRangeFormattingCallback(MarkwonMarkdownEditor editText) {
-        this.editText = editText;
+    public ContextBasedRangeFormattingCallback(@NonNull MarkwonMarkdownEditor ignored) {
+        super(R.menu.context_based_range_formatting, Map.of(
+                R.id.bold, Command.TOGGLE_BOLD,
+                R.id.italic, Command.TOGGLE_ITALIC,
+                R.id.link, Command.INSERT_LINK,
+                R.id.checkbox, Command.TOGGLE_CHECKBOX_LIST
+        ));
     }
 
     @Override
     public boolean onCreateActionMode(ActionMode mode, Menu menu) {
-        mode.getMenuInflater().inflate(R.menu.context_based_range_formatting, menu);
+        super.onCreateActionMode(mode, menu);
 
         final var styleFormatMap = new SparseIntArray();
         styleFormatMap.append(R.id.bold, Typeface.BOLD);
@@ -45,58 +50,5 @@ public class ContextBasedRangeFormattingCallback implements ActionMode.Callback 
         }
 
         return true;
-    }
-
-    @Override
-    public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
-        final var text = editText.getText();
-        if (text != null) {
-            final int selectionStart = editText.getSelectionStart();
-            final int selectionEnd = editText.getSelectionEnd();
-            if (selectionStart >= 0 && selectionStart <= text.length()) {
-                if (MarkdownUtil.selectionIsInLink(text, selectionStart, selectionEnd)) {
-                    menu.findItem(R.id.link).setVisible(false);
-                    Log.i(TAG, "Hide link menu item because the selection is already within a link.");
-                }
-            } else {
-                Log.e(TAG, "SelectionStart is " + selectionStart + ". Expected to be between 0 and " + text.length());
-            }
-        }
-        return false;
-    }
-
-    @Override
-    public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
-        final var editable = editText.getText();
-        if (editable != null) {
-            final int itemId = item.getItemId();
-            final int start = editText.getSelectionStart();
-            final int end = editText.getSelectionEnd();
-
-            if (itemId == R.id.bold) {
-                final int newSelection = MarkdownUtil.togglePunctuation(editable, start, end, "**");
-                editText.setMarkdownStringModel(editable);
-                editText.setSelection(newSelection);
-                return true;
-            } else if (itemId == R.id.italic) {
-                final int newSelection = MarkdownUtil.togglePunctuation(editable, start, end, "*");
-                editText.setMarkdownStringModel(editable);
-                editText.setSelection(newSelection);
-                return true;
-            } else if (itemId == R.id.link) {
-                final int newSelection = MarkdownUtil.insertLink(editable, start, end, ClipboardUtil.getClipboardURLorNull(editText.getContext()));
-                editText.setMarkdownStringModel(editable);
-                editText.setSelection(newSelection);
-                return true;
-            }
-        } else {
-            Log.e(TAG, "Editable is null");
-        }
-        return false;
-    }
-
-    @Override
-    public void onDestroyActionMode(ActionMode mode) {
-        // Nothing to do here...
     }
 }

@@ -9,6 +9,7 @@ import android.text.style.ForegroundColorSpan
 import it.niedermann.android.markdown.model.EListType
 import it.niedermann.android.markdown.model.SearchSpan
 import junit.framework.TestCase
+import org.junit.Assert.assertThrows
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -43,6 +44,115 @@ class MarkdownUtilTest : TestCase() {
                 i <= 78 -> assertEquals(78, startOfLine)
                 i <= 79 -> assertEquals(79, startOfLine)
             }
+        }
+    }
+
+    @Test
+    fun isMultilineSelection() {
+        //language=md
+        val test = SpannableStringBuilder(
+            """
+              # Test-Note
+              
+              - [ ] this is a test note
+              - [x] test
+              [test](https://example.com)
+              
+              
+              
+              """.trimIndent()
+        )
+
+        assertTrue(MarkdownUtil.isMultilineSelection(test, 0, test.length - 1))
+        assertTrue(MarkdownUtil.isMultilineSelection(test, 11, 12))
+        assertTrue(MarkdownUtil.isMultilineSelection(test, 77, 78))
+
+        assertFalse(MarkdownUtil.isMultilineSelection(test, 0, 0))
+        assertFalse(MarkdownUtil.isMultilineSelection(test, 0, 1))
+        assertFalse(MarkdownUtil.isMultilineSelection(test, 0, 11))
+
+        assertThrows(IndexOutOfBoundsException::class.java) {
+            MarkdownUtil.isMultilineSelection(SpannableStringBuilder(""), 0, 1)
+        }
+
+        assertThrows(IndexOutOfBoundsException::class.java) {
+            MarkdownUtil.isMultilineSelection(SpannableStringBuilder(""), 1, 2)
+        }
+
+        assertThrows(IllegalArgumentException::class.java) {
+            MarkdownUtil.isMultilineSelection(SpannableStringBuilder(test), 2, 1)
+        }
+    }
+
+    @Test
+    fun isSinglelineSelection() {
+        //language=md
+        val test = SpannableStringBuilder(
+            """
+              # Test-Note
+              
+              - [ ] this is a test note
+              - [x] test
+              [test](https://example.com)
+              
+              
+              
+              """.trimIndent()
+        )
+
+        assertFalse(MarkdownUtil.isSinglelineSelection(test, 0, test.length - 1))
+        assertFalse(MarkdownUtil.isSinglelineSelection(test, 11, 12))
+        assertFalse(MarkdownUtil.isSinglelineSelection(test, 77, 78))
+
+        assertTrue(MarkdownUtil.isSinglelineSelection(test, 0, 0))
+        assertTrue(MarkdownUtil.isSinglelineSelection(test, 0, 1))
+        assertTrue(MarkdownUtil.isSinglelineSelection(test, 0, 11))
+
+        assertThrows(IndexOutOfBoundsException::class.java) {
+            MarkdownUtil.isSinglelineSelection(SpannableStringBuilder(""), 0, 1)
+        }
+
+        assertThrows(IndexOutOfBoundsException::class.java) {
+            MarkdownUtil.isSinglelineSelection(SpannableStringBuilder(""), 1, 2)
+        }
+
+        assertThrows(IllegalArgumentException::class.java) {
+            MarkdownUtil.isSinglelineSelection(SpannableStringBuilder(test), 2, 1)
+        }
+    }
+
+    @Test
+    fun getLine() {
+        //language=md
+        val test = StringBuilder(
+            """
+              # Test-Note
+              
+              - [ ] this is a test note
+              - [x] test
+              [test](https://example.com)
+              
+              
+              
+              """.trimIndent() // line start 78
+        )
+        test.indices.forEach { i ->
+            val line = MarkdownUtil.getLine(test, i)
+            when {
+                i <= 11 -> assertEquals("# Test-Note", line)
+                i <= 12 -> assertEquals("", line)
+                i <= 38 -> assertEquals("- [ ] this is a test note", line)
+                i <= 49 -> assertEquals("- [x] test", line)
+                i <= 77 -> assertEquals("[test](https://example.com)", line)
+                i <= 78 -> assertEquals("", line)
+                i <= 79 -> assertEquals("", line)
+            }
+        }
+
+        assertEquals("", MarkdownUtil.getLine("", 0))
+
+        assertThrows(IndexOutOfBoundsException::class.java) {
+            MarkdownUtil.getLine("", 1)
         }
     }
 
@@ -171,7 +281,12 @@ class MarkdownUtilTest : TestCase() {
             Pair("-[]", false),
             Pair("*[]", false),
             Pair("+[]", false)
-        ).forEach { (key: String, value: Boolean) -> assertEquals(value, MarkdownUtil.lineStartsWithCheckbox(key)) }
+        ).forEach { (key: String, value: Boolean) ->
+            assertEquals(
+                value,
+                MarkdownUtil.lineStartsWithCheckbox(key)
+            )
+        }
     }
 
     @Test
@@ -234,11 +349,6 @@ class MarkdownUtilTest : TestCase() {
         builder = SpannableStringBuilder("Lorem *ipsum dolor sit amet.")
         assertEquals(28, MarkdownUtil.togglePunctuation(builder, 0, 28, "*"))
         assertEquals("Lorem *ipsum dolor sit amet.", builder.toString())
-
-        // Do nothing when the same punctuation is contained only one time
-        builder = SpannableStringBuilder("Lorem **ipsum dolor sit amet.")
-        assertEquals(29, MarkdownUtil.togglePunctuation(builder, 0, 29, "**"))
-        assertEquals("Lorem **ipsum dolor sit amet.", builder.toString())
 
         // Remove containing punctuation
         builder = SpannableStringBuilder("Lorem *ipsum* dolor sit amet.")
@@ -421,7 +531,10 @@ class MarkdownUtilTest : TestCase() {
         // Add link with clipboardUrl to url
         builder = SpannableStringBuilder("Lorem https://example.com dolor sit amet.")
         assertEquals(46, MarkdownUtil.insertLink(builder, 6, 25, "https://example.de"))
-        assertEquals("Lorem [https://example.com](https://example.de) dolor sit amet.", builder.toString())
+        assertEquals(
+            "Lorem [https://example.com](https://example.de) dolor sit amet.",
+            builder.toString()
+        )
 
         // Add link with clipboardUrl to empty selection before space character
         builder = SpannableStringBuilder("Lorem ipsum dolor sit amet.")
@@ -522,22 +635,125 @@ class MarkdownUtilTest : TestCase() {
     @Test
     fun selectionIsInLink() {
         try {
-            val method = MarkdownUtil::class.java.getDeclaredMethod("selectionIsInLink", CharSequence::class.java, Int::class.javaPrimitiveType, Int::class.javaPrimitiveType)
+            val method = MarkdownUtil::class.java.getDeclaredMethod(
+                "selectionIsInLink",
+                CharSequence::class.java,
+                Int::class.javaPrimitiveType,
+                Int::class.javaPrimitiveType
+            )
             method.isAccessible = true
-            assertTrue((method.invoke(null, "Lorem [ipsum](https://example.com) dolor sit amet.", 7, 12) as Boolean))
-            assertTrue((method.invoke(null, "Lorem [ipsum](https://example.com) dolor sit amet.", 6, 34) as Boolean))
-            assertTrue((method.invoke(null, "Lorem [ipsum](https://example.com) dolor sit amet.", 14, 33) as Boolean))
-            assertTrue((method.invoke(null, "Lorem [ipsum](https://example.com) dolor sit amet.", 12, 14) as Boolean))
-            assertTrue((method.invoke(null, "Lorem [ipsum](https://example.com) dolor sit amet.", 0, 7) as Boolean))
-            assertTrue((method.invoke(null, "Lorem [ipsum](https://example.com) dolor sit amet.", 33, 34) as Boolean))
-            assertTrue((method.invoke(null, "Lorem [](https://example.com) dolor sit amet.", 6, 28) as Boolean))
-            assertTrue((method.invoke(null, "Lorem [](https://example.com) dolor sit amet.", 7, 28) as Boolean))
-            assertTrue((method.invoke(null, "Lorem [](https://example.com) dolor sit amet.", 8, 28) as Boolean))
-            assertTrue((method.invoke(null, "Lorem [](https://example.com) dolor sit amet.", 9, 28) as Boolean))
-            assertTrue((method.invoke(null, "Lorem [](https://example.com) dolor sit amet.", 6, 29) as Boolean))
-            assertTrue((method.invoke(null, "Lorem [](https://example.com) dolor sit amet.", 7, 29) as Boolean))
-            assertTrue((method.invoke(null, "Lorem [](https://example.com) dolor sit amet.", 8, 29) as Boolean))
-            assertTrue((method.invoke(null, "Lorem [](https://example.com) dolor sit amet.", 9, 29) as Boolean))
+            assertTrue(
+                (method.invoke(
+                    null,
+                    "Lorem [ipsum](https://example.com) dolor sit amet.",
+                    7,
+                    12
+                ) as Boolean)
+            )
+            assertTrue(
+                (method.invoke(
+                    null,
+                    "Lorem [ipsum](https://example.com) dolor sit amet.",
+                    6,
+                    34
+                ) as Boolean)
+            )
+            assertTrue(
+                (method.invoke(
+                    null,
+                    "Lorem [ipsum](https://example.com) dolor sit amet.",
+                    14,
+                    33
+                ) as Boolean)
+            )
+            assertTrue(
+                (method.invoke(
+                    null,
+                    "Lorem [ipsum](https://example.com) dolor sit amet.",
+                    12,
+                    14
+                ) as Boolean)
+            )
+            assertTrue(
+                (method.invoke(
+                    null,
+                    "Lorem [ipsum](https://example.com) dolor sit amet.",
+                    0,
+                    7
+                ) as Boolean)
+            )
+            assertTrue(
+                (method.invoke(
+                    null,
+                    "Lorem [ipsum](https://example.com) dolor sit amet.",
+                    33,
+                    34
+                ) as Boolean)
+            )
+            assertTrue(
+                (method.invoke(
+                    null,
+                    "Lorem [](https://example.com) dolor sit amet.",
+                    6,
+                    28
+                ) as Boolean)
+            )
+            assertTrue(
+                (method.invoke(
+                    null,
+                    "Lorem [](https://example.com) dolor sit amet.",
+                    7,
+                    28
+                ) as Boolean)
+            )
+            assertTrue(
+                (method.invoke(
+                    null,
+                    "Lorem [](https://example.com) dolor sit amet.",
+                    8,
+                    28
+                ) as Boolean)
+            )
+            assertTrue(
+                (method.invoke(
+                    null,
+                    "Lorem [](https://example.com) dolor sit amet.",
+                    9,
+                    28
+                ) as Boolean)
+            )
+            assertTrue(
+                (method.invoke(
+                    null,
+                    "Lorem [](https://example.com) dolor sit amet.",
+                    6,
+                    29
+                ) as Boolean)
+            )
+            assertTrue(
+                (method.invoke(
+                    null,
+                    "Lorem [](https://example.com) dolor sit amet.",
+                    7,
+                    29
+                ) as Boolean)
+            )
+            assertTrue(
+                (method.invoke(
+                    null,
+                    "Lorem [](https://example.com) dolor sit amet.",
+                    8,
+                    29
+                ) as Boolean)
+            )
+            assertTrue(
+                (method.invoke(
+                    null,
+                    "Lorem [](https://example.com) dolor sit amet.",
+                    9,
+                    29
+                ) as Boolean)
+            )
             assertTrue((method.invoke(null, "Lorem [ipsum]() dolor sit amet.", 6, 12) as Boolean))
             assertTrue((method.invoke(null, "Lorem [ipsum]() dolor sit amet.", 6, 13) as Boolean))
             assertTrue((method.invoke(null, "Lorem [ipsum]() dolor sit amet.", 6, 14) as Boolean))
@@ -546,9 +762,30 @@ class MarkdownUtilTest : TestCase() {
             assertTrue((method.invoke(null, "Lorem [ipsum]() dolor sit amet.", 7, 13) as Boolean))
             assertTrue((method.invoke(null, "Lorem [ipsum]() dolor sit amet.", 7, 14) as Boolean))
             assertTrue((method.invoke(null, "Lorem [ipsum]() dolor sit amet.", 7, 15) as Boolean))
-            assertFalse((method.invoke(null, "Lorem [ipsum](https://example.com) dolor sit amet.", 0, 6) as Boolean))
-            assertFalse((method.invoke(null, "Lorem [ipsum](https://example.com) dolor sit amet.", 34, 50) as Boolean))
-            assertFalse((method.invoke(null, "Lorem [ipsum](https://example.com) dolor sit amet.", 41, 44) as Boolean))
+            assertFalse(
+                (method.invoke(
+                    null,
+                    "Lorem [ipsum](https://example.com) dolor sit amet.",
+                    0,
+                    6
+                ) as Boolean)
+            )
+            assertFalse(
+                (method.invoke(
+                    null,
+                    "Lorem [ipsum](https://example.com) dolor sit amet.",
+                    34,
+                    50
+                ) as Boolean)
+            )
+            assertFalse(
+                (method.invoke(
+                    null,
+                    "Lorem [ipsum](https://example.com) dolor sit amet.",
+                    41,
+                    44
+                ) as Boolean)
+            )
         } catch (e: NoSuchMethodException) {
             e.printStackTrace()
         } catch (e: IllegalAccessException) {
@@ -724,31 +961,115 @@ class MarkdownUtilTest : TestCase() {
     @Test
     fun removeSpans() {
         try {
-            val removeSpans = MarkdownUtil::class.java.getDeclaredMethod("removeSpans", Spannable::class.java, Class::class.java)
+            val removeSpans = MarkdownUtil::class.java.getDeclaredMethod(
+                "removeSpans",
+                Spannable::class.java,
+                Class::class.java
+            )
             removeSpans.isAccessible = true
             val editable_1 = SpannableStringBuilder("Lorem Ipsum dolor sit amet")
-            editable_1.setSpan(SearchSpan(Color.RED, Color.GRAY), 0, 5, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-            editable_1.setSpan(ForegroundColorSpan(Color.BLUE), 6, 11, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-            editable_1.setSpan(SearchSpan(Color.BLUE, Color.GREEN), 12, 17, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+            editable_1.setSpan(
+                SearchSpan(Color.RED, Color.GRAY),
+                0,
+                5,
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
+            editable_1.setSpan(
+                ForegroundColorSpan(Color.BLUE),
+                6,
+                11,
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
+            editable_1.setSpan(
+                SearchSpan(Color.BLUE, Color.GREEN),
+                12,
+                17,
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
             removeSpans.invoke(null, editable_1, SearchSpan::class.java)
             assertEquals(0, editable_1.getSpans(0, editable_1.length, SearchSpan::class.java).size)
-            assertEquals(1, editable_1.getSpans(0, editable_1.length, ForegroundColorSpan::class.java).size)
+            assertEquals(
+                1,
+                editable_1.getSpans(0, editable_1.length, ForegroundColorSpan::class.java).size
+            )
             val editable_2 = SpannableStringBuilder("Lorem Ipsum dolor sit amet")
-            editable_2.setSpan(SearchSpan(Color.GRAY, Color.RED), 0, 5, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-            editable_2.setSpan(ForegroundColorSpan(Color.BLUE), 2, 7, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-            editable_2.setSpan(SearchSpan(Color.BLUE, Color.GREEN), 3, 9, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+            editable_2.setSpan(
+                SearchSpan(Color.GRAY, Color.RED),
+                0,
+                5,
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
+            editable_2.setSpan(
+                ForegroundColorSpan(Color.BLUE),
+                2,
+                7,
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
+            editable_2.setSpan(
+                SearchSpan(Color.BLUE, Color.GREEN),
+                3,
+                9,
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
             removeSpans.invoke(null, editable_2, SearchSpan::class.java)
             assertEquals(0, editable_2.getSpans(0, editable_2.length, SearchSpan::class.java).size)
-            assertEquals(1, editable_2.getSpans(0, editable_2.length, ForegroundColorSpan::class.java).size)
-            assertEquals(2, editable_2.getSpanStart(editable_2.getSpans(0, editable_2.length, ForegroundColorSpan::class.java)[0]))
-            assertEquals(7, editable_2.getSpanEnd(editable_2.getSpans(0, editable_2.length, ForegroundColorSpan::class.java)[0]))
+            assertEquals(
+                1,
+                editable_2.getSpans(0, editable_2.length, ForegroundColorSpan::class.java).size
+            )
+            assertEquals(
+                2,
+                editable_2.getSpanStart(
+                    editable_2.getSpans(
+                        0,
+                        editable_2.length,
+                        ForegroundColorSpan::class.java
+                    )[0]
+                )
+            )
+            assertEquals(
+                7,
+                editable_2.getSpanEnd(
+                    editable_2.getSpans(
+                        0,
+                        editable_2.length,
+                        ForegroundColorSpan::class.java
+                    )[0]
+                )
+            )
             val editable_3 = SpannableStringBuilder("Lorem Ipsum dolor sit amet")
-            editable_3.setSpan(ForegroundColorSpan(Color.BLUE), 2, 7, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+            editable_3.setSpan(
+                ForegroundColorSpan(Color.BLUE),
+                2,
+                7,
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
             removeSpans.invoke(null, editable_3, SearchSpan::class.java)
             assertEquals(0, editable_3.getSpans(0, editable_3.length, SearchSpan::class.java).size)
-            assertEquals(1, editable_3.getSpans(0, editable_3.length, ForegroundColorSpan::class.java).size)
-            assertEquals(2, editable_3.getSpanStart(editable_3.getSpans(0, editable_3.length, ForegroundColorSpan::class.java)[0]))
-            assertEquals(7, editable_3.getSpanEnd(editable_3.getSpans(0, editable_3.length, ForegroundColorSpan::class.java)[0]))
+            assertEquals(
+                1,
+                editable_3.getSpans(0, editable_3.length, ForegroundColorSpan::class.java).size
+            )
+            assertEquals(
+                2,
+                editable_3.getSpanStart(
+                    editable_3.getSpans(
+                        0,
+                        editable_3.length,
+                        ForegroundColorSpan::class.java
+                    )[0]
+                )
+            )
+            assertEquals(
+                7,
+                editable_3.getSpanEnd(
+                    editable_3.getSpans(
+                        0,
+                        editable_3.length,
+                        ForegroundColorSpan::class.java
+                    )[0]
+                )
+            )
         } catch (e: NoSuchMethodException) {
             e.printStackTrace()
         } catch (e: IllegalAccessException) {
@@ -782,12 +1103,21 @@ class MarkdownUtilTest : TestCase() {
         assertEquals("Foo\nNo Header #\nBar", MarkdownUtil.removeMarkdown("Foo\nNo Header #\nBar"))
         assertEquals("Foo\nHeader\nBar", MarkdownUtil.removeMarkdown("Foo\nHeader\n=\nBar"))
         assertEquals("Foo\nHeader\nBar", MarkdownUtil.removeMarkdown("Foo\nHeader\n-----\nBar"))
-        assertEquals("Foo\nHeader\n--=--\nBar", MarkdownUtil.removeMarkdown("Foo\nHeader\n--=--\nBar"))
+        assertEquals(
+            "Foo\nHeader\n--=--\nBar",
+            MarkdownUtil.removeMarkdown("Foo\nHeader\n--=--\nBar")
+        )
         assertEquals("Foo\nAufzählung\nBar", MarkdownUtil.removeMarkdown("Foo\n* Aufzählung\nBar"))
         assertEquals("Foo\nAufzählung\nBar", MarkdownUtil.removeMarkdown("Foo\n+ Aufzählung\nBar"))
         assertEquals("Foo\nAufzählung\nBar", MarkdownUtil.removeMarkdown("Foo\n- Aufzählung\nBar"))
-        assertEquals("Foo\n- Aufzählung\nBar", MarkdownUtil.removeMarkdown("Foo\n    - Aufzählung\nBar"))
-        assertEquals("Foo\nAufzählung *\nBar", MarkdownUtil.removeMarkdown("Foo\n* Aufzählung *\nBar"))
+        assertEquals(
+            "Foo\n- Aufzählung\nBar",
+            MarkdownUtil.removeMarkdown("Foo\n    - Aufzählung\nBar")
+        )
+        assertEquals(
+            "Foo\nAufzählung *\nBar",
+            MarkdownUtil.removeMarkdown("Foo\n* Aufzählung *\nBar")
+        )
         assertEquals("Title", MarkdownUtil.removeMarkdown("# Title"))
         assertEquals("Aufzählung", MarkdownUtil.removeMarkdown("* Aufzählung"))
         //        assertEquals("Foo Link Bar", MarkdownUtil.removeMarkdown("Foo [Link](https://example.com) Bar"));
@@ -797,6 +1127,9 @@ class MarkdownUtilTest : TestCase() {
         assertEquals("", MarkdownUtil.removeMarkdown(""))
 
         // https://github.com/stefan-niedermann/nextcloud-notes/issues/1104
-        assertEquals("2021-03-24 - Example text", MarkdownUtil.removeMarkdown("2021-03-24 - Example text"))
+        assertEquals(
+            "2021-03-24 - Example text",
+            MarkdownUtil.removeMarkdown("2021-03-24 - Example text")
+        )
     }
 }

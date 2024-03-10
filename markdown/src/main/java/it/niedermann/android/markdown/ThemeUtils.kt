@@ -25,6 +25,10 @@ class ThemeUtils(schemes: MaterialSchemes) : ViewThemeUtilsBase(schemes) {
         return withScheme(context) { scheme -> scheme.onSecondary }
     }
 
+    fun getOnSurfaceVariant(context: Context): Int {
+        return withScheme(context) { scheme -> scheme.onSurfaceVariant }
+    }
+
     fun tintDrawable(
         context: Context,
         drawable: Drawable

@@ -4,4 +4,9 @@
     <string name="simple_bold">Bold</string>
     <string name="simple_link">Link</string>
     <string name="simple_italic">Italic</string>
+    <string name="simple_unordered_list">Unordered list</string>
+    <string name="simple_ordered_list">Ordered list</string>
+    <string name="simple_blockquote">Blockquote</string>
+    <string name="simple_codeblock">Codeblock</string>
+    <string name="simple_strikethrough">Strikethrough</string>
 </resources>
