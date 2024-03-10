@@ -1,10 +1,8 @@
-package it.niedermann.android.markdown.markwon.controller.stateresolver
+package it.niedermann.android.markdown.controller.stateresolver
 
 import android.content.Context
 import android.text.SpannableStringBuilder
 import androidx.test.core.app.ApplicationProvider
-import it.niedermann.android.markdown.controller.stateresolver.CommandStateResolver
-import it.niedermann.android.markdown.controller.stateresolver.ToggleInlinePunctuationCsr
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertThrows
 import org.junit.Before

@@ -10,11 +10,10 @@ import android.view.MenuItem;
 
 import java.util.Map;
 
-import it.niedermann.android.markdown.MarkdownController;
 import it.niedermann.android.markdown.R;
 import it.niedermann.android.markdown.controller.Command;
 
-public class ContextBasedFormattingCallback extends AbstractFormattingCallback implements ActionMode.Callback, MarkdownController {
+public class ContextBasedFormattingCallback extends AbstractFormattingCallback {
 
     public ContextBasedFormattingCallback() {
         super(R.menu.context_based_formatting, Map.of(

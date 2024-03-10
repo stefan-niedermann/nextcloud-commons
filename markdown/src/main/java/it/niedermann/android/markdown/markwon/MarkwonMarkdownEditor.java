@@ -1,18 +1,24 @@
 package it.niedermann.android.markdown.markwon;
 
 import android.content.Context;
+import android.os.Build;
 import android.text.SpannableStringBuilder;
 import android.text.TextWatcher;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.util.TypedValue;
+import android.view.View;
 import android.widget.EditText;
 
 import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RestrictTo;
+import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.widget.AppCompatEditText;
+import androidx.lifecycle.Lifecycle;
+import androidx.lifecycle.LifecycleOwner;
+import androidx.lifecycle.LifecycleRegistry;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
@@ -21,9 +27,13 @@ import com.nextcloud.android.sso.exceptions.NoCurrentAccountSelectedException;
 import com.nextcloud.android.sso.helper.SingleAccountHelper;
 import com.nextcloud.android.sso.model.SingleSignOnAccount;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import io.noties.markwon.Markwon;
 import io.noties.markwon.editor.MarkwonEditor;
@@ -33,12 +43,14 @@ import io.noties.markwon.ext.strikethrough.StrikethroughPlugin;
 import io.noties.markwon.image.ImagesPlugin;
 import io.noties.markwon.inlineparser.MarkwonInlineParserPlugin;
 import io.noties.markwon.simple.ext.SimpleExtPlugin;
-import it.niedermann.android.markdown.MarkdownController;
 import it.niedermann.android.markdown.MarkdownEditor;
 import it.niedermann.android.markdown.MarkdownUtil;
 import it.niedermann.android.markdown.controller.Command;
 import it.niedermann.android.markdown.controller.CommandReceiver;
+import it.niedermann.android.markdown.controller.ControllerConnector;
+import it.niedermann.android.markdown.controller.EditorStateListener;
 import it.niedermann.android.markdown.controller.EditorStateNotifier;
+import it.niedermann.android.markdown.controller.MarkdownController;
 import it.niedermann.android.markdown.markwon.format.ContextBasedFormattingCallback;
 import it.niedermann.android.markdown.markwon.handler.BlockQuoteEditHandler;
 import it.niedermann.android.markdown.markwon.handler.CodeBlockEditHandler;
@@ -50,10 +62,12 @@ import it.niedermann.android.markdown.markwon.plugins.ThemePlugin;
 import it.niedermann.android.markdown.markwon.textwatcher.CombinedTextWatcher;
 import it.niedermann.android.markdown.markwon.textwatcher.SearchHighlightTextWatcher;
 
-public class MarkwonMarkdownEditor extends AppCompatEditText implements MarkdownEditor, CommandReceiver {
+public class MarkwonMarkdownEditor extends AppCompatEditText implements MarkdownEditor, CommandReceiver, LifecycleOwner, View.OnAttachStateChangeListener {
 
     private static final String TAG = MarkwonMarkdownEditor.class.getSimpleName();
 
+    @NonNull
+    private final LifecycleRegistry lifecycleRegistry = new LifecycleRegistry(this);
     @Nullable
     private Consumer<CharSequence> listener;
     @Nullable
@@ -73,6 +87,14 @@ public class MarkwonMarkdownEditor extends AppCompatEditText implements Markdown
     }
 
     public MarkwonMarkdownEditor(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+        this(context, attrs, defStyleAttr, EditorStateNotifier::new);
+    }
+
+    @VisibleForTesting
+    protected MarkwonMarkdownEditor(@NonNull Context context,
+                                    @Nullable AttributeSet attrs,
+                                    int defStyleAttr,
+                                    @NonNull Function<Collection<? extends EditorStateListener>, EditorStateNotifier> editStateNotifierFactory) {
         super(context, attrs, defStyleAttr);
 
         final var typedValue = new TypedValue();
@@ -80,7 +102,7 @@ public class MarkwonMarkdownEditor extends AppCompatEditText implements Markdown
         theme.resolveAttribute(androidx.appcompat.R.attr.colorPrimary, typedValue, true);
         this.color = typedValue.data;
 
-        editorStateNotifier = new EditorStateNotifier(controllers);
+        this.editorStateNotifier = editStateNotifierFactory.apply(controllers);
         final var markwon = createMarkwonBuilder(context, color).build();
         final var editor = createMarkwonEditorBuilder(markwon).build();
 
@@ -88,9 +110,10 @@ public class MarkwonMarkdownEditor extends AppCompatEditText implements Markdown
         addTextChangedListener(combinedWatcher);
 
         final var actionModeCallback = new ContextBasedFormattingCallback();
-        registerController(actionModeCallback);
         setCustomSelectionActionModeCallback(actionModeCallback);
         setCustomInsertionActionModeCallback(actionModeCallback);
+        ControllerConnector.connect(this, this, actionModeCallback);
+        addOnAttachStateChangeListener(this);
     }
 
     private static Markwon.Builder createMarkwonBuilder(@NonNull Context context, @ColorInt int color) {
@@ -112,6 +135,22 @@ public class MarkwonMarkdownEditor extends AppCompatEditText implements Markdown
                 .useEditHandler(new CodeBlockEditHandler())
                 .useEditHandler(new BlockQuoteEditHandler())
                 .useEditHandler(new HeadingEditHandler());
+    }
+
+    @Override
+    public void onViewAttachedToWindow(@NonNull View view) {
+        lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME);
+    }
+
+    @Override
+    public void onViewDetachedFromWindow(@NonNull View view) {
+        lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_PAUSE);
+    }
+
+    @NonNull
+    @Override
+    public Lifecycle getLifecycle() {
+        return lifecycleRegistry;
     }
 
     /**
@@ -166,7 +205,10 @@ public class MarkwonMarkdownEditor extends AppCompatEditText implements Markdown
     /**
      * Updates the current model which matches the rendered state of the editor *without* triggering
      * anything of the native {@link EditText}
+     *
+     * @deprecated will be library private in the next release. Use {@link #setMarkdownStringChangedListener(Consumer)} not get notified about raw changes.
      */
+    @Deprecated
     public void setMarkdownStringModel(CharSequence text) {
         unrenderedText$.setValue(text == null ? "" : text.toString());
         if (listener != null) {
@@ -187,36 +229,45 @@ public class MarkwonMarkdownEditor extends AppCompatEditText implements Markdown
     /**
      * ⚠ This is a <strong>BETA</strong> feature. Please be careful. API changes can happen anytime and won't be announced!
      */
-    public void registerController(@NonNull MarkdownController controller) {
+    @Override
+    @RestrictTo(RestrictTo.Scope.LIBRARY)
+    public Future<Void> registerController(@NonNull MarkdownController controller) {
         Log.w(TAG, "⚠ This is a BETA feature. Please be careful. API changes can happen anytime and won't be announced!");
-        if (controllers != null) {
-            controllers.add(controller);
-            controller.setEditor(this);
-            editorStateNotifier.initiallyNotify(getContext(),
-                    controller,
-                    isEnabled(),
-                    this.color,
-                    MarkdownUtil.getContentAsSpannable(this),
-                    getSelectionStart(),
-                    getSelectionEnd());
+
+        if (controllers == null) {
+            final var npe = new NullPointerException();
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                return CompletableFuture.failedFuture(npe);
+            } else {
+                final var future = new CompletableFuture<Void>();
+                future.completeExceptionally(npe);
+                return future;
+            }
         }
+
+        controllers.add(controller);
+        return editorStateNotifier.forceNotify(getContext(),
+                controller,
+                isEnabled(),
+                this.color,
+                MarkdownUtil.getContentAsSpannable(this),
+                getSelectionStart(),
+                getSelectionEnd());
     }
 
     /**
      * ⚠ This is a <strong>BETA</strong> feature. Please be careful. API changes can happen anytime and won't be announced!
      */
-    public void unregisterController(@NonNull MarkdownController controller) {
-        unregisterController(controller, true);
-    }
+    @Override
     @RestrictTo(RestrictTo.Scope.LIBRARY)
-    public void unregisterController(@NonNull MarkdownController controller, boolean skipPropagation) {
+    public void unregisterController(@NonNull MarkdownController controller) {
         Log.w(TAG, "⚠ This is a BETA feature. Please be careful. API changes can happen anytime and won't be announced!");
-        if (controllers != null) {
-            if (!skipPropagation) {
-                controller.setEditor(null);
-            }
-            controllers.remove(controller);
+
+        if (controllers == null) {
+            return;
         }
+
+        controllers.remove(controller);
     }
 
     @Override
@@ -233,6 +284,7 @@ public class MarkwonMarkdownEditor extends AppCompatEditText implements Markdown
 
     private void notifyControllers() {
         if (editorStateNotifier == null) {
+            CompletableFuture.completedFuture(null);
             return; // Called during constructor
         }
 

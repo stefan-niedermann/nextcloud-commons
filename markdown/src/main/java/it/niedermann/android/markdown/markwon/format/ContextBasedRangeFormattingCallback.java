@@ -12,9 +12,9 @@ import androidx.annotation.NonNull;
 
 import java.util.Map;
 
-import it.niedermann.android.markdown.MarkdownController;
 import it.niedermann.android.markdown.R;
 import it.niedermann.android.markdown.controller.Command;
+import it.niedermann.android.markdown.controller.MarkdownController;
 import it.niedermann.android.markdown.markwon.MarkwonMarkdownEditor;
 
 @Deprecated(forRemoval = true)

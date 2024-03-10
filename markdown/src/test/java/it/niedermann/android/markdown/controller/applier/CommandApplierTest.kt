@@ -1,9 +1,8 @@
-package it.niedermann.android.markdown.markwon.controller.applier
+package it.niedermann.android.markdown.controller.applier
 
 import android.content.Context
 import android.text.SpannableStringBuilder
 import androidx.test.core.app.ApplicationProvider
-import it.niedermann.android.markdown.controller.applier.CommandApplier
 import org.junit.Assert.assertEquals
 import org.junit.ComparisonFailure
 import org.junit.Test

@@ -59,7 +59,7 @@
             android:layout_height="wrap_content"
             android:text="@string/headline_markdown_editor" />
 
-        <it.niedermann.android.markdown.MarkdownToolbarController xmlns:app="http://schemas.android.com/apk/res-auto"
+        <it.niedermann.android.markdown.controller.MarkdownToolbarController xmlns:app="http://schemas.android.com/apk/res-auto"
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

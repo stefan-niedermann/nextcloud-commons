@@ -1,84 +1,133 @@
 package it.niedermann.android.markdown.markwon
 
+import android.content.Context
+import android.text.Spannable
 import androidx.test.core.app.ApplicationProvider
 import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.spyk
 import io.mockk.verify
-import it.niedermann.android.markdown.MarkdownController
-import it.niedermann.android.markdown.MarkdownToolbarController
+import it.niedermann.android.markdown.controller.CommandReceiver
+import it.niedermann.android.markdown.controller.EditorStateListener
+import it.niedermann.android.markdown.controller.EditorStateNotifier
+import it.niedermann.android.markdown.controller.MarkdownController
+import it.niedermann.android.markdown.controller.MarkdownToolbarController
 import it.niedermann.android.markdown.markwon.format.AbstractFormattingCallback
 import junit.framework.TestCase
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import java.util.concurrent.CompletableFuture
 
 @RunWith(RobolectricTestRunner::class)
 class MarkwonMarkdownEditorTest : TestCase() {
 
     private lateinit var editor: MarkwonMarkdownEditor
-    private lateinit var controllerMock: MarkdownController
+    private lateinit var editorStateNotifierMock: EditorStateNotifier
 
-    private fun MarkwonMarkdownEditor.getControllers(): Collection<MarkdownController> {
+    private fun CommandReceiver.getControllers(filterFormattingCallbacks: Boolean = true): Collection<MarkdownController> {
         @Suppress("UNCHECKED_CAST")
-        return (javaClass.getDeclaredField("controllers").let {
+        val controllers = (javaClass.getDeclaredField("controllers").let {
             it.isAccessible = true
             return@let it.get(this);
         } as Collection<MarkdownController>)
-            .filter { it !is AbstractFormattingCallback }
+        return if (filterFormattingCallbacks) controllers
+            .filter { it !is AbstractFormattingCallback } else controllers
     }
 
     private fun createControllerMock(): MarkdownController {
-        val mock = mockk<MarkdownToolbarController>()
-        every { mock.setEditor(any(MarkwonMarkdownEditor::class)) } returns Unit
-        return mock
+        return mockk<MarkdownToolbarController> {
+            every { setCommandReceiver(any(MarkwonMarkdownEditor::class)) } returns Unit
+        }
+    }
+
+    private fun createEditorStateNotifierMock(): EditorStateNotifier {
+        return mockk<EditorStateNotifier> {
+            every {
+                notify(
+                    any(Context::class),
+                    any(),
+                    any(),
+                    any(Spannable::class),
+                    any(),
+                    any()
+                )
+            } returns CompletableFuture.completedFuture(null)
+            every {
+                forceNotify(
+                    any(Context::class),
+                    any(EditorStateListener::class),
+                    any(Boolean::class),
+                    any(),
+                    any(Spannable::class),
+                    any(),
+                    any()
+                )
+            } returns CompletableFuture.completedFuture(null)
+        }
     }
 
     @Before
     fun setup() {
-        editor = MarkwonMarkdownEditor(ApplicationProvider.getApplicationContext())
-        assertEquals(0, editor.getControllers().size)
-        controllerMock = createControllerMock()
+        editorStateNotifierMock = createEditorStateNotifierMock()
+        editor = spyk(
+            MarkwonMarkdownEditor(
+                ApplicationProvider.getApplicationContext(),
+                null,
+                android.R.attr.editTextStyle
+            ) {
+                editorStateNotifierMock
+            })
+        editor.setMarkdownString("foo")
         clearAllMocks(answers = false)
     }
 
     @Test
-    fun `registerController - A to ()`() {
-        editor.registerController(controllerMock)
+    fun `should forced notify recently registered controllers`() {
+        val controllerMock = createControllerMock()
+        val notified = editor.registerController(controllerMock)
 
+        assertTrue(notified.isDone)
         assertEquals(1, editor.getControllers().size)
         assertTrue(editor.getControllers().contains(controllerMock))
-        verify(exactly = 1) { controllerMock.setEditor(any()) }
-        verify(exactly = 1) { editor.registerController(any()) }
-        verify(exactly = 0) { editor.unregisterController(any()) }
+
+        verify(exactly = 1) {
+            editorStateNotifierMock.forceNotify(
+                any(Context::class),
+                any(EditorStateListener::class),
+                any(Boolean::class),
+                any(),
+                any(Spannable::class),
+                any(),
+                any()
+            )
+        }
     }
-//
+
 //    @Test
-//    fun `registerController - A to (A)`() {
-//    }
+//    fun `should notify all registered controllers on selection changed`() {
+//        val controllerMock = createControllerMock()
+//        val notified = editor.registerController(controllerMock)
 //
-//    @Test
-//    fun `registerController - A to (B)`() {
-//    }
+//        assertTrue(notified.isDone)
+//        assertEquals(1, editor.getControllers().size)
+//        assertTrue(editor.getControllers().contains(controllerMock))
 //
-//    @Test
-//    fun `registerController - A to (A, B)`() {
-//    }
+////        editor.setSelection(0)
+////        editor.setSelection(1)
+////        editor.setSelection(2)
 //
-//    @Test
-//    fun `unregisterController - A from ()`() {
-//    }
-//
-//    @Test
-//    fun `unregisterController - A from (A)`() {
-//    }
-//
-//    @Test
-//    fun `unregisterController - A from (B)`() {
-//    }
-//
-//    @Test
-//    fun `unregisterController - A from (A, B)`() {
+//        verify(exactly = 1) {
+//            editorStateNotifierMock.notify(
+//                any(Context::class),
+//                any(Boolean::class),
+//                any(),
+//                any(Spannable::class),
+//                any(),
+//                any()
+//            )
+//        }
 //    }
 }

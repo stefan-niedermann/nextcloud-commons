@@ -10,11 +10,11 @@ import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.button.MaterialButton
 import com.nextcloud.android.sso.AccountImporter
 import com.nextcloud.android.sso.helper.SingleAccountHelper
-import it.niedermann.android.markdown.MarkdownController
 import it.niedermann.android.markdown.MarkdownEditor
 import it.niedermann.android.markdown.MarkdownEditorImpl
 import it.niedermann.android.markdown.MarkdownViewerImpl
-import it.niedermann.android.markdown.controller.EditorControllerConnector
+import it.niedermann.android.markdown.controller.ControllerConnector
+import it.niedermann.android.markdown.controller.MarkdownController
 import it.niedermann.nextcloud.exception.getDebugInfos
 
 class MainActivity : AppCompatActivity() {
@@ -43,7 +43,8 @@ class MainActivity : AppCompatActivity() {
 
         sampleException.text = getDebugInfos(this, RuntimeException())
 
-        EditorControllerConnector(markdownEditor, toolbar)
+        ControllerConnector.connect(this, markdownEditor, toolbar)
+
         markdownEditor.setMarkdownStringChangedListener { str ->
             markdownViewer.setMarkdownString(str)
         }

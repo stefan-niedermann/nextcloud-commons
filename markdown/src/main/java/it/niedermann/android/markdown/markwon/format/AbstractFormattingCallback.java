@@ -15,18 +15,18 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
-import it.niedermann.android.markdown.MarkdownController;
 import it.niedermann.android.markdown.controller.Command;
+import it.niedermann.android.markdown.controller.CommandReceiver;
 import it.niedermann.android.markdown.controller.CommandState;
 import it.niedermann.android.markdown.controller.EditorState;
-import it.niedermann.android.markdown.markwon.MarkwonMarkdownEditor;
+import it.niedermann.android.markdown.controller.MarkdownController;
 
 public abstract class AbstractFormattingCallback implements ActionMode.Callback, MarkdownController {
 
     @NonNull
     protected final Map<Integer, Command> commandMap;
     @Nullable
-    protected MarkwonMarkdownEditor editor;
+    protected CommandReceiver commandReceiver;
     @Nullable
     private EditorState state;
     @MenuRes
@@ -39,17 +39,9 @@ public abstract class AbstractFormattingCallback implements ActionMode.Callback,
     }
 
     @Override
-    public void setEditor(@Nullable MarkwonMarkdownEditor editor) {
-        if (this.editor == null && editor != null) {
-            this.editor = editor;
-            this.editor.registerController(this);
-        } else if (this.editor != editor) {
-            this.editor.unregisterController(this);
-            this.editor = editor;
-            if (this.editor != null) {
-                this.editor.registerController(this);
-            }
-        }
+    public void setCommandReceiver(@Nullable CommandReceiver commandReceiver) {
+        this.commandReceiver = commandReceiver;
+        this.state = null;
     }
 
     @Override
@@ -77,6 +69,7 @@ public abstract class AbstractFormattingCallback implements ActionMode.Callback,
                 () -> menu.findItem(itemId).setVisible(false));
     }
 
+    @NonNull
     protected Optional<CommandState> getCommandState(@NonNull Command command) {
         if (state == null) {
             return Optional.empty();
@@ -87,7 +80,7 @@ public abstract class AbstractFormattingCallback implements ActionMode.Callback,
     @CallSuper
     @Override
     public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
-        if (editor == null) {
+        if (commandReceiver == null) {
             return false;
         }
 
@@ -95,7 +88,7 @@ public abstract class AbstractFormattingCallback implements ActionMode.Callback,
         final var command = Optional.ofNullable(commandMap.get(itemId));
 
         if (command.isPresent()) {
-            editor.executeCommand(command.get());
+            commandReceiver.executeCommand(command.get());
             return true;
         }
 
@@ -104,6 +97,6 @@ public abstract class AbstractFormattingCallback implements ActionMode.Callback,
 
     @Override
     public void onDestroyActionMode(ActionMode mode) {
-        // Nothing to do here...
+        // Nothing to do here…
     }
 }

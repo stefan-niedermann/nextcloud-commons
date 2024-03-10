@@ -9,16 +9,16 @@ import androidx.annotation.AnyThread;
 import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.WorkerThread;
+import androidx.annotation.VisibleForTesting;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -37,63 +37,71 @@ public class EditorStateNotifier {
     private final Supplier<ExecutorService> executorFactory;
     @NonNull
     private final Function<Integer, ExecutorService> commandStateBuilderExecutorFactory;
+    @NonNull
+    private final EditorState.Factory editorStateFactory;
     @Nullable
     private EditorState lastNotifiedState;
 
     public EditorStateNotifier(@NonNull Collection<? extends EditorStateListener> listeners) {
-        this(listeners, Executors::newSingleThreadExecutor, Executors::newFixedThreadPool,
-                new ThreadPoolExecutor(Command.values().length + 1, Integer.MAX_VALUE, 5L, TimeUnit.SECONDS, new SynchronousQueue<>()));
+        this(
+                listeners,
+                Executors::newSingleThreadExecutor,
+                Executors::newFixedThreadPool,
+                new ThreadPoolExecutor(Command.values().length + 1, Integer.MAX_VALUE, 5L, TimeUnit.SECONDS, new SynchronousQueue<>()),
+                new EditorState.Factory()
+        );
     }
 
-    private EditorStateNotifier(@NonNull Collection<? extends EditorStateListener> listeners,
-                                @NonNull Supplier<ExecutorService> executorFactory,
-                                @NonNull Function<Integer, ExecutorService> commandStateBuilderExecutorFactory,
-                                @NonNull ExecutorService firstNotifyExecutorService
+    @VisibleForTesting
+    protected EditorStateNotifier(@NonNull Collection<? extends EditorStateListener> listeners,
+                               @NonNull Supplier<ExecutorService> executorFactory,
+                               @NonNull Function<Integer, ExecutorService> commandStateBuilderExecutorFactory,
+                               @NonNull ExecutorService firstNotifyExecutorService,
+                               @NonNull EditorState.Factory editorStateFactory
     ) {
         this.listeners = listeners;
         this.executorFactory = executorFactory;
         this.commandStateBuilderExecutorFactory = commandStateBuilderExecutorFactory;
         this.firstNotifyExecutorService = firstNotifyExecutorService;
+        this.editorStateFactory = editorStateFactory;
     }
 
     @AnyThread
-    public void initiallyNotify(@NonNull Context context,
-                                @NonNull EditorStateListener listener,
-                                boolean editorIsEnabled,
-                                @ColorInt int color,
-                                @NonNull Spannable content,
-                                int selectionStart,
-                                int selectionEnd) {
+    public Future<Void> forceNotify(@NonNull Context context,
+                                    @NonNull EditorStateListener listener,
+                                    boolean editorIsEnabled,
+                                    @ColorInt int color,
+                                    @NonNull Spannable content,
+                                    int selectionStart,
+                                    int selectionEnd) {
 
-        firstNotifyExecutorService.submit(() -> {
-            final EditorState state;
-            try {
-                state = build(context,
-                        firstNotifyExecutorService,
-                        editorIsEnabled,
-                        color,
-                        content,
-                        selectionStart,
-                        selectionEnd);
+        // FIXME This way a race condition with notify is possible
+        return firstNotifyExecutorService.submit(() -> {
+            final var state = editorStateFactory.build(context,
+                    firstNotifyExecutorService,
+                    editorIsEnabled,
+                    color,
+                    content,
+                    selectionStart,
+                    selectionEnd);
 
-                listener.onEditorStateChanged(state);
-                lastNotifiedState = state;
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
+            listener.onEditorStateChanged(state);
+            lastNotifiedState = state;
+
+            return null;
         });
     }
 
     @AnyThread
-    public void notify(@NonNull Context context,
-                       boolean editorIsEnabled,
-                       @ColorInt int color,
-                       @NonNull Spannable content,
-                       int selectionStart,
-                       int selectionEnd) {
+    public Future<Void> notify(@NonNull Context context,
+                               boolean editorIsEnabled,
+                               @ColorInt int color,
+                               @NonNull Spannable content,
+                               int selectionStart,
+                               int selectionEnd) {
         listeners.removeIf(Objects::isNull);
         if (listeners.isEmpty()) {
-            return;
+            return CompletableFuture.completedFuture(null);
         }
 
         final var executor = executorFactory.get();
@@ -107,17 +115,18 @@ public class EditorStateNotifier {
             executors.addAll(List.of(executor, commandExecutor));
         }
 
-        executor.submit(() -> {
+        return executor.submit(() -> {
             try {
-                final var state = build(context,
+                final var state = editorStateFactory.build(context,
                         commandExecutor,
                         editorIsEnabled,
                         color,
                         content,
                         selectionStart,
                         selectionEnd);
+
                 if (Objects.equals(state, lastNotifiedState)) {
-                    return;
+                    return null;
                 }
 
                 listeners.forEach(listener -> {
@@ -126,44 +135,13 @@ public class EditorStateNotifier {
                         lastNotifiedState = state;
                     }
                 });
-            } catch (InterruptedException ignored) {
+
             } finally {
                 executor.shutdown();
                 commandExecutor.shutdown();
             }
+
+            return null;
         });
-    }
-
-    @WorkerThread
-    @NonNull
-    public EditorState build(@NonNull Context context,
-                             @NonNull ExecutorService executor,
-                             boolean editorIsEnabled,
-                             @ColorInt int color,
-                             @NonNull Spannable content,
-                             int selectionStart,
-                             int selectionEnd) throws InterruptedException {
-
-        final int commandCount = Command.values().length;
-        final var latch = new CountDownLatch(commandCount);
-        final var commandStates = new HashMap<Command, CommandState>(commandCount);
-
-        for (final var command : Command.values()) {
-            executor.submit(() -> {
-                try {
-                    final var state = new CommandState(
-                            editorIsEnabled && command.isEnabled(context, content, selectionStart, selectionEnd),
-                            command.isActive(context, content, selectionStart, selectionEnd)
-                    );
-
-                    commandStates.put(command, state);
-                } finally {
-                    latch.countDown();
-                }
-            });
-        }
-
-        latch.await();
-        return new EditorState(commandStates, color);
     }
 }

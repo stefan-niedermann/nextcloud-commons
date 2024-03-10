@@ -1,4 +1,4 @@
-package it.niedermann.android.markdown;
+package it.niedermann.android.markdown.controller;
 
 import android.content.Context;
 import android.content.res.ColorStateList;
@@ -9,15 +9,16 @@ import android.view.MenuItem;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RestrictTo;
 import androidx.appcompat.widget.Toolbar;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-import it.niedermann.android.markdown.controller.Command;
-import it.niedermann.android.markdown.controller.EditorState;
-import it.niedermann.android.markdown.controller.EditorStateListener;
+import it.niedermann.android.markdown.MarkdownEditorImpl;
+import it.niedermann.android.markdown.R;
+import it.niedermann.android.markdown.ThemeUtils;
 import it.niedermann.android.markdown.markwon.MarkwonMarkdownEditor;
 
 /**
@@ -37,7 +38,7 @@ public class MarkdownToolbarController extends Toolbar implements MarkdownContro
 
     private static final String TAG = MarkdownToolbarController.class.getSimpleName();
     @Nullable
-    private MarkwonMarkdownEditor editor;
+    private CommandReceiver commandReceiver;
     @NonNull
     private final Map<Integer, Command> commandMap = new HashMap<>();
     @Nullable
@@ -68,8 +69,10 @@ public class MarkdownToolbarController extends Toolbar implements MarkdownContro
     }
 
     @Override
-    public void setEditor(@Nullable MarkwonMarkdownEditor editor) {
-        this.editor = editor;
+    @RestrictTo(RestrictTo.Scope.LIBRARY)
+    public void setCommandReceiver(@Nullable CommandReceiver commandReceiver) {
+        this.commandReceiver = commandReceiver;
+        this.state = null;
     }
 
     /**
@@ -110,7 +113,7 @@ public class MarkdownToolbarController extends Toolbar implements MarkdownContro
 
     @Override
     public boolean onMenuItemClick(MenuItem item) {
-        if (editor == null) {
+        if (commandReceiver == null) {
             Log.v(TAG, MarkwonMarkdownEditor.class.getSimpleName() + " must be set before clicking on menu items is possible");
             return false;
         }
@@ -140,7 +143,7 @@ public class MarkdownToolbarController extends Toolbar implements MarkdownContro
         }
 
         try {
-            editor.executeCommand(command.get());
+            commandReceiver.executeCommand(command.get());
             return true;
         } catch (UnsupportedOperationException e) {
             e.printStackTrace();

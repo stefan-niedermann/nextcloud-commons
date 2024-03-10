@@ -1,6 +1,5 @@
-package it.niedermann.android.markdown.markwon.controller.applier
+package it.niedermann.android.markdown.controller.applier
 
-import it.niedermann.android.markdown.controller.applier.ToggleCheckboxCa
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 
