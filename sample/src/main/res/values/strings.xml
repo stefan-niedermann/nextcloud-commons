@@ -8,4 +8,5 @@
     <string name="markdown_content">\@stefan **strong**, @ste @stefan @artur @stefan@artur *emphasised*, ~~strike~~ and again and again and again @artur</string>
     <string name="tbd">To be done</string>
     <string name="sign_on">Sign on</string>
+    <string name="bold">Bold</string>
 </resources>

@@ -13,6 +13,8 @@ import com.nextcloud.android.sso.helper.SingleAccountHelper
 import it.niedermann.android.markdown.MarkdownEditor
 import it.niedermann.android.markdown.MarkdownEditorImpl
 import it.niedermann.android.markdown.MarkdownViewerImpl
+import it.niedermann.android.markdown.controller.ControllerConnector
+import it.niedermann.android.markdown.controller.MarkdownController
 import it.niedermann.nextcloud.exception.getDebugInfos
 
 class MainActivity : AppCompatActivity() {
@@ -20,9 +22,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var signOn: Button
     private lateinit var currentUser: TextView
     private lateinit var sampleException: TextView
-    private lateinit var markdownEditor: MarkdownEditor
+    private lateinit var toolbar: MarkdownController
+    private lateinit var markdownEditor: MarkdownEditorImpl
     private lateinit var markdownViewer: MarkdownEditor
-    private var mentions = mutableMapOf<String, String>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,7 +33,8 @@ class MainActivity : AppCompatActivity() {
         signOn = findViewById<MaterialButton>(R.id.signOn)
         currentUser = findViewById(R.id.currentUser)
         sampleException = findViewById(R.id.sampleException)
-        markdownEditor = findViewById<MarkdownEditorImpl>(R.id.markdown_editor)
+        toolbar = findViewById(R.id.toolbar)
+        markdownEditor = findViewById(R.id.markdown_editor)
         markdownViewer = findViewById<MarkdownViewerImpl>(R.id.markdown_viewer)
 
         signOn.setOnClickListener {
@@ -39,6 +42,8 @@ class MainActivity : AppCompatActivity() {
         }
 
         sampleException.text = getDebugInfos(this, RuntimeException())
+
+        ControllerConnector.connect(this, markdownEditor, toolbar)
 
         markdownEditor.setMarkdownStringChangedListener { str ->
             markdownViewer.setMarkdownString(str)

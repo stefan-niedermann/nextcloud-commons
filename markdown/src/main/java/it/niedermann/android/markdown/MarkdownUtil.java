@@ -239,6 +239,31 @@ public class MarkdownUtil {
         return lineStartsWithCheckbox(line) && line.trim().length() > EListType.DASH.checkboxChecked.length();
     }
 
+    public static String getLine(@NonNull CharSequence s, int cursorPosition) {
+        final int startOfLine = getStartOfLine(s, cursorPosition);
+        final int endOfLine = getEndOfLine(s, startOfLine);
+        return s.subSequence(startOfLine, endOfLine).toString();
+    }
+
+    public static boolean isMultilineSelection(@NonNull Spannable content, int selectionStart, int selectionEnd) {
+        if (selectionStart > content.length()) {
+            throw new IndexOutOfBoundsException("selection start was " + selectionStart + " but content length was only " + content.length());
+        }
+
+        if (selectionEnd > content.length()) {
+            throw new IndexOutOfBoundsException("selection end was " + selectionEnd + " but content length was only " + content.length());
+        }
+
+        if (selectionStart > selectionEnd) {
+            throw new IllegalArgumentException("selection end must be greater or equal to selection start");
+        }
+        return content.subSequence(selectionStart, selectionEnd).toString().contains("\n");
+    }
+
+    public static boolean isSinglelineSelection(@NonNull Spannable content, int selectionStart, int selectionEnd) {
+        return !isMultilineSelection(content, selectionStart, selectionEnd);
+    }
+
     public static int getStartOfLine(@NonNull CharSequence s, int cursorPosition) {
         int startOfLine = cursorPosition;
         while (startOfLine > 0 && s.charAt(startOfLine - 1) != '\n') {
@@ -310,6 +335,20 @@ public class MarkdownUtil {
             }
         }
         return TextUtils.join("\n", lines);
+    }
+
+    public static Optional<EListType> lineStartsWithList(@NonNull String line) {
+        for (EListType listType : EListType.values()) {
+            if (lineStartsWithList(line, listType)) {
+                return Optional.of(listType);
+            }
+        }
+        return Optional.empty();
+    }
+
+    public static boolean lineStartsWithList(@NonNull String line, @NonNull EListType listType) {
+        final String trimmedLine = line.trim();
+        return (trimmedLine.startsWith(listType.listSymbolWithTrailingSpace));
     }
 
     public static boolean lineStartsWithCheckbox(@NonNull String line) {
