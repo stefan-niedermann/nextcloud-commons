@@ -6,27 +6,29 @@ import android.graphics.drawable.Drawable
 import com.nextcloud.android.common.ui.theme.MaterialSchemes
 import com.nextcloud.android.common.ui.theme.MaterialSchemes.Companion.fromColor
 import com.nextcloud.android.common.ui.theme.ViewThemeUtilsBase
+import dynamiccolor.MaterialDynamicColors
 
 class ThemeUtils(schemes: MaterialSchemes) : ViewThemeUtilsBase(schemes) {
+    private val dynamicColor = MaterialDynamicColors()
 
     fun getPrimary(context: Context): Int {
-        return withScheme(context) { scheme -> scheme.primary }
+        return withScheme(context) { scheme -> dynamicColor.primary().getArgb(scheme) }
     }
 
     fun getOnPrimary(context: Context): Int {
-        return withScheme(context) { scheme -> scheme.onPrimary }
+        return withScheme(context) { scheme -> dynamicColor.onPrimary().getArgb(scheme) }
     }
 
     fun getSecondary(context: Context): Int {
-        return withScheme(context) { scheme -> scheme.secondary }
+        return withScheme(context) { scheme -> dynamicColor.secondary().getArgb(scheme) }
     }
 
     fun getOnSecondary(context: Context): Int {
-        return withScheme(context) { scheme -> scheme.onSecondary }
+        return withScheme(context) { scheme -> dynamicColor.onSecondary().getArgb(scheme) }
     }
 
     fun getOnSurfaceVariant(context: Context): Int {
-        return withScheme(context) { scheme -> scheme.onSurfaceVariant }
+        return withScheme(context) { scheme -> dynamicColor.onSurfaceVariant().getArgb(scheme) }
     }
 
     fun tintDrawable(
@@ -34,7 +36,7 @@ class ThemeUtils(schemes: MaterialSchemes) : ViewThemeUtilsBase(schemes) {
         drawable: Drawable
     ): Drawable {
         return withScheme(context) { scheme ->
-            drawable.setTintList(ColorStateList.valueOf(scheme.onSurfaceVariant))
+            drawable.setTintList(ColorStateList.valueOf(dynamicColor.onSurfaceVariant().getArgb(scheme)))
             drawable
         }
     }
@@ -47,5 +49,4 @@ class ThemeUtils(schemes: MaterialSchemes) : ViewThemeUtilsBase(schemes) {
             }
         }
     }
-
 }
