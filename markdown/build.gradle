@@ -50,7 +50,7 @@ dependencies {
     implementation project(':ocs')
 
     api "com.github.nextcloud:Android-SingleSignOn:$sso_version"
-    implementation 'com.github.nextcloud:android-common:0.20.0'
+    implementation 'com.github.nextcloud:android-common:0.21.0'
     implementation 'com.github.stefan-niedermann:android-commons:1.0.0'
 
     implementation 'androidx.appcompat:appcompat:1.6.1'

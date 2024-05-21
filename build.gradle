@@ -4,7 +4,7 @@ buildscript {
     ext.version_code = 2002000
     ext.version_name = '2.2.0'
     ext.kotlin_version = '1.9.24'
-    ext.sso_version = '1.1.0'
+    ext.sso_version = '1.2.0'
 
     repositories {
         google()
@@ -12,7 +12,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.4.0'
+        classpath 'com.android.tools.build:gradle:8.4.1'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }
