@@ -62,7 +62,7 @@ dependencies {
     api "com.github.nextcloud:Android-SingleSignOn:$sso_version"
     implementation 'com.squareup.retrofit2:retrofit:2.11.0'
 
-    testImplementation 'androidx.test:core:1.6.0'
+    testImplementation 'androidx.test:core:1.6.1'
     testImplementation "io.mockk:mockk:1.13.11"
     testImplementation 'junit:junit:4.13.2'
 }
