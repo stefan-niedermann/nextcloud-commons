@@ -54,7 +54,7 @@ dependencies {
     implementation 'com.github.stefan-niedermann:android-commons:1.0.0'
 
     implementation 'androidx.appcompat:appcompat:1.7.0'
-    implementation 'androidx.lifecycle:lifecycle-livedata:2.8.2'
+    implementation 'androidx.lifecycle:lifecycle-livedata:2.8.3'
 
     implementation 'org.jsoup:jsoup:1.17.2'
 
