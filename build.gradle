@@ -3,7 +3,7 @@
 buildscript {
     ext.version_code = 2003000
     ext.version_name = '2.3.0'
-    ext.kotlin_version = '2.0.0'
+    ext.kotlin_version = '2.0.10'
     ext.sso_version = '1.2.0'
 
     repositories {
