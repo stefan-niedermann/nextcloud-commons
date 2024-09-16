@@ -47,10 +47,10 @@ public class ToggleCheckboxCa implements CommandApplier {
             newSelection = selectionEnd + previousLineListType.checkboxUncheckedWithTrailingSpace.length();
         } else {
             if (startOfLine + listType.checkboxUncheckedWithTrailingSpace.length() > endOfLine) {
-                content.replace(startOfLine, listType.checkboxUnchecked.length(), "");
+                content.replace(startOfLine, startOfLine + listType.checkboxUnchecked.length(), "");
                 newSelection = selectionEnd - listType.checkboxUnchecked.length();
             } else {
-                content.replace(startOfLine, listType.checkboxUncheckedWithTrailingSpace.length(), "");
+                content.replace(startOfLine, startOfLine + listType.checkboxUncheckedWithTrailingSpace.length(), "");
                 newSelection = selectionEnd - listType.checkboxUncheckedWithTrailingSpace.length();
             }
         }
