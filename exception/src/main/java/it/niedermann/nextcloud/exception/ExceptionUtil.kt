@@ -7,8 +7,8 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
 import android.text.TextUtils
+import com.nextcloud.android.sso.FilesAppTypeRegistry
 import com.nextcloud.android.sso.helper.VersionCheckHelper
-import com.nextcloud.android.sso.model.FilesAppType
 import java.io.PrintWriter
 import java.io.StringWriter
 
@@ -98,7 +98,7 @@ private fun getAppVersions(context: Context, flavor: String?, serverAppVersion: 
             "App Flavor: $flavor\n"
         }
     }
-    val types = FilesAppType.entries
+    val types = FilesAppTypeRegistry.getInstance().types
     types.forEach {
         try {
             versions += "\nFiles App Version Code: ${

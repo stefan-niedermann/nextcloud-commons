@@ -36,11 +36,11 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
-
-    lintOptions {
-        disable 'MissingTranslation'
+    lint {
         abortOnError false
+        disable 'MissingTranslation'
     }
+
 }
 
 afterEvaluate {
@@ -59,7 +59,7 @@ afterEvaluate {
 dependencies {
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.2'
 
-    api "com.github.nextcloud:Android-SingleSignOn:$sso_version"
+    api "com.github.nextcloud:Android-SingleSignOn:$version_sso"
 
     testImplementation 'androidx.test:core:1.6.1'
     testImplementation "io.mockk:mockk:1.13.12"
