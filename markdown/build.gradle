@@ -49,7 +49,7 @@ dependencies {
 
     implementation project(':ocs')
 
-    api "com.github.nextcloud:Android-SingleSignOn:$version_sso"
+    implementation "com.github.nextcloud:Android-SingleSignOn:$version_sso"
     implementation 'com.github.nextcloud:android-common:0.23.1'
     implementation "com.github.stefan-niedermann:android-commons:$version_android_commons"
 
