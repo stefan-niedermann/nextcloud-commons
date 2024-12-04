@@ -4,13 +4,13 @@ plugins {
 }
 
 android {
-    compileSdk 34
+    compileSdk 35
     namespace 'it.niedermann.nextcloud.sample'
 
     defaultConfig {
         applicationId "it.niedermann.nextcloud.sample"
         minSdk 24
-        targetSdk 34
+        targetSdk 35
         versionCode version_code
         versionName version_name
 
@@ -41,16 +41,18 @@ android {
 }
 
 dependencies {
-    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.2'
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.3'
 
     implementation project(path: ':exception')
     implementation project(path: ':markdown')
     implementation project(path: ':sso-glide')
 
-    implementation 'androidx.core:core-ktx:1.13.1'
+    implementation "com.github.nextcloud:Android-SingleSignOn:$version_sso"
+
+    implementation 'androidx.core:core-ktx:1.15.0'
     implementation 'androidx.appcompat:appcompat:1.7.0'
     implementation 'com.google.android.material:material:1.12.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation 'androidx.constraintlayout:constraintlayout:2.2.0'
 
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.2.1'
