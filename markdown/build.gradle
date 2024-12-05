@@ -77,7 +77,7 @@ dependencies {
         exclude group: 'org.jetbrains', module: 'annotations-java5'
     }
     annotationProcessor 'io.noties:prism4j-bundler:2.0.0'
-    implementation 'org.jetbrains:annotations:25.0.0'
+    implementation 'org.jetbrains:annotations:26.0.1'
 
     implementation 'com.squareup.retrofit2:retrofit:2.11.0'
 
