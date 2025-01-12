@@ -131,6 +131,9 @@ public class MarkwonMarkdownViewer extends AppCompatTextView implements Markdown
                     }
 
                     unrenderedText$.setValue(MarkdownUtil.setCheckboxStatus(oldUnrenderedText.toString(), toggledCheckboxPosition, newCheckedState));
+                    if (listener != null) {
+                        listener.accept(unrenderedText$.getValue());
+                    }
 
                     // https://stackoverflow.com/q/14785848
                     if (isTextSelectable()) {
@@ -185,7 +188,7 @@ public class MarkwonMarkdownViewer extends AppCompatTextView implements Markdown
         final var previousText = this.unrenderedText$.getValue();
         this.unrenderedText$.setValue(text);
         if (listener != null) {
-            listener.accept(text);
+            listener.accept(unrenderedText$.getValue());
         }
         if (TextUtils.isEmpty(text)) {
             setText(text);

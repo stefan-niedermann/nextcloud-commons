@@ -212,7 +212,7 @@ public class MarkwonMarkdownEditor extends AppCompatEditText implements Markdown
     public void setMarkdownStringModel(CharSequence text) {
         unrenderedText$.setValue(text == null ? "" : text.toString());
         if (listener != null) {
-            listener.accept(text);
+            listener.accept(unrenderedText$.getValue());
         }
     }
 
