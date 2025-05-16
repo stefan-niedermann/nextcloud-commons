@@ -60,7 +60,7 @@ afterEvaluate {
 dependencies {
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.5'
 
-    implementation "com.github.nextcloud:Android-SingleSignOn:$version_sso"
+    api "com.github.nextcloud:Android-SingleSignOn:$version_sso"
 
     implementation project(':sso-url-helper')
 
