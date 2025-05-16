@@ -79,7 +79,7 @@ dependencies {
     annotationProcessor 'io.noties:prism4j-bundler:2.0.0'
     implementation 'org.jetbrains:annotations:26.0.2'
 
-    implementation 'com.squareup.retrofit2:retrofit:2.11.0'
+    implementation 'com.squareup.retrofit2:retrofit:3.0.0'
 
     testImplementation 'androidx.test:core:1.6.1'
     testImplementation 'androidx.arch.core:core-testing:2.2.0'
