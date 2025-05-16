@@ -106,7 +106,7 @@ private fun getAppVersions(context: Context, flavor: String?, serverAppVersion: 
                     context,
                     it
                 )
-            } (${it})"
+            } (${it.type.name})"
         } catch (e: PackageManager.NameNotFoundException) {
             // Ignored
         }
@@ -122,8 +122,8 @@ Device: ${Build.DEVICE}
 Manufacturer: ${Build.MANUFACTURER}
 Model (and Product): ${Build.MODEL} (${Build.PRODUCT})"""
 
-private fun getStacktraceOf(e: Throwable): String {
+private fun getStacktraceOf(e: Throwable?): String {
     val sw = StringWriter()
-    e.printStackTrace(PrintWriter(sw))
+    e?.printStackTrace(PrintWriter(sw))
     return sw.toString()
 }
