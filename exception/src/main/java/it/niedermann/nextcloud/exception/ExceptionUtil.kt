@@ -12,34 +12,34 @@ import com.nextcloud.android.sso.helper.VersionCheckHelper
 import java.io.PrintWriter
 import java.io.StringWriter
 
-fun getDebugInfos(context: Context, throwable: Throwable): String {
+fun getDebugInfos(context: Context, throwable: Throwable?): String {
     return getDebugInfos(context, throwable, null, null)
 }
 
-fun getDebugInfos(context: Context, throwable: Throwable, flavor: String?): String {
+fun getDebugInfos(context: Context, throwable: Throwable?, flavor: String?): String {
     return getDebugInfos(context, throwable, flavor, null)
 }
 
 fun getDebugInfos(
     context: Context,
-    throwable: Throwable,
+    throwable: Throwable?,
     flavor: String?,
     serverAppVersion: String?
 ): String {
     return getDebugInfos(context, setOf(throwable), flavor, serverAppVersion)
 }
 
-fun getDebugInfos(context: Context, throwables: Collection<Throwable>): String {
+fun getDebugInfos(context: Context, throwables: Collection<Throwable?>): String {
     return getDebugInfos(context, throwables, null, null)
 }
 
-fun getDebugInfos(context: Context, throwables: Collection<Throwable>, flavor: String?): String {
+fun getDebugInfos(context: Context, throwables: Collection<Throwable?>, flavor: String?): String {
     return getDebugInfos(context, throwables, flavor, null)
 }
 
 fun getDebugInfos(
     context: Context,
-    throwables: Collection<Throwable>,
+    throwables: Collection<Throwable?>,
     flavor: String?,
     serverAppVersion: String?
 ): String {
@@ -48,7 +48,7 @@ fun getDebugInfos(
         .append("\n\n---\n")
         .append(deviceInfos)
         .append("\n\n---")
-    for (throwable in throwables) {
+    for (throwable in throwables.filterNotNull()) {
         debugInfos.append("\n\n").append(getStacktraceOf(throwable))
     }
     return debugInfos.toString()
