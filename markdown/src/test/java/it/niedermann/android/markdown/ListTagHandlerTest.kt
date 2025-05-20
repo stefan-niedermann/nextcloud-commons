@@ -28,7 +28,7 @@ class ListTagHandlerTest : TestCase() {
     @Test
     fun `should handle tag`() {
         val handler = ListTagHandler()
-        assertEquals("\n• Item ", HtmlCompat.fromHtml(ListTagHandler.prepareTagHandling("<ul><li>Item</li></ul>"), 0, null, handler).toString())
+        assertEquals("\n• Item ", HtmlCompat.fromHtml(ListTagHandler.prepareTagHandling("<ul><li>Item</ul>"), 0, null, handler).toString())
         val lines = HtmlCompat.fromHtml(ListTagHandler.prepareTagHandling(SAMPLE_HTML_WIDGET_TEST), 0, null, handler).toString().split("\n").toTypedArray()
         assertEquals("Widget-Test", lines[0])
         assertEquals("", lines[1])
@@ -40,15 +40,15 @@ class ListTagHandlerTest : TestCase() {
         assertEquals("1. Item ", lines[7])
         assertEquals("\t\t1. Subitem ", lines[8])
         assertEquals("\t\t2. Subitem ", lines[9])
-        assertEquals("\t\t\t\t• Subi ", lines[10])
+        assertEquals("\t\t\t\t• Subi", lines[10])
         assertEquals("\t\t\t\t• Subi ", lines[11])
         assertEquals("\t\t3. Test ", lines[12])
-        assertEquals("2. Item ", lines[13])
+        assertEquals("2. Item", lines[13])
         assertEquals("3. Item ", lines[14])
-        assertEquals("• Unordered ", lines[15])
+        assertEquals("• Unordered", lines[15])
         assertEquals("• Unordered ", lines[16])
         assertEquals("", lines[17])
-        assertEquals("☐ Unchecked", lines[18])
+        assertEquals("☐ Unchecked ", lines[18])
         assertEquals("☒ Checked", lines[19])
         HtmlCompat.fromHtml(ListTagHandler.prepareTagHandling(SAMPLE_HTML_MARKDOWN_SYNTAX), 0, null, handler)
     }

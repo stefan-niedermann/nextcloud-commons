@@ -8,7 +8,6 @@ import androidx.annotation.NonNull;
 import androidx.core.text.HtmlCompat;
 
 import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
 import org.xml.sax.XMLReader;
 
 import java.util.Stack;
@@ -58,7 +57,7 @@ public class ListTagHandler implements Html.TagHandler {
                     for (int nestingLevel = 1; nestingLevel < parents.size(); nestingLevel++) {
                         output.append("\t\t");
                     }
-                    output.append("•");
+                    output.append("• ");
                 }
             }
         }
@@ -71,7 +70,7 @@ public class ListTagHandler implements Html.TagHandler {
      */
     @NonNull
     public static String prepareTagHandling(@NonNull String html) {
-        final Document document = Jsoup.parse(html);
+        final var document = Jsoup.parse(html);
         document.getElementsByTag("ol").tagName(X_OL);
         document.getElementsByTag("ul").tagName(X_UL);
         document.getElementsByTag("li").tagName(X_LI);
