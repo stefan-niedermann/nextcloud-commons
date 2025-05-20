@@ -45,45 +45,44 @@ afterEvaluate {
 }
 
 dependencies {
-    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.5'
+    coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:$version_desugar"
 
     implementation project(':ocs')
 
     api "com.github.nextcloud:Android-SingleSignOn:$version_sso"
-    implementation 'com.github.nextcloud:android-common:0.25.0'
+    implementation "com.github.nextcloud:android-common:$version_android_common"
     implementation "com.github.stefan-niedermann:android-commons:$version_android_commons"
 
     implementation 'androidx.appcompat:appcompat:1.7.0'
-    implementation 'androidx.lifecycle:lifecycle-livedata:2.9.0'
+    implementation "androidx.lifecycle:lifecycle-livedata-ktx:$version_lifecycle"
 
-    implementation 'org.jsoup:jsoup:1.19.1'
+    implementation "org.jsoup:jsoup:$version_jsoup"
 
-    def markwonVersion = '4.6.2'
-    implementation "io.noties.markwon:core:$markwonVersion"
-    implementation "io.noties.markwon:editor:$markwonVersion"
-    implementation "io.noties.markwon:ext-strikethrough:$markwonVersion"
-    implementation "io.noties.markwon:ext-tables:$markwonVersion"
-    implementation "io.noties.markwon:ext-tasklist:$markwonVersion"
-    implementation "io.noties.markwon:html:$markwonVersion"
-    implementation "io.noties.markwon:image:$markwonVersion"
-    implementation "io.noties.markwon:image-glide:$markwonVersion"
-    implementation "io.noties.markwon:linkify:$markwonVersion"
-    implementation "io.noties.markwon:simple-ext:$markwonVersion"
-    implementation "io.noties.markwon:inline-parser:$markwonVersion"
-    implementation("io.noties.markwon:syntax-highlight:$markwonVersion") {
+    implementation "io.noties.markwon:core:$version_markwon"
+    implementation "io.noties.markwon:editor:$version_markwon"
+    implementation "io.noties.markwon:ext-strikethrough:$version_markwon"
+    implementation "io.noties.markwon:ext-tables:$version_markwon"
+    implementation "io.noties.markwon:ext-tasklist:$version_markwon"
+    implementation "io.noties.markwon:html:$version_markwon"
+    implementation "io.noties.markwon:image:$version_markwon"
+    implementation "io.noties.markwon:image-glide:$version_markwon"
+    implementation "io.noties.markwon:linkify:$version_markwon"
+    implementation "io.noties.markwon:simple-ext:$version_markwon"
+    implementation "io.noties.markwon:inline-parser:$version_markwon"
+    implementation("io.noties.markwon:syntax-highlight:$version_markwon") {
         exclude group: 'org.jetbrains', module: 'annotations-java5'
     }
-    implementation('io.noties:prism4j:2.0.0') {
+    implementation("io.noties:prism4j:$version_prism") {
         exclude group: 'org.jetbrains', module: 'annotations-java5'
     }
-    annotationProcessor 'io.noties:prism4j-bundler:2.0.0'
-    implementation 'org.jetbrains:annotations:26.0.2'
+    annotationProcessor "io.noties:prism4j-bundler:$version_prism"
+    implementation "org.jetbrains:annotations:$version_annotations"
 
-    implementation 'com.squareup.retrofit2:retrofit:2.11.0'
+    implementation "com.squareup.retrofit2:retrofit:$version_retrofit"
 
-    testImplementation 'androidx.test:core:1.6.1'
-    testImplementation 'androidx.arch.core:core-testing:2.2.0'
-    testImplementation 'junit:junit:4.13.2'
-    testImplementation 'io.mockk:mockk:1.14.2'
-    testImplementation 'org.robolectric:robolectric:4.14.1'
+    testImplementation "androidx.test:core:$version_test_core"
+    testImplementation "androidx.arch.core:core-testing:$version_test_arch_core"
+    testImplementation "junit:junit:$version_junit"
+    testImplementation "io.mockk:mockk:$version_mockk"
+    testImplementation "org.robolectric:robolectric:$version_robolectric"
 }

@@ -58,17 +58,18 @@ afterEvaluate {
 }
 
 dependencies {
-    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.5'
+    coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:$version_desugar"
 
     api "com.github.nextcloud:Android-SingleSignOn:$version_sso"
 
     implementation project(':sso-url-helper')
 
-    implementation 'com.github.bumptech.glide:glide:4.16.0'
-    kapt 'com.github.bumptech.glide:compiler:4.16.0'
+    implementation "com.github.bumptech.glide:glide:$version_glide"
+    kapt "com.github.bumptech.glide:compiler:$version_glide"
 
-    testImplementation 'androidx.test:core:1.6.1'
-    testImplementation 'io.mockk:mockk:1.14.2'
-    testImplementation 'junit:junit:4.13.2'
-    testImplementation 'org.robolectric:robolectric:4.14.1'
+
+    testImplementation "androidx.test:core:$version_test_core"
+    testImplementation "io.mockk:mockk:$version_mockk"
+    testImplementation "junit:junit:$version_junit"
+    testImplementation "org.robolectric:robolectric:$version_robolectric"
 }

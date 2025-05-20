@@ -41,7 +41,7 @@ android {
 }
 
 dependencies {
-    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.5'
+    coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:$version_desugar"
 
     implementation project(path: ':exception')
     implementation project(path: ':markdown')
@@ -49,12 +49,8 @@ dependencies {
 
     implementation "com.github.nextcloud:Android-SingleSignOn:$version_sso"
 
-    implementation 'androidx.core:core-ktx:1.16.0'
-    implementation 'androidx.appcompat:appcompat:1.7.0'
-    implementation 'com.google.android.material:material:1.12.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.2.1'
-
-    testImplementation 'junit:junit:4.13.2'
-    androidTestImplementation 'androidx.test.ext:junit:1.2.1'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.6.1'
+    implementation "androidx.core:core-ktx:$version_core"
+    implementation "androidx.appcompat:appcompat:$version_appcompat"
+    implementation "com.google.android.material:material:$version_material"
+    implementation "androidx.constraintlayout:constraintlayout:$version_constraintlayout"
 }
