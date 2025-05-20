@@ -15,7 +15,7 @@ buildscript {
     ext.version_constraintlayout = '2.2.1'
     ext.version_annotations = '26.0.2'
     ext.version_glide = '4.16.0'
-    ext.version_retrofit = '2.11.0'
+    ext.version_retrofit = '3.0.0'
     ext.version_markwon = '4.6.2'
     ext.version_prism = '2.0.0'
     ext.version_jsoup = '1.19.1'
