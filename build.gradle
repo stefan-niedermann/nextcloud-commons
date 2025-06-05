@@ -10,7 +10,7 @@ buildscript {
     ext.version_android_common= '0.25.0'
     ext.version_android_commons = '1.1.0'
     ext.version_core = '1.16.0'
-    ext.version_appcompat = '1.7.0'
+    ext.version_appcompat = '1.7.1'
     ext.version_material = '1.12.0'
     ext.version_constraintlayout = '2.2.1'
     ext.version_annotations = '26.0.2'
