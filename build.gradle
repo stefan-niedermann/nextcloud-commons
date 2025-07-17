@@ -19,7 +19,7 @@ buildscript {
     ext.version_markwon = '4.6.2'
     ext.version_prism = '2.0.0'
     ext.version_jsoup = '1.21.1'
-    ext.version_lifecycle = '2.9.1'
+    ext.version_lifecycle = '2.9.2'
     ext.version_junit = '4.13.2'
     ext.version_mockk = '1.14.5'
     ext.version_robolectric = '4.15.1'
