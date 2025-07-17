@@ -21,7 +21,7 @@ buildscript {
     ext.version_jsoup = '1.21.1'
     ext.version_lifecycle = '2.9.1'
     ext.version_junit = '4.13.2'
-    ext.version_mockk = '1.14.4'
+    ext.version_mockk = '1.14.5'
     ext.version_robolectric = '4.15.1'
     ext.version_test_core = '1.6.1'
     ext.version_test_arch_core = '2.2.0'
