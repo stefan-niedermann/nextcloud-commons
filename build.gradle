@@ -13,7 +13,7 @@ buildscript {
     ext.version_appcompat = '1.7.1'
     ext.version_material = '1.12.0'
     ext.version_constraintlayout = '2.2.1'
-    ext.version_annotations = '26.0.2'
+    ext.version_annotations = '26.0.2-1'
     ext.version_glide = '4.16.0'
     ext.version_retrofit = '2.11.0'
     ext.version_markwon = '4.6.2'
