@@ -4,13 +4,13 @@ plugins {
 }
 
 android {
-    compileSdk 35
+    compileSdk = 36
     namespace 'it.niedermann.nextcloud.sample'
 
     defaultConfig {
         applicationId "it.niedermann.nextcloud.sample"
         minSdk 24
-        targetSdk 35
+        targetSdk = 36
         versionCode version_code
         versionName version_name
 
