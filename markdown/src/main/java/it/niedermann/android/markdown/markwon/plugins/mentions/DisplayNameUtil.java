@@ -155,7 +155,7 @@ public class DisplayNameUtil {
             if (body == null) {
                 throw new RuntimeException("Response body for " + potentialUsername + " was null.");
             } else {
-                return body.ocs.data.displayName;
+                return body.ocs().data().displayName();
             }
 
         } else {

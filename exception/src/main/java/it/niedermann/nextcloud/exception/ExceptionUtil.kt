@@ -12,6 +12,7 @@ import com.nextcloud.android.sso.FilesAppTypeRegistry
 import com.nextcloud.android.sso.helper.VersionCheckHelper
 import java.io.PrintWriter
 import java.io.StringWriter
+import java.lang.Exception
 
 fun getDebugInfos(context: Context, throwable: Throwable?): String {
     return getDebugInfos(context, throwable, null, null)
@@ -107,8 +108,8 @@ private fun getAppVersions(context: Context, flavor: String?, serverAppVersion: 
                     context,
                     it
                 )
-            } (${it.type.name})"
-        } catch (e: PackageManager.NameNotFoundException) {
+            } (${it.stage.name})"
+        } catch (e: Exception) {
             // Ignored
         }
     }
