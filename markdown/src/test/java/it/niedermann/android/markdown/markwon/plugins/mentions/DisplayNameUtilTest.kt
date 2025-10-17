@@ -18,7 +18,6 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import retrofit2.Call
 import retrofit2.Response
-import java.util.*
 
 
 @RunWith(RobolectricTestRunner::class)
@@ -128,11 +127,24 @@ class DisplayNameUtilTest : TestCase() {
                         every {
                             body()
                         } answers {
-                            val response = OcsResponse<OcsUser>()
-                            response.ocs = OcsResponse.OcsWrapper()
-                            response.ocs.data = OcsUser()
-                            response.ocs.data.displayName = actualUsers[userName]
-                            response
+                            val displayName = actualUsers[userName]
+                            val data = OcsUser(
+                                false,
+                                null,
+                                0,
+                                null,
+                                null,
+                                displayName,
+                                null,
+                                null,
+                                null,
+                                null,
+                                null,
+                                null,
+                                null
+                            )
+                            val ocs = OcsResponse.OcsWrapper(null, data)
+                            OcsResponse(ocs)
                         }
                     }
                 }

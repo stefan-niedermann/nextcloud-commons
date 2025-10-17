@@ -24,7 +24,8 @@ jobs:
       - uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
-          java-version: '17'
+          # Robolectric requires JDK 21+ for Android 36 SDK
+          java-version: '21'
           check-latest: true
           cache: 'gradle'
       - name: Unit tests
