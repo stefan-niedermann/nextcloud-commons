@@ -24,7 +24,7 @@ public class InterceptedURLSpan extends URLSpan {
     }
     @Override
     public void onClick(View widget) {
-        if (onLinkClickCallbacks.size() > 0) {
+        if (!onLinkClickCallbacks.isEmpty()) {
             executor.submit(() -> {
                 for (final var callback : onLinkClickCallbacks) {
                     try {
