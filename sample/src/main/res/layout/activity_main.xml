@@ -11,10 +11,18 @@
         android:orientation="vertical"
         tools:context=".MainActivity">
 
+        <TextView
+            style="?attr/textAppearanceHeadline4"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="@string/lib_name" />
+
         <com.google.android.material.button.MaterialButton
             android:id="@+id/signOn"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
             android:text="@string/sign_on" />
 
         <com.google.android.material.textview.MaterialTextView
@@ -22,74 +30,85 @@
             style="?attr/textAppearanceBodyMedium"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
             android:textAlignment="center"
             android:visibility="gone"
             tools:text="@tools:sample/full_names"
             tools:visibility="visible" />
 
         <com.google.android.material.textview.MaterialTextView
-            style="?attr/textAppearanceHeadlineLarge"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/headline_exception" />
-
-        <androidx.core.widget.NestedScrollView
-            android:layout_width="match_parent"
-            android:layout_height="150dp">
-
-            <com.google.android.material.textview.MaterialTextView
-                android:id="@+id/sampleException"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="?attr/colorTertiaryContainer"
-                android:fontFamily="monospace"
-                android:padding="16dp"
-                android:textColor="?attr/colorOnTertiaryContainer" />
-        </androidx.core.widget.NestedScrollView>
-
-        <com.google.android.material.textview.MaterialTextView
             style="?attr/textAppearanceHeadlineMedium"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
             android:text="@string/headline_markdown" />
 
         <com.google.android.material.textview.MaterialTextView
             style="?attr/textAppearanceHeadlineSmall"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
             android:text="@string/headline_markdown_editor" />
 
         <it.niedermann.android.markdown.controller.MarkdownToolbarController xmlns:app="http://schemas.android.com/apk/res-auto"
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
             app:menu="@menu/toolbar" />
 
         <it.niedermann.android.markdown.MarkdownEditorImpl
             android:id="@+id/markdown_editor"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:background="@null" />
 
         <com.google.android.material.textview.MaterialTextView
             style="?attr/textAppearanceHeadlineSmall"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
             android:text="@string/headline_markdown_viewer" />
 
         <it.niedermann.android.markdown.MarkdownViewerImpl
             android:id="@+id/markdown_viewer"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp" />
 
         <com.google.android.material.textview.MaterialTextView
             style="?attr/textAppearanceHeadlineMedium"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
             android:text="@string/headline_sso_glide" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
             android:text="@string/tbd" />
+
+        <com.google.android.material.textview.MaterialTextView
+            style="?attr/textAppearanceHeadlineLarge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="@string/headline_exception" />
+
+        <androidx.core.widget.NestedScrollView
+            android:layout_width="match_parent"
+            android:layout_height="250dp"
+            android:layout_marginTop="8dp">
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/sampleException"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="?attr/colorSecondaryContainer"
+                android:fontFamily="monospace"
+                android:padding="16dp"
+                android:textColor="?attr/colorOnSecondaryContainer" />
+        </androidx.core.widget.NestedScrollView>
     </LinearLayout>
 </ScrollView>

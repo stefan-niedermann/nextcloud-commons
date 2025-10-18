@@ -7,11 +7,11 @@
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
 - [What is this](#what-is-this)
-- [How to use](#how-to-use)
 - [Modules](#modules)
-  - [exception](#exception)
+  - [theme](#theme) 
   - [sso-glide](#sso-glide)
   - [markdown](#markdown)
+  - [exception](#exception)
 - [Development](#development)
 - [License](#notebook-license)
 
@@ -19,83 +19,60 @@
 
 Many Android clients for Nextcloud apps need similar mechanisms. To reduce maintenance efforts and provide a similar look & feel, this library aims to provide tooling and support which can be useful for various Android clients.
 
-## How to use
-
-Add this dependency to your `build.gradle`-file to include *all* modules at once:
-
-```groovy
-implementation 'com.github.stefan-niedermann:nextcloud-commons:2.4.0'
-```
-
 ## Modules
 
-### exception
+### theme
 
 ```groovy
-implementation 'com.github.stefan-niedermann.nextcloud-commons:exception:2.4.0'
+implementation 'com.github.stefan-niedermann.nextcloud-commons:theme:2.5.0'
 ```
-
-This is a util class which provides methods for generating a rich stacktrace from a throwable containing additional information like the used files app and OS versions.
 
 #### Usage
 
+Declaratively in an `AndroidManifest.xml`:
+
+```
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+  <!-- Use as application theme -->
+  <application android:theme="@style/Theme.NextcloudCommons.Default.Material3Expressive.DayNight.NoActionBar">
+
+    <!-- or alternatively set it as theme for a specific activity -->
+    <activity android:theme="@style/Theme.NextcloudCommons.Default.Material3Expressive.DayNight.NoActionBar" />
+
+  </application>
+</manifest>
+```
+
+Programmatically in an `Activity`:
+
 ```java
-try {
-  // …
-} catch (Exception exception) {
-  String debug = ExceptionUtil.getDebugInfos(context, exception);
+public class ExampleActivity extends Activity {
+
+  @Override
+  protected void onCreate(@Nullable Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    setTheme(it.niedermann.nextcloud.theme.R.style.Theme_NextcloudCommons_Primary_Material3Expressive_DayNight_NoActionBar);
+  }
 }
 ```
 
-#### Example
+#### Available themes:
 
-```
-App Version: 2.17.1
-App Version Code: 2017001
-Server App Version: 3.2.0
-App Flavor: dev
+`Theme.NextcloudCommons.Default.Material3Expressive.DayNight.NoActionBar`:
 
-Files App Version Code: 30120090
+A material theme based on the ["Nextcloud Blue"](https://docs.nextcloud.com/server/latest/developer_manual/design/foundations.html#color) `#0082C9`, derived with the algorithms implemented in [`com.github.nextcloud.android-common:ui:0.7.0`](https://github.com/nextcloud/android-common).
 
----
+`Theme.NextcloudCommons.Neutral.Material3Expressive.DayNight.NoActionBar`:
 
-OS Version: 4.14.112+(5775370)
-OS API Level: 29
-Device: generic_x86_64
-Manufacturer: unknown
-Model (and Product): Android SDK built for x86_64 (sdk_phone_x86_64)
-
----
-
-java.lang.RuntimeException: Unable to start activity ComponentInfo{it.niedermann.owncloud.notes.dev/it.niedermann.owncloud.notes.main.MainActivity}: java.lang.NumberFormatException: For input string: "ASDF"
-	at android.app.ActivityThread.performLaunchActivity(ActivityThread.java:3270)
-	at android.app.ActivityThread.handleLaunchActivity(ActivityThread.java:3409)
-	at android.app.servertransaction.LaunchActivityItem.execute(LaunchActivityItem.java:83)
-	at android.app.servertransaction.TransactionExecutor.executeCallbacks(TransactionExecutor.java:135)
-	at android.app.servertransaction.TransactionExecutor.execute(TransactionExecutor.java:95)
-	at android.app.ActivityThread$H.handleMessage(ActivityThread.java:2016)
-	at android.os.Handler.dispatchMessage(Handler.java:107)
-	at android.os.Looper.loop(Looper.java:214)
-	at android.app.ActivityThread.main(ActivityThread.java:7356)
-	at java.lang.reflect.Method.invoke(Native Method)
-	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:492)
-	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:930)
-Caused by: java.lang.NumberFormatException: For input string: "ASDF"
-	at java.lang.Integer.parseInt(Integer.java:615)
-	at java.lang.Integer.parseInt(Integer.java:650)
-	at it.niedermann.owncloud.notes.main.MainActivity.onCreate(MainActivity.java:180)
-	at android.app.Activity.performCreate(Activity.java:7802)
-	at android.app.Activity.performCreate(Activity.java:7791)
-	at android.app.Instrumentation.callActivityOnCreate(Instrumentation.java:1299)
-	at android.app.ActivityThread.performLaunchActivity(ActivityThread.java:3245)
-	... 11 more
-
-```
+A completely neutral grey scale theme. It is intended to be used in conjunction with custom theming via [`com.github.nextcloud.android-common:ui:0.7.0`](https://github.com/nextcloud/android-common).
+The reason is that in case of custom theming a neutral base palette is the only way to ensure no conflicting colors if some UI parts are not themable or the developer forgot to apply manual theming.
 
 ### sso-glide
 
 ```groovy
-implementation 'com.github.stefan-niedermann.nextcloud-commons:sso-glide:2.4.0'
+implementation 'com.github.stefan-niedermann.nextcloud-commons:sso-glide:2.5.0'
 ```
 
 This is a Glide-integration module. If you are using [Single Sign On](https://github.com/nextcloud/Android-SingleSignOn) you may want to also fetch avatars or other images via Glide but with the SSO network stack to avoid problems with self-signed certificates, 2fa and so on.
@@ -168,7 +145,7 @@ Glide.with(context)
 ### markdown
 
 ```groovy
-implementation('com.github.stefan-niedermann.nextcloud-commons:markdown:2.4.0') {
+implementation('com.github.stefan-niedermann.nextcloud-commons:markdown:2.5.0') {
   exclude group: 'org.jetbrains', module: 'annotations-java5'
 }
 ```
@@ -196,6 +173,69 @@ You can implement against the `MarkdownEditor` interface, which allows you to ad
 - render user avatars next to `@user` mentions
 
 The `MarkdownUtil` provides some helper tools to work with markdown.
+
+### exception
+
+```groovy
+implementation 'com.github.stefan-niedermann.nextcloud-commons:exception:2.5.0'
+```
+
+This is a util class which provides methods for generating a rich stacktrace from a throwable containing additional information like the used files app and OS versions.
+
+#### Usage
+
+```java
+try {
+  // …
+} catch (Exception exception) {
+  String debug = ExceptionUtil.getDebugInfos(context, exception);
+}
+```
+
+#### Example
+
+```
+App Version: 2.17.1
+App Version Code: 2017001
+Server App Version: 3.2.0
+App Flavor: dev
+
+Files App Version Code: 30120090
+
+---
+
+OS Version: 4.14.112+(5775370)
+OS API Level: 29
+Device: generic_x86_64
+Manufacturer: unknown
+Model (and Product): Android SDK built for x86_64 (sdk_phone_x86_64)
+
+---
+
+java.lang.RuntimeException: Unable to start activity ComponentInfo{it.niedermann.owncloud.notes.dev/it.niedermann.owncloud.notes.main.MainActivity}: java.lang.NumberFormatException: For input string: "ASDF"
+	at android.app.ActivityThread.performLaunchActivity(ActivityThread.java:3270)
+	at android.app.ActivityThread.handleLaunchActivity(ActivityThread.java:3409)
+	at android.app.servertransaction.LaunchActivityItem.execute(LaunchActivityItem.java:83)
+	at android.app.servertransaction.TransactionExecutor.executeCallbacks(TransactionExecutor.java:135)
+	at android.app.servertransaction.TransactionExecutor.execute(TransactionExecutor.java:95)
+	at android.app.ActivityThread$H.handleMessage(ActivityThread.java:2016)
+	at android.os.Handler.dispatchMessage(Handler.java:107)
+	at android.os.Looper.loop(Looper.java:214)
+	at android.app.ActivityThread.main(ActivityThread.java:7356)
+	at java.lang.reflect.Method.invoke(Native Method)
+	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:492)
+	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:930)
+Caused by: java.lang.NumberFormatException: For input string: "ASDF"
+	at java.lang.Integer.parseInt(Integer.java:615)
+	at java.lang.Integer.parseInt(Integer.java:650)
+	at it.niedermann.owncloud.notes.main.MainActivity.onCreate(MainActivity.java:180)
+	at android.app.Activity.performCreate(Activity.java:7802)
+	at android.app.Activity.performCreate(Activity.java:7791)
+	at android.app.Instrumentation.callActivityOnCreate(Instrumentation.java:1299)
+	at android.app.ActivityThread.performLaunchActivity(ActivityThread.java:3245)
+	... 11 more
+
+```
 
 
 ## Development

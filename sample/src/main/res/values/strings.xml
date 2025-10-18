@@ -1,10 +1,11 @@
 <resources>
     <string name="app_name">Sample</string>
-    <string name="headline_exception">exception</string>
+    <string name="lib_name">nextcloud-commons</string>
     <string name="headline_markdown">markdown</string>
     <string name="headline_markdown_editor">Editor</string>
     <string name="headline_markdown_viewer">Viewer</string>
     <string name="headline_sso_glide">sso-glide</string>
+    <string name="headline_exception">exception</string>
     <string name="markdown_content">\@stefan **strong**, @ste @stefan @artur @stefan@artur *emphasised*, ~~strike~~ and again and again and again @artur</string>
     <string name="tbd">To be done</string>
     <string name="sign_on">Sign on</string>

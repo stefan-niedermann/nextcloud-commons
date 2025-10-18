@@ -7,7 +7,7 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.Nextcloudcommons">
+        android:theme="@style/Theme.NextcloudCommons.Default.Material3Expressive.DayNight.NoActionBar">
         <activity
             android:name=".MainActivity"
             android:exported="true">

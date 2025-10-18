@@ -1,8 +1,8 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
 buildscript {
-    ext.version_code = 2004001
-    ext.version_name = '2.4.1'
+    ext.version_code = 2005000
+    ext.version_name = '2.5.0'
 
     ext.version_android_common= '0.29.0'
     ext.version_android_commons = '1.1.1'
@@ -17,7 +17,7 @@ buildscript {
     ext.version_kotlin = '2.2.20'
     ext.version_lifecycle = '2.9.4'
     ext.version_markwon = '4.6.2'
-    ext.version_material = '1.13.0'
+    ext.version_material = '1.14.0-alpha05'
     ext.version_mockk = '1.14.6'
     ext.version_prism = '2.0.0'
     ext.version_retrofit = '2.11.0'

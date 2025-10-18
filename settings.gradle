@@ -1,2 +1,3 @@
 include ':ocs', ':sso-url-helper', ':sso-glide', ':exception', ':markdown', ':sample'
 rootProject.name='nextcloud-commons'
+include ':theme'

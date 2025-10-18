@@ -46,6 +46,7 @@ dependencies {
     implementation project(path: ':exception')
     implementation project(path: ':markdown')
     implementation project(path: ':sso-glide')
+    implementation project(path: ':theme')
 
     implementation "com.github.nextcloud:Android-SingleSignOn:$version_sso"
 

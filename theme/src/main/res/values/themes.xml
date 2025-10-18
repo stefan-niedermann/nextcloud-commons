@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="Theme.NextcloudCommons.Default.Material3Expressive.DayNight.NoActionBar" parent="Theme.Material3Expressive.DayNight.NoActionBar">
+        <item name="colorError">@color/nextcloudCommonsDefaultError</item>
+        <item name="colorErrorContainer">@color/nextcloudCommonsDefaultErrorContainer</item>
+        <item name="colorOnBackground">@color/nextcloudCommonsDefaultOnBackground</item>
+        <item name="colorOnError">@color/nextcloudCommonsDefaultOnError</item>
+        <item name="colorOnErrorContainer">@color/nextcloudCommonsDefaultOnErrorContainer</item>
+        <item name="colorOnPrimary">@color/nextcloudCommonsDefaultOnPrimary</item>
+        <item name="colorOnPrimaryContainer">@color/nextcloudCommonsDefaultOnPrimaryContainer</item>
+        <item name="colorOnSecondary">@color/nextcloudCommonsDefaultOnSecondary</item>
+        <item name="colorOnSecondaryContainer">@color/nextcloudCommonsDefaultOnSecondaryContainer
+        </item>
+        <item name="colorOnSurface">@color/nextcloudCommonsDefaultOnSurface</item>
+        <item name="colorOnSurfaceVariant">@color/nextcloudCommonsDefaultOnSurfaceVariant</item>
+        <item name="colorOnTertiary">@color/nextcloudCommonsDefaultOnTertiary</item>
+        <item name="colorOnTertiaryContainer">@color/nextcloudCommonsDefaultOnTertiaryContainer
+        </item>
+        <item name="colorOutline">@color/nextcloudCommonsDefaultOutline</item>
+        <item name="colorOutlineVariant">@color/nextcloudCommonsDefaultOutlineVariant</item>
+        <item name="colorPrimary">@color/nextcloudCommonsDefaultPrimary</item>
+        <item name="colorPrimaryContainer">@color/nextcloudCommonsDefaultPrimaryContainer</item>
+        <item name="colorSecondary">@color/nextcloudCommonsDefaultSecondary</item>
+        <item name="colorSecondaryContainer">@color/nextcloudCommonsDefaultSecondaryContainer</item>
+        <item name="colorSurface">@color/nextcloudCommonsDefaultSurface</item>
+        <item name="colorSurfaceVariant">@color/nextcloudCommonsDefaultSurfaceVariant</item>
+        <item name="colorTertiary">@color/nextcloudCommonsDefaultTertiary</item>
+        <item name="colorTertiaryContainer">@color/nextcloudCommonsDefaultTertiaryContainer</item>
+
+        <!-- Used by PopupMenus -->
+        <item name="colorSurfaceContainer">@color/nextcloudCommonsDefaultSurface</item>
+
+        <!-- Used by Material Dialogs & Material SearchBar -->
+        <item name="colorSurfaceContainerHigh">@color/nextcloudCommonsDefaultSurface</item>
+
+        <!-- Used as Drawer background -->
+        <item name="colorSurfaceContainerLow">@color/nextcloudCommonsDefaultSurface</item>
+
+        <!-- Unknown usage -->
+        <item name="colorSurfaceContainerHighest">@color/nextcloudCommonsDefaultSurface</item>
+        <item name="colorSurfaceContainerLowest">@color/nextcloudCommonsDefaultSurface</item>
+
+        <item name="android:windowBackground">@color/nextcloudCommonsDefaultBackground</item>
+        <item name="android:statusBarColor">?attr/colorSurface</item>
+        <item name="android:navigationBarColor">?attr/colorSurface</item>
+    </style>
+
+    <style name="Theme.NextcloudCommons.Neutral.Material3Expressive.DayNight.NoActionBar" parent="Theme.Material3Expressive.DayNight.NoActionBar">
+        <item name="colorError">@color/nextcloudCommonsNeutralError</item>
+        <item name="colorErrorContainer">@color/nextcloudCommonsNeutralErrorContainer</item>
+        <item name="colorOnBackground">@color/nextcloudCommonsNeutralOnBackground</item>
+        <item name="colorOnError">@color/nextcloudCommonsNeutralOnError</item>
+        <item name="colorOnErrorContainer">@color/nextcloudCommonsNeutralOnErrorContainer</item>
+        <item name="colorOnPrimary">@color/nextcloudCommonsNeutralOnPrimary</item>
+        <item name="colorOnPrimaryContainer">@color/nextcloudCommonsNeutralOnPrimaryContainer</item>
+        <item name="colorOnSecondary">@color/nextcloudCommonsNeutralOnSecondary</item>
+        <item name="colorOnSecondaryContainer">@color/nextcloudCommonsNeutralOnSecondaryContainer
+        </item>
+        <item name="colorOnSurface">@color/nextcloudCommonsNeutralOnSurface</item>
+        <item name="colorOnSurfaceVariant">@color/nextcloudCommonsNeutralOnSurfaceVariant</item>
+        <item name="colorOnTertiary">@color/nextcloudCommonsNeutralOnTertiary</item>
+        <item name="colorOnTertiaryContainer">@color/nextcloudCommonsNeutralOnTertiaryContainer
+        </item>
+        <item name="colorOutline">@color/nextcloudCommonsNeutralOutline</item>
+        <item name="colorOutlineVariant">@color/nextcloudCommonsNeutralOutlineVariant</item>
+        <item name="colorPrimary">@color/nextcloudCommonsNeutralPrimary</item>
+        <item name="colorPrimaryContainer">@color/nextcloudCommonsNeutralPrimaryContainer</item>
+        <item name="colorSecondary">@color/nextcloudCommonsNeutralSecondary</item>
+        <item name="colorSecondaryContainer">@color/nextcloudCommonsNeutralSecondaryContainer</item>
+        <item name="colorSurface">@color/nextcloudCommonsNeutralSurface</item>
+        <item name="colorSurfaceVariant">@color/nextcloudCommonsNeutralSurfaceVariant</item>
+        <item name="colorTertiary">@color/nextcloudCommonsNeutralTertiary</item>
+        <item name="colorTertiaryContainer">@color/nextcloudCommonsNeutralTertiaryContainer</item>
+
+        <!-- Used by PopupMenus -->
+        <item name="colorSurfaceContainer">@color/nextcloudCommonsNeutralSurface</item>
+
+        <!-- Used by Material Dialogs & Material SearchBar -->
+        <item name="colorSurfaceContainerHigh">@color/nextcloudCommonsNeutralSurface</item>
+
+        <!-- Used as Drawer background -->
+        <item name="colorSurfaceContainerLow">@color/nextcloudCommonsNeutralSurface</item>
+
+        <!-- Unknown usage -->
+        <item name="colorSurfaceContainerHighest">@color/nextcloudCommonsNeutralSurface</item>
+        <item name="colorSurfaceContainerLowest">@color/nextcloudCommonsNeutralSurface</item>
+
+        <item name="android:windowBackground">@color/nextcloudCommonsNeutralBackground</item>
+        <item name="android:statusBarColor">?attr/colorSurface</item>
+        <item name="android:navigationBarColor">?attr/colorSurface</item>
+    </style>
+</resources>
