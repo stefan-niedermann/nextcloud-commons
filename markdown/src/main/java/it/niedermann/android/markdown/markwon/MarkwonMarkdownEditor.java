@@ -3,7 +3,6 @@ package it.niedermann.android.markdown.markwon;
 import android.content.Context;
 import android.os.Build;
 import android.text.SpannableStringBuilder;
-import android.text.TextWatcher;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.util.TypedValue;
@@ -173,21 +172,13 @@ public class MarkwonMarkdownEditor extends AppCompatEditText implements Markdown
         this.color = color;
         notifyControllers();
         final var searchHighlightTextWatcher = combinedWatcher.get(SearchHighlightTextWatcher.class);
-        if (searchHighlightTextWatcher == null) {
-            Log.w(TAG, SearchHighlightTextWatcher.class.getSimpleName() + " is not a registered " + TextWatcher.class.getSimpleName());
-        } else {
-            searchHighlightTextWatcher.setSearchColor(color);
-        }
+        searchHighlightTextWatcher.setSearchColor(color);
     }
 
     @Override
     public void setSearchText(@Nullable CharSequence searchText, @Nullable Integer current) {
         final var searchHighlightTextWatcher = combinedWatcher.get(SearchHighlightTextWatcher.class);
-        if (searchHighlightTextWatcher == null) {
-            Log.w(TAG, SearchHighlightTextWatcher.class.getSimpleName() + " is not a registered " + TextWatcher.class.getSimpleName());
-        } else {
-            searchHighlightTextWatcher.setSearchText(searchText, current);
-        }
+        searchHighlightTextWatcher.setSearchText(searchText, current);
     }
 
     @Override
@@ -206,7 +197,7 @@ public class MarkwonMarkdownEditor extends AppCompatEditText implements Markdown
      * Updates the current model which matches the rendered state of the editor *without* triggering
      * anything of the native {@link EditText}
      *
-     * @deprecated will be library private in the next release. Use {@link #setMarkdownStringChangedListener(Consumer)} not get notified about raw changes.
+     * @deprecated will be library private in the next release. Use {@link #setMarkdownString(CharSequence)}
      */
     @Deprecated
     public void setMarkdownStringModel(CharSequence text) {
@@ -216,7 +207,11 @@ public class MarkwonMarkdownEditor extends AppCompatEditText implements Markdown
         }
     }
 
+    /**
+     * @deprecated use {@link #setMarkdownStringChangedListener(Consumer)}
+     */
     @Override
+    @Deprecated
     public LiveData<CharSequence> getMarkdownString() {
         return unrenderedText$;
     }

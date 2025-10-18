@@ -1,15 +1,14 @@
 package it.niedermann.android.markdown.markwon;
 
 import static androidx.lifecycle.Transformations.distinctUntilChanged;
+import static java.util.Objects.requireNonNull;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Build;
 import android.text.TextUtils;
-import android.text.TextWatcher;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.util.TypedValue;
 
 import androidx.annotation.ColorInt;
@@ -63,7 +62,6 @@ import it.niedermann.android.markdown.markwon.plugins.mentions.MentionsPlugin;
 @PrismBundle(includeAll = true, grammarLocatorClassName = ".MarkwonGrammarLocator")
 public class MarkwonMarkdownViewer extends AppCompatTextView implements MarkdownEditor {
 
-    private static final String TAG = MarkwonMarkdownViewer.class.getSimpleName();
     private static final Prism4j prism4j = new Prism4j(new MarkwonGrammarLocator());
     private final Markwon markwon;
     @Nullable
@@ -161,21 +159,13 @@ public class MarkwonMarkdownViewer extends AppCompatTextView implements Markdown
 
     @Override
     public void registerOnLinkClickCallback(@NonNull Function<String, Boolean> callback) {
-        final var plugin = this.markwon.getPlugin(LinkClickInterceptorPlugin.class);
-        if (plugin == null) {
-            Log.w(TAG, "Tried to register callback, but " + LinkClickInterceptorPlugin.class.getSimpleName() + " is not a registered " + MarkwonPlugin.class.getSimpleName() + ".");
-        } else {
-            plugin.registerOnLinkClickCallback(callback);
-        }
+        final var linkClickInterceptorPlugin = getPlugin(LinkClickInterceptorPlugin.class);
+        linkClickInterceptorPlugin.registerOnLinkClickCallback(callback);
     }
 
     public void setMarkdownImageUrlPrefix(@NonNull String prefix) {
-        final var plugin = this.markwon.getPlugin(RelativeImageUrlPlugin.class);
-        if (plugin == null) {
-            Log.w(TAG, "Tried to change image url prefix for " + RelativeImageUrlPlugin.class.getSimpleName() + ", but " + RelativeImageUrlPlugin.class.getSimpleName() + " is not a registered " + MarkwonPlugin.class.getSimpleName() + ".");
-        } else {
-            plugin.setImagePrefix(prefix);
-        }
+        final var relativeImageUrlPlugin = getPlugin(RelativeImageUrlPlugin.class);
+        relativeImageUrlPlugin.setImagePrefix(prefix);
     }
 
     @Override
@@ -221,33 +211,19 @@ public class MarkwonMarkdownViewer extends AppCompatTextView implements Markdown
 
     @Override
     public void setCurrentSingleSignOnAccount(@Nullable SingleSignOnAccount ssoAccount, @ColorInt int color) {
-        final var searchHighlightPlugin = this.markwon.getPlugin(SearchHighlightPlugin.class);
-        if (searchHighlightPlugin == null) {
-            Log.w(TAG, SearchHighlightPlugin.class.getSimpleName() + " is not a registered " + MarkwonPlugin.class.getSimpleName());
-        } else {
-            searchHighlightPlugin.setColor(color);
-        }
+        final var searchHighlightPlugin = getPlugin(SearchHighlightPlugin.class);
+        searchHighlightPlugin.setColor(color);
 
-        final var mentionsPlugin = this.markwon.getPlugin(MentionsPlugin.class);
-        if (mentionsPlugin == null) {
-            Log.w(TAG, MentionsPlugin.class.getSimpleName() + " is not a registered " + TextWatcher.class.getSimpleName());
-        } else {
-            mentionsPlugin.setColor(color);
-            mentionsPlugin.setCurrentSingleSignOnAccount(ssoAccount);
-        }
-
+        final var mentionsPlugin = getPlugin(MentionsPlugin.class);
+        mentionsPlugin.setColor(color);
+        mentionsPlugin.setCurrentSingleSignOnAccount(ssoAccount);
         rerender();
     }
 
     @Override
     public void setSearchText(@Nullable CharSequence searchText, @Nullable Integer current) {
-        final var searchHighlightPlugin = this.markwon.getPlugin(SearchHighlightPlugin.class);
-        if (searchHighlightPlugin == null) {
-            Log.w(TAG, SearchHighlightPlugin.class.getSimpleName() + " is not a registered " + MarkwonPlugin.class.getSimpleName());
-        } else {
-            searchHighlightPlugin.setSearchText(searchText, current, this);
-        }
-
+        final var searchHighlightPlugin = getPlugin(SearchHighlightPlugin.class);
+        searchHighlightPlugin.setSearchText(searchText, current, this);
         rerender();
     }
 
@@ -261,6 +237,7 @@ public class MarkwonMarkdownViewer extends AppCompatTextView implements Markdown
     }
 
     @Override
+    @Deprecated
     public LiveData<CharSequence> getMarkdownString() {
         return distinctUntilChanged(this.unrenderedText$);
     }
@@ -268,6 +245,10 @@ public class MarkwonMarkdownViewer extends AppCompatTextView implements Markdown
     @Override
     public void setMarkdownStringChangedListener(@Nullable Consumer<CharSequence> listener) {
         this.listener = listener;
+    }
+
+    private <P extends MarkwonPlugin> P getPlugin(@NonNull Class<P> type) {
+        return requireNonNull(this.markwon.getPlugin(type));
     }
 
     private void rerender() {

@@ -52,7 +52,9 @@ public interface MarkdownEditor {
 
     /**
      * @return the source {@link CharSequence} of the currently rendered markdown
+     * @deprecated use {@link #setMarkdownStringChangedListener(Consumer)}
      */
+    @Deprecated(forRemoval = true)
     LiveData<CharSequence> getMarkdownString();
 
     /**
