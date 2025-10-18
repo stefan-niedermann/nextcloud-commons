@@ -22,9 +22,9 @@ import com.nextcloud.android.sso.helper.SingleAccountHelper;
 import com.nextcloud.android.sso.model.SingleSignOnAccount;
 
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -62,7 +62,7 @@ public class MarkwonMarkdownEditor extends AppCompatEditText implements Markdown
     @Nullable
     private Consumer<CharSequence> listener;
     @Nullable
-    private final Set<MarkdownController> controllers = new HashSet<>();
+    private final Set<MarkdownController> controllers = ConcurrentHashMap.newKeySet(2);
     private final EditorStateNotifier editorStateNotifier;
     private final MutableLiveData<CharSequence> unrenderedText$ = new MutableLiveData<>();
     private final CombinedTextWatcher combinedWatcher;
