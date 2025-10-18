@@ -81,6 +81,13 @@ class MarkwonMarkdownEditorTest : TestCase() {
     }
 
     @Test
+    fun `should set itself as command receiver when registering a controller`() {
+        val controllerMock = createControllerMock()
+        editor.registerController(controllerMock)
+        verify(exactly = 1) { controllerMock.setCommandReceiver(editor) }
+    }
+
+    @Test
     fun `should forced notify recently registered controllers`() {
         val controllerMock = createControllerMock()
         val notified = editor.registerController(controllerMock)

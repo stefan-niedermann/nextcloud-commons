@@ -1,6 +1,7 @@
 package it.niedermann.android.markdown.controller;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.RestrictTo;
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleOwner;
@@ -32,7 +33,7 @@ public class ControllerConnector {
     }
 
     @NonNull
-    public static ControllerConnector connect(@NonNull LifecycleOwner ignored,
+    public static ControllerConnector connect(@Nullable LifecycleOwner ignored,
                                               @NonNull CommandReceiver commandReceiver,
                                               @NonNull MarkdownController controller) {
         final var connector = new ControllerConnector(commandReceiver, controller);
