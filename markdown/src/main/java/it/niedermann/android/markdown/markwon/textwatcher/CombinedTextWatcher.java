@@ -1,10 +1,11 @@
 package it.niedermann.android.markdown.markwon.textwatcher;
 
+import static java.util.Objects.requireNonNull;
+
 import android.text.Editable;
 import android.text.TextWatcher;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 import java.util.HashMap;
 import java.util.concurrent.Executors;
@@ -27,9 +28,9 @@ public class CombinedTextWatcher extends HashMap<Class<?>, TextWatcher> implemen
     }
 
     @SuppressWarnings({"unchecked"})
-    @Nullable
-    public <T> T get(@Nullable Class<T> key) {
-        return (T) super.get(key);
+    @NonNull
+    public <T> T get(@NonNull Class<T> key) {
+        return (T) requireNonNull(super.get(key));
     }
 
     @Override
