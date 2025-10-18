@@ -2,7 +2,6 @@ package it.niedermann.android.markdown.controller;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RestrictTo;
-import androidx.lifecycle.DefaultLifecycleObserver;
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleOwner;
 
@@ -10,8 +9,10 @@ import it.niedermann.android.markdown.markwon.MarkwonMarkdownEditor;
 
 /**
  * A {@link Lifecycle} aware implementation to connect a {@link MarkdownController} with a {@link CommandReceiver}
+ * @deprecated Use {@link CommandReceiver#registerController(MarkdownController)}
  */
-public class ControllerConnector implements DefaultLifecycleObserver {
+@Deprecated(forRemoval = true)
+public class ControllerConnector {
 
     @NonNull
     private final CommandReceiver commandReceiver;
@@ -31,25 +32,21 @@ public class ControllerConnector implements DefaultLifecycleObserver {
     }
 
     @NonNull
-    public static ControllerConnector connect(@NonNull LifecycleOwner lifecycleOwner,
+    public static ControllerConnector connect(@NonNull LifecycleOwner ignored,
                                               @NonNull CommandReceiver commandReceiver,
                                               @NonNull MarkdownController controller) {
         final var connector = new ControllerConnector(commandReceiver, controller);
-        lifecycleOwner.getLifecycle().addObserver(connector);
+        commandReceiver.registerController(controller);
         return connector;
     }
 
-    @Override
     @RestrictTo(RestrictTo.Scope.LIBRARY)
     public void onResume(@NonNull LifecycleOwner owner) {
         commandReceiver.registerController(controller);
-        controller.setCommandReceiver(commandReceiver);
     }
 
-    @Override
     @RestrictTo(RestrictTo.Scope.LIBRARY)
     public void onPause(@NonNull LifecycleOwner owner) {
         commandReceiver.unregisterController(controller);
-        controller.setCommandReceiver(null);
     }
 }

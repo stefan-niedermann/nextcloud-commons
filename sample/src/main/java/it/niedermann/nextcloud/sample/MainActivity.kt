@@ -13,7 +13,6 @@ import com.nextcloud.android.sso.helper.SingleAccountHelper
 import it.niedermann.android.markdown.MarkdownEditor
 import it.niedermann.android.markdown.MarkdownEditorImpl
 import it.niedermann.android.markdown.MarkdownViewerImpl
-import it.niedermann.android.markdown.controller.ControllerConnector
 import it.niedermann.android.markdown.controller.MarkdownController
 import it.niedermann.nextcloud.exception.getDebugInfos
 
@@ -43,7 +42,7 @@ class MainActivity : AppCompatActivity() {
 
         sampleException.text = getDebugInfos(this, RuntimeException())
 
-        ControllerConnector.connect(this, markdownEditor, toolbar)
+        markdownEditor.registerController(toolbar)
 
         markdownEditor.setMarkdownStringChangedListener { str ->
             markdownViewer.setMarkdownString(str)

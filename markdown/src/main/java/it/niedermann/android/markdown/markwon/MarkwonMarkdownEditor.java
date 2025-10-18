@@ -6,18 +6,13 @@ import android.text.SpannableStringBuilder;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.util.TypedValue;
-import android.view.View;
 import android.widget.EditText;
 
 import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.RestrictTo;
 import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.widget.AppCompatEditText;
-import androidx.lifecycle.Lifecycle;
-import androidx.lifecycle.LifecycleOwner;
-import androidx.lifecycle.LifecycleRegistry;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
@@ -46,7 +41,6 @@ import it.niedermann.android.markdown.MarkdownEditor;
 import it.niedermann.android.markdown.MarkdownUtil;
 import it.niedermann.android.markdown.controller.Command;
 import it.niedermann.android.markdown.controller.CommandReceiver;
-import it.niedermann.android.markdown.controller.ControllerConnector;
 import it.niedermann.android.markdown.controller.EditorStateListener;
 import it.niedermann.android.markdown.controller.EditorStateNotifier;
 import it.niedermann.android.markdown.controller.MarkdownController;
@@ -61,12 +55,10 @@ import it.niedermann.android.markdown.markwon.plugins.ThemePlugin;
 import it.niedermann.android.markdown.markwon.textwatcher.CombinedTextWatcher;
 import it.niedermann.android.markdown.markwon.textwatcher.SearchHighlightTextWatcher;
 
-public class MarkwonMarkdownEditor extends AppCompatEditText implements MarkdownEditor, CommandReceiver, LifecycleOwner, View.OnAttachStateChangeListener {
+public class MarkwonMarkdownEditor extends AppCompatEditText implements MarkdownEditor, CommandReceiver {
 
     private static final String TAG = MarkwonMarkdownEditor.class.getSimpleName();
 
-    @NonNull
-    private final LifecycleRegistry lifecycleRegistry = new LifecycleRegistry(this);
     @Nullable
     private Consumer<CharSequence> listener;
     @Nullable
@@ -111,8 +103,7 @@ public class MarkwonMarkdownEditor extends AppCompatEditText implements Markdown
         final var actionModeCallback = new ContextBasedFormattingCallback();
         setCustomSelectionActionModeCallback(actionModeCallback);
         setCustomInsertionActionModeCallback(actionModeCallback);
-        ControllerConnector.connect(this, this, actionModeCallback);
-        addOnAttachStateChangeListener(this);
+        registerController(actionModeCallback);
     }
 
     private static Markwon.Builder createMarkwonBuilder(@NonNull Context context, @ColorInt int color) {
@@ -134,22 +125,6 @@ public class MarkwonMarkdownEditor extends AppCompatEditText implements Markdown
                 .useEditHandler(new CodeBlockEditHandler())
                 .useEditHandler(new BlockQuoteEditHandler())
                 .useEditHandler(new HeadingEditHandler());
-    }
-
-    @Override
-    public void onViewAttachedToWindow(@NonNull View view) {
-        lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME);
-    }
-
-    @Override
-    public void onViewDetachedFromWindow(@NonNull View view) {
-        lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_PAUSE);
-    }
-
-    @NonNull
-    @Override
-    public Lifecycle getLifecycle() {
-        return lifecycleRegistry;
     }
 
     /**
@@ -224,8 +199,8 @@ public class MarkwonMarkdownEditor extends AppCompatEditText implements Markdown
     /**
      * ⚠ This is a <strong>BETA</strong> feature. Please be careful. API changes can happen anytime and won't be announced!
      */
+    @NonNull
     @Override
-    @RestrictTo(RestrictTo.Scope.LIBRARY)
     public Future<Void> registerController(@NonNull MarkdownController controller) {
         Log.w(TAG, "⚠ This is a BETA feature. Please be careful. API changes can happen anytime and won't be announced!");
 
@@ -241,6 +216,7 @@ public class MarkwonMarkdownEditor extends AppCompatEditText implements Markdown
         }
 
         controllers.add(controller);
+        controller.setCommandReceiver(this);
         return editorStateNotifier.forceNotify(getContext(),
                 controller,
                 isEnabled(),
@@ -254,7 +230,6 @@ public class MarkwonMarkdownEditor extends AppCompatEditText implements Markdown
      * ⚠ This is a <strong>BETA</strong> feature. Please be careful. API changes can happen anytime and won't be announced!
      */
     @Override
-    @RestrictTo(RestrictTo.Scope.LIBRARY)
     public void unregisterController(@NonNull MarkdownController controller) {
         Log.w(TAG, "⚠ This is a BETA feature. Please be careful. API changes can happen anytime and won't be announced!");
 
@@ -262,7 +237,16 @@ public class MarkwonMarkdownEditor extends AppCompatEditText implements Markdown
             return;
         }
 
+        controller.setCommandReceiver(null);
         controllers.remove(controller);
+    }
+
+    @Override
+    protected void onDetachedFromWindow() {
+        if (controllers != null) {
+            controllers.forEach(this::unregisterController);
+        }
+        super.onDetachedFromWindow();
     }
 
     @Override
