@@ -46,7 +46,7 @@ jobs:
       - name: Build debug AAR
         run: bash ./gradlew assemble --stacktrace --no-configuration-cache
       - name: Upload AAR
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: aar
           path: ./**/build/outputs/aar/**.aar
