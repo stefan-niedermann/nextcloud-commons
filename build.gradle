@@ -12,7 +12,7 @@ buildscript {
     ext.version_core = '1.17.0'
     ext.version_desugar = '2.1.5'
     ext.version_glide = '5.0.5'
-    ext.version_jsoup = '1.21.2'
+    ext.version_jsoup = '1.22.1'
     ext.version_junit = '4.13.2'
     ext.version_kotlin = '2.3.0'
     ext.version_lifecycle = '2.10.0'
