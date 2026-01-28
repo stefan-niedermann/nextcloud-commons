@@ -17,7 +17,7 @@ buildscript {
     ext.version_kotlin = '2.3.0'
     ext.version_lifecycle = '2.10.0'
     ext.version_markwon = '4.6.2'
-    ext.version_material = '1.14.0-alpha07'
+    ext.version_material = '1.14.0-alpha09'
     ext.version_mockk = '1.14.6'
     ext.version_prism = '2.0.0'
     ext.version_retrofit = '2.11.0'
