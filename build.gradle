@@ -14,7 +14,7 @@ buildscript {
     ext.version_glide = '5.0.5'
     ext.version_jsoup = '1.22.1'
     ext.version_junit = '4.13.2'
-    ext.version_kotlin = '2.3.0'
+    ext.version_kotlin = '2.3.10'
     ext.version_lifecycle = '2.10.0'
     ext.version_markwon = '4.6.2'
     ext.version_material = '1.14.0-alpha09'
