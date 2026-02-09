@@ -4,7 +4,7 @@ buildscript {
     ext.version_code = 2005000
     ext.version_name = '2.5.0'
 
-    ext.version_android_common= '0.29.0'
+    ext.version_android_common= '0.32.0'
     ext.version_android_commons = '1.1.1'
     ext.version_annotations = '26.0.2-1'
     ext.version_appcompat = '1.7.1'
