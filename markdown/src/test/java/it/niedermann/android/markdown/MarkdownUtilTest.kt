@@ -1,11 +1,14 @@
 package it.niedermann.android.markdown
 
+import android.content.Context
 import android.graphics.Color
 import android.text.Editable
 import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.text.Spanned
 import android.text.style.ForegroundColorSpan
+import android.text.style.StyleSpan
+import androidx.test.core.app.ApplicationProvider
 import it.niedermann.android.markdown.model.EListType
 import it.niedermann.android.markdown.model.SearchSpan
 import junit.framework.TestCase
@@ -1130,6 +1133,26 @@ class MarkdownUtilTest : TestCase() {
         assertEquals(
             "2021-03-24 - Example text",
             MarkdownUtil.removeMarkdown("2021-03-24 - Example text")
+        )
+    }
+
+    @Test
+    fun renderForRemoteView() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        fun render(markdown: String) = MarkdownUtil.renderForRemoteView(context, markdown).toString()
+
+        assertEquals("Foo\n\nBar", render("Foo\n\nBar"))
+        assertEquals("Foo\n\n\n\nBar", render("Foo\n\n\n\nBar"))
+        assertEquals("Foo", render("\n\nFoo\n\n"))
+        assertEquals("• Foo \n• Bar", render("- Foo\n- Bar"))
+        assertEquals("Foo\n• Bar \n• Baz", render("Foo\n- Bar\n- Baz"))
+        assertEquals("Foo\n\n• Bar \n• Baz \nQux", render("Foo\n\n- Bar\n- Baz\nQux"))
+        assertEquals("Foo\nBar", render("# Foo\nBar"))
+        assertEquals("1. Foo\n\n2. Bar", render("1. Foo\n\n2. Bar"))
+        assertEquals("Foo\n\nBar Baz", render("Foo\n\n```\nBar\n\n\nBaz\n```"))
+        assertTrue(
+            (MarkdownUtil.renderForRemoteView(context, "Foo\n\n**Bar**") as Spanned)
+                .getSpans(0, 8, StyleSpan::class.java).isNotEmpty()
         )
     }
 }
