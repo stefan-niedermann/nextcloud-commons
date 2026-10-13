@@ -140,14 +140,68 @@ public class MarkdownUtil {
      * @noinspection unused
      */
     public static CharSequence renderForRemoteView(@NonNull Context context, @NonNull String content) {
-        // Create HTML string from Markup
-        final String html = RENDERER.render(PARSER.parse(replaceCheckboxesWithEmojis(content)));
-
-        // Create Spanned from HTML, with special handling for ordered list items
-        final Spanned spanned = HtmlCompat.fromHtml(ListTagHandler.prepareTagHandling(html), 0, null, new ListTagHandler());
+        // Render each block between empty lines on its own, so the empty lines of the source are kept
+        final var result = new SpannableStringBuilder();
+        final var block = new StringBuilder();
+        int emptyLines = 0;
+        String openFence = null;
+        for (final String line : content.split("\n")) {
+            if (openFence == null && line.trim().isEmpty()) {
+                if (block.length() > 0) {
+                    appendRemoteViewBlock(result, block.toString(), emptyLines);
+                    block.setLength(0);
+                    emptyLines = 0;
+                }
+                if (result.length() > 0) {
+                    emptyLines++;
+                }
+                continue;
+            }
+            final var fenceMatcher = PATTERN_CODE_FENCE.matcher(line);
+            if (fenceMatcher.find()) {
+                final String fence = fenceMatcher.group(1);
+                if (openFence == null) {
+                    openFence = fence;
+                } else if (fence != null && fence.startsWith(openFence)) {
+                    openFence = null;
+                }
+            }
+            block.append(line).append("\n");
+        }
+        if (block.length() > 0) {
+            appendRemoteViewBlock(result, block.toString(), emptyLines);
+        }
 
         // Enhance colors and margins of the Spanned
-        return customizeQuoteSpanAppearance(context, spanned, 5, 30);
+        return customizeQuoteSpanAppearance(context, result, 5, 30);
+    }
+
+    private static void appendRemoteViewBlock(@NonNull SpannableStringBuilder result, @NonNull String markdown, int emptyLinesBefore) {
+        // Create HTML string from Markup
+        final String html = RENDERER.render(PARSER.parse(replaceCheckboxesWithEmojis(markdown)));
+
+        // Create Spanned from HTML, with special handling for ordered list items
+        final var block = new SpannableStringBuilder(HtmlCompat.fromHtml(ListTagHandler.prepareTagHandling(html), 0, null, new ListTagHandler()));
+
+        // The source block has no empty lines, so remove the ones added between paragraphs, headings and lists
+        for (int i = block.length() - 1; i > 0; i--) {
+            if (block.charAt(i) == '\n' && block.charAt(i - 1) == '\n') {
+                block.delete(i, i + 1);
+            }
+        }
+        while (block.length() > 0 && block.charAt(0) == '\n') {
+            block.delete(0, 1);
+        }
+        while (block.length() > 0 && Character.isWhitespace(block.charAt(block.length() - 1))) {
+            block.delete(block.length() - 1, block.length());
+        }
+
+        if (result.length() > 0) {
+            for (int i = 0; i <= emptyLinesBefore; i++) {
+                result.append("\n");
+            }
+        }
+        result.append(block);
     }
 
     @SuppressWarnings("SameParameterValue")
