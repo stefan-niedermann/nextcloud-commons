@@ -27,10 +27,10 @@ public class ListTagHandler implements Html.TagHandler {
 
     @Override
     public void handleTag(boolean opening, String tag, Editable output, XMLReader xmlReader) {
-        if (X_OL.equals(tag)) {
+        if (tag.startsWith(X_OL)) {
             if (opening) {
                 parents.push(X_OL);
-                listItemIndex.push(1);
+                listItemIndex.push(Integer.parseInt(tag.substring(X_OL.length() + 1)));
             } else {
                 parents.pop();
                 listItemIndex.pop();
@@ -44,7 +44,7 @@ public class ListTagHandler implements Html.TagHandler {
         } else if (X_LI.equals(tag)) {
             if (X_OL.equals(parents.peek())) {
                 if (opening) {
-                    output.append("\n");
+                    startNewLine(output);
                     for (int nestingLevel = 1; nestingLevel < parents.size(); nestingLevel++) {
                         output.append("\t\t");
                     }
@@ -53,7 +53,7 @@ public class ListTagHandler implements Html.TagHandler {
                 }
             } else if (X_UL.equals(parents.peek())) {
                 if (opening) {
-                    output.append("\n");
+                    startNewLine(output);
                     for (int nestingLevel = 1; nestingLevel < parents.size(); nestingLevel++) {
                         output.append("\t\t");
                     }
@@ -63,15 +63,25 @@ public class ListTagHandler implements Html.TagHandler {
         }
     }
 
+    private static void startNewLine(@NonNull Editable output) {
+        if (output.length() > 0 && output.charAt(output.length() - 1) != '\n') {
+            output.append("\n");
+        }
+    }
+
     /**
      * Replace the list tags with custom tags to prevent them being handeled by {@link HtmlCompat}.
      * Otherwise, all <code>li</code> tags will be replaced with {@link BulletSpan} which is not the
      * desired behavior of ordered list items.
+     * The start number of ordered lists is kept in the tag name, e.g. <code>x-ol-3</code>.
      */
     @NonNull
     public static String prepareTagHandling(@NonNull String html) {
         final var document = Jsoup.parse(html);
-        document.getElementsByTag("ol").tagName(X_OL);
+        for (final var ol : document.getElementsByTag("ol")) {
+            final var start = ol.attr("start");
+            ol.tagName(X_OL + "-" + (start.matches("\\d+") ? start : "1"));
+        }
         document.getElementsByTag("ul").tagName(X_UL);
         document.getElementsByTag("li").tagName(X_LI);
         return document.outerHtml();
