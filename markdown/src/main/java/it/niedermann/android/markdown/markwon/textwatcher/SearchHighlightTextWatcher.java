@@ -1,5 +1,7 @@
 package it.niedermann.android.markdown.markwon.textwatcher;
 
+import android.os.Handler;
+import android.os.Looper;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -15,7 +17,17 @@ import it.niedermann.android.markdown.model.SearchSpan;
 
 public class SearchHighlightTextWatcher extends InterceptorTextWatcher {
 
+    /**
+     * While a search is active, each text change removes and re-applies <em>all</em>
+     * {@link SearchSpan}s over the whole document. Debouncing this work keeps typing responsive in
+     * long notes (see https://github.com/nextcloud/notes-android/issues/2489 and
+     * https://github.com/nextcloud/notes-android/issues/1729).
+     */
+    private static final long REHIGHLIGHT_DEBOUNCE_MS = 250;
+
     private final MarkwonMarkdownEditor editText;
+    private final Handler handler = new Handler(Looper.getMainLooper());
+    private final Runnable rehighlightRunnable = this::rehighlight;
     @Nullable
     private CharSequence searchText;
     @Nullable
@@ -37,27 +49,46 @@ public class SearchHighlightTextWatcher extends InterceptorTextWatcher {
         this.current = current;
         if (TextUtils.isEmpty(searchText)) {
             this.searchText = null;
+            handler.removeCallbacks(rehighlightRunnable);
             final var text = editText.getText();
             if (text != null) {
                 MarkdownUtil.removeSpans(text, SearchSpan.class);
             }
         } else {
             this.searchText = searchText;
-            afterTextChanged(editText.getText());
+            // Apply immediately because this is a direct reaction to a user action. Only the
+            // search highlighting is updated - the previous implementation additionally triggered
+            // a full Markdown re-render by delegating to the original watcher although the text
+            // did not change at all.
+            rehighlight();
         }
     }
 
     public void setSearchColor(@ColorInt int color) {
         this.color = color;
-        afterTextChanged(editText.getText());
+        if (searchText != null) {
+            rehighlight();
+        }
     }
 
     @Override
     public void afterTextChanged(Editable s) {
         originalWatcher.afterTextChanged(s);
         if (searchText != null) {
-            MarkdownUtil.removeSpans(s, SearchSpan.class);
-            MarkdownUtil.searchAndColor(editText.getContext(), s, searchText, color, current);
+            handler.removeCallbacks(rehighlightRunnable);
+            handler.postDelayed(rehighlightRunnable, REHIGHLIGHT_DEBOUNCE_MS);
+        }
+    }
+
+    private void rehighlight() {
+        handler.removeCallbacks(rehighlightRunnable);
+        final var text = editText.getText();
+        if (text == null) {
+            return;
+        }
+        MarkdownUtil.removeSpans(text, SearchSpan.class);
+        if (searchText != null) {
+            MarkdownUtil.searchAndColor(editText.getContext(), text, searchText, color, current);
         }
     }
 }

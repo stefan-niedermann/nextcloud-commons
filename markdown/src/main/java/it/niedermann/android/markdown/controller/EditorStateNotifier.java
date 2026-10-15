@@ -1,7 +1,5 @@
 package it.niedermann.android.markdown.controller;
 
-import static java.util.function.Predicate.not;
-
 import android.content.Context;
 import android.text.Spannable;
 
@@ -12,17 +10,16 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -32,16 +29,28 @@ public class EditorStateNotifier {
     private final Collection<? extends EditorStateListener> listeners;
     @NonNull
     private final ExecutorService firstNotifyExecutorService;
+    /**
+     * Single threaded, long living executor which serializes {@link EditorState} builds.
+     */
     @NonNull
-    private final Collection<ExecutorService> executors = new HashSet<>(2);
+    private final ExecutorService notifyExecutor;
+    /**
+     * Long living executor which resolves the states of all {@link Command}s in parallel.
+     */
     @NonNull
-    private final Supplier<ExecutorService> executorFactory;
-    @NonNull
-    private final Function<Integer, ExecutorService> commandStateBuilderExecutorFactory;
+    private final ExecutorService commandExecutor;
     @NonNull
     private final EditorState.Factory editorStateFactory;
+    /**
+     * Holds only the most recent enqueued notify request. Requests which arrive while a build is
+     * running get coalesced, so that only the newest one will be processed afterwards.
+     */
+    @NonNull
+    private final AtomicReference<NotifyRequest> pendingRequest = new AtomicReference<>();
+    @NonNull
+    private final AtomicBoolean workerActive = new AtomicBoolean(false);
     @Nullable
-    private EditorState lastNotifiedState;
+    private volatile EditorState lastNotifiedState;
 
     public EditorStateNotifier(@NonNull Collection<? extends EditorStateListener> listeners) {
         this(
@@ -61,8 +70,12 @@ public class EditorStateNotifier {
                                   @NonNull EditorState.Factory editorStateFactory
     ) {
         this.listeners = listeners;
-        this.executorFactory = executorFactory;
-        this.commandStateBuilderExecutorFactory = commandStateBuilderExecutorFactory;
+        // The factories get applied exactly once. Reusing the resulting executors avoids expensive
+        // thread (pool) creation and destruction for each notify() call, which happens on every
+        // single keystroke via onSelectionChanged
+        // (see https://github.com/nextcloud/notes-android/issues/2489).
+        this.notifyExecutor = executorFactory.get();
+        this.commandExecutor = commandStateBuilderExecutorFactory.apply(Command.values().length);
         this.firstNotifyExecutorService = firstNotifyExecutorService;
         this.editorStateFactory = editorStateFactory;
     }
@@ -105,54 +118,71 @@ public class EditorStateNotifier {
             return CompletableFuture.completedFuture(null);
         }
 
-        final var executor = executorFactory.get();
-        final var commandExecutor = commandStateBuilderExecutorFactory.apply(Command.values().length);
+        pendingRequest.set(new NotifyRequest(context, editorIsEnabled, color, content, selectionStart, selectionEnd));
 
-        synchronized (executors) {
-            executors.stream()
-                    .filter(not(ExecutorService::isShutdown))
-                    .forEach(ExecutorService::shutdownNow);
-            executors.removeIf(ExecutorService::isShutdown);
-            executors.addAll(List.of(executor, commandExecutor));
+        if (workerActive.compareAndSet(false, true)) {
+            return notifyExecutor.submit(this::processPendingRequests);
         }
 
-        return executor.submit(() -> {
-            try {
-                final var state = editorStateFactory.build(context,
-                        commandExecutor,
-                        editorIsEnabled,
-                        color,
-                        content,
-                        selectionStart,
-                        selectionEnd);
+        // A worker is already active and will pick up the coalesced request.
+        return CompletableFuture.completedFuture(null);
+    }
 
-                if (Objects.equals(state, lastNotifiedState)) {
+    private Void processPendingRequests() {
+        try {
+            NotifyRequest request;
+            while ((request = pendingRequest.getAndSet(null)) != null) {
+                final EditorState state;
+                try {
+                    state = editorStateFactory.build(request.context(),
+                            commandExecutor,
+                            request.editorIsEnabled(),
+                            request.color(),
+                            request.content(),
+                            request.selectionStart(),
+                            request.selectionEnd());
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
                     return null;
                 }
 
-                listeners.forEach(listener -> {
-                    if (!executor.isShutdown()) {
-                        listener.onEditorStateChanged(state);
-                        lastNotifiedState = state;
-                    }
-                });
+                if (Objects.equals(state, lastNotifiedState)) {
+                    continue;
+                }
 
-            } finally {
-                executor.shutdown();
-                commandExecutor.shutdown();
+                for (final var listener : listeners) {
+                    listener.onEditorStateChanged(state);
+                    lastNotifiedState = state;
+                }
             }
+        } finally {
+            workerActive.set(false);
+            // Handles the race where a new request arrived after the last getAndSet(null) returned
+            // null, but before workerActive has been reset.
+            if (pendingRequest.get() != null && workerActive.compareAndSet(false, true)) {
+                notifyExecutor.submit(this::processPendingRequests);
+            }
+        }
+        return null;
+    }
 
-            return null;
-        });
+    private record NotifyRequest(@NonNull Context context,
+                                 boolean editorIsEnabled,
+                                 @ColorInt int color,
+                                 @NonNull Spannable content,
+                                 int selectionStart,
+                                 int selectionEnd) {
     }
 
     /**
-     * {@link Executor} optimized to submit {@link Command} related operations
+     * {@link ThreadPoolExecutor} optimized to resolve {@link Command} related states in parallel,
+     * allowing all threads to time out while the editor is idle.
      */
     private static class CommandExecutor extends ThreadPoolExecutor {
 
         public CommandExecutor() {
             super(Command.values().length + 1, Integer.MAX_VALUE, 5L, TimeUnit.SECONDS, new SynchronousQueue<>());
+            allowCoreThreadTimeOut(true);
         }
     }
 }
