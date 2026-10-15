@@ -9,7 +9,7 @@ buildscript {
     ext.version_annotations = '26.0.2-1'
     ext.version_appcompat = '1.7.1'
     ext.version_constraintlayout = '2.2.1'
-    ext.version_core = '1.17.0'
+    ext.version_core = '1.18.0'
     ext.version_desugar = '2.1.5'
     ext.version_glide = '5.0.5'
     ext.version_jsoup = '1.22.1'
