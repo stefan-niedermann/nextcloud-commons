@@ -1,6 +1,9 @@
 package it.niedermann.android.markdown.markwon
 
 import android.content.Context
+import android.graphics.Rect
+import android.view.View
+import android.widget.FrameLayout
 import android.text.Spannable
 import androidx.test.core.app.ApplicationProvider
 import io.mockk.clearAllMocks
@@ -132,5 +135,25 @@ class MarkwonMarkdownEditorTest : TestCase() {
                 any()
             )
         }
+    }
+
+    @Test
+    fun `should not scroll to cursor after keepScrollPositionUntilEdit until selection changes`() {
+        var requests = 0
+        val parent = object : FrameLayout(ApplicationProvider.getApplicationContext()) {
+            override fun requestChildRectangleOnScreen(child: View, rectangle: Rect, immediate: Boolean): Boolean {
+                requests++
+                return true
+            }
+        }
+        parent.addView(editor)
+
+        editor.keepScrollPositionUntilEdit()
+        editor.requestRectangleOnScreen(Rect())
+        assertEquals(0, requests)
+
+        editor.setSelection(1)
+        editor.requestRectangleOnScreen(Rect())
+        assertEquals(1, requests)
     }
 }
