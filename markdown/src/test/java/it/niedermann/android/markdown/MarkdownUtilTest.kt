@@ -8,6 +8,7 @@ import android.text.SpannableStringBuilder
 import android.text.Spanned
 import android.text.style.ForegroundColorSpan
 import android.text.style.StyleSpan
+import android.text.style.UpdateLayout
 import androidx.test.core.app.ApplicationProvider
 import it.niedermann.android.markdown.model.EListType
 import it.niedermann.android.markdown.model.SearchSpan
@@ -1154,5 +1155,15 @@ class MarkdownUtilTest : TestCase() {
             (MarkdownUtil.renderForRemoteView(context, "Foo\n\n**Bar**") as Spanned)
                 .getSpans(0, 8, StyleSpan::class.java).isNotEmpty()
         )
+    }
+
+    @Test
+    fun searchAndColor() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val editable = SpannableStringBuilder("Foo bar foo FOO")
+        MarkdownUtil.searchAndColor(context, editable, "foo", Color.BLUE, 2)
+        val spans = editable.getSpans(0, editable.length, SearchSpan::class.java)
+        assertEquals(listOf(0, 8, 12), spans.map { editable.getSpanStart(it) }.sorted())
+        spans.forEach { assertFalse(it is UpdateLayout) }
     }
 }

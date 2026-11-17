@@ -656,8 +656,12 @@ public class MarkdownUtil {
     }
 
     public static void searchAndColor(@NonNull Context context, @NonNull Spannable editable, @Nullable CharSequence searchText, @ColorInt int color, @Nullable Integer current) {
-        final var util = ThemeUtils.Companion.of(color);
         if (searchText != null) {
+            final var util = ThemeUtils.Companion.of(color);
+            final int primary = util.getPrimary(context);
+            final int onPrimary = util.getOnPrimary(context);
+            final int secondary = util.getSecondary(context);
+            final int onSecondary = util.getOnSecondary(context);
             final var m = Pattern
                     .compile(searchText.toString(), Pattern.CASE_INSENSITIVE | Pattern.LITERAL)
                     .matcher(editable);
@@ -667,8 +671,8 @@ public class MarkdownUtil {
                 int start = m.start();
                 int end = m.end();
                 final var span = current == null || i == current
-                        ? new SearchSpan(util.getPrimary(context), util.getOnPrimary(context))
-                        : new SearchSpan(util.getSecondary(context), util.getOnSecondary(context));
+                        ? new SearchSpan(primary, onPrimary)
+                        : new SearchSpan(secondary, onSecondary);
                 editable.setSpan(span, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
                 i++;
             }
