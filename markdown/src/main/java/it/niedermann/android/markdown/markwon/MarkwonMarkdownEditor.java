@@ -3,6 +3,7 @@ package it.niedermann.android.markdown.markwon;
 import android.content.Context;
 import android.os.Build;
 import android.text.SpannableStringBuilder;
+import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.util.TypedValue;
@@ -68,6 +69,7 @@ public class MarkwonMarkdownEditor extends AppCompatEditText implements Markdown
     private final CombinedTextWatcher combinedWatcher;
     @ColorInt
     private int color;
+    private boolean keepScrollPosition = false;
 
     public MarkwonMarkdownEditor(@NonNull Context context) {
         this(context, null);
@@ -252,7 +254,22 @@ public class MarkwonMarkdownEditor extends AppCompatEditText implements Markdown
     @Override
     protected void onSelectionChanged(int selStart, int selEnd) {
         super.onSelectionChanged(selStart, selEnd);
+        keepScrollPosition = false;
         notifyControllers();
+    }
+
+    /**
+     * Stops scrolling to the cursor on layout changes until the text or the selection changes.
+     * {@link android.widget.TextView} scrolls to the cursor each time its height changes, for example when spans get
+     * applied while the user scrolls.
+     */
+    public void keepScrollPositionUntilEdit() {
+        keepScrollPosition = true;
+    }
+
+    @Override
+    public boolean requestRectangleOnScreen(Rect rectangle, boolean immediate) {
+        return !keepScrollPosition && super.requestRectangleOnScreen(rectangle, immediate);
     }
 
     @Override
