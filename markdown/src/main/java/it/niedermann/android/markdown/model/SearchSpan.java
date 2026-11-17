@@ -3,17 +3,20 @@ package it.niedermann.android.markdown.model;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.text.TextPaint;
-import android.text.style.MetricAffectingSpan;
+import android.text.style.CharacterStyle;
+import android.text.style.UpdateAppearance;
 
 import androidx.annotation.ColorInt;
-import androidx.annotation.NonNull;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Objects;
 
 import it.niedermann.android.markdown.ThemeUtils;
 
-public class SearchSpan extends MetricAffectingSpan {
+/**
+ * Only changes colors, so adding or removing it does not reflow the text layout.
+ */
+public class SearchSpan extends CharacterStyle implements UpdateAppearance {
 
     @ColorInt
     private final int colorBackground;
@@ -52,11 +55,5 @@ public class SearchSpan extends MetricAffectingSpan {
     public void updateDrawState(TextPaint tp) {
         tp.bgColor = colorBackground;
         tp.setColor(colorOnBackground);
-        tp.setFakeBoldText(true);
-    }
-
-    @Override
-    public void updateMeasureState(@NonNull TextPaint tp) {
-        tp.setFakeBoldText(true);
     }
 }
