@@ -88,6 +88,9 @@ public class MarkwonMarkdownEditor extends AppCompatEditText implements Markdown
                                     @NonNull Function<Collection<? extends EditorStateListener>, EditorStateNotifier> editStateNotifierFactory) {
         super(context, attrs, defStyleAttr);
 
+        // EmojiCompat re-lays out the whole text on each keystroke, which makes typing lag in long notes
+        setEmojiCompatEnabled(false);
+
         final var typedValue = new TypedValue();
         final var theme = context.getTheme();
         theme.resolveAttribute(androidx.appcompat.R.attr.colorPrimary, typedValue, true);
